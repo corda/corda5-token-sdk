@@ -5,8 +5,12 @@ import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.utilities.sumTokenStatesOrZero
-import net.corda.core.contracts.*
-import net.corda.core.internal.uncheckedCast
+import net.corda.v5.base.internal.uncheckedCast
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.Attachment
+import net.corda.v5.ledger.contracts.CommandWithParties
+import net.corda.v5.ledger.contracts.ContractState
+import net.corda.v5.ledger.contracts.StateAndRef
 import java.security.PublicKey
 
 /**
@@ -30,11 +34,11 @@ open class FungibleTokenContract : AbstractTokenContract<FungibleToken>() {
     }
 
     override fun verifyIssue(
-            issueCommand: CommandWithParties<TokenCommand>,
-            inputs: List<IndexedState<FungibleToken>>,
-            outputs: List<IndexedState<FungibleToken>>,
-            attachments: List<Attachment>,
-            references: List<StateAndRef<ContractState>>
+        issueCommand: CommandWithParties<TokenCommand>,
+        inputs: List<IndexedState<FungibleToken>>,
+        outputs: List<IndexedState<FungibleToken>>,
+        attachments: List<Attachment>,
+        references: List<StateAndRef<ContractState>>
     ) {
         val issuedToken: IssuedTokenType = issueCommand.value.token
         require(inputs.isEmpty()) { "When issuing tokens, there cannot be any input states." }

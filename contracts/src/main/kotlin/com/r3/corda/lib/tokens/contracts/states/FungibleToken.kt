@@ -8,16 +8,16 @@ import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.getAttachmentIdForGenericParam
 import com.r3.corda.lib.tokens.contracts.utilities.holderString
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.BelongsToContract
-import net.corda.core.contracts.FungibleState
-import net.corda.core.crypto.SecureHash
-import net.corda.core.crypto.toStringShort
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
-import net.corda.core.schemas.MappedSchema
-import net.corda.core.schemas.PersistentState
-import net.corda.core.schemas.QueryableState
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.node.services.persistence.MappedSchema
+import net.corda.v5.crypto.SecureHash
+import net.corda.v5.crypto.toStringShort
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.BelongsToContract
+import net.corda.v5.ledger.contracts.FungibleState
+import net.corda.v5.ledger.schemas.PersistentState
+import net.corda.v5.ledger.schemas.QueryableState
 
 /**
  * This class is for handling the issuer and holder relationship for fungible token types. If the [TokenType] is a
@@ -34,9 +34,9 @@ import net.corda.core.schemas.QueryableState
  */
 @BelongsToContract(FungibleTokenContract::class)
 open class FungibleToken @JvmOverloads constructor(
-        override val amount: Amount<IssuedTokenType>,
-        override val holder: AbstractParty,
-        override val tokenTypeJarHash: SecureHash? = amount.token.tokenType.getAttachmentIdForGenericParam()
+    override val amount: Amount<IssuedTokenType>,
+    override val holder: AbstractParty,
+    override val tokenTypeJarHash: SecureHash? = amount.token.tokenType.getAttachmentIdForGenericParam()
 ) : FungibleState<IssuedTokenType>, AbstractToken, QueryableState {
 
     override val tokenType: TokenType get() = amount.token.tokenType

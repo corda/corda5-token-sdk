@@ -1,12 +1,15 @@
 package com.r3.corda.lib.tokens.workflows.flows.redeem
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.Amount
-import net.corda.core.flows.FlowSession
-import net.corda.core.identity.AbstractParty
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowIdentity
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /**
  * Inlined flow used to redeem amount of [FungibleToken]s issued by the particular issuer with possible change output
@@ -21,21 +24,30 @@ import net.corda.core.transactions.TransactionBuilder
 class RedeemFungibleTokensFlow
 @JvmOverloads
 constructor(
-        val amount: Amount<TokenType>,
-        override val issuerSession: FlowSession,
-        val changeHolder: AbstractParty? = null,
-        override val observerSessions: List<FlowSession> = emptyList(),
-        val additionalQueryCriteria: QueryCriteria? = null
+    val amount: Amount<TokenType>,
+    override val issuerSession: FlowSession,
+    val changeHolder: AbstractParty? = null,
+    override val observerSessions: List<FlowSession> = emptyList(),
+    val additionalQueryCriteria: QueryCriteria? = null
 ) : AbstractRedeemTokensFlow() {
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
+    @CordaInject
+    lateinit var flowIdentity: FlowIdentity
+
     @Suspendable
     override fun generateExit(transactionBuilder: TransactionBuilder) {
         addFungibleTokensToRedeem(
-                transactionBuilder = transactionBuilder,
-                serviceHub = serviceHub,
-                amount = amount,
-                issuer = issuerSession.counterparty,
-                changeHolder = changeHolder ?: ourIdentity,
-                additionalQueryCriteria = additionalQueryCriteria
+            transactionBuilder = transactionBuilder,
+            vaultService = vaultService,
+            identityService = identityService,
+            flowEngine = flowEngine,
+            amount = amount,
+            issuer = issuerSession.counterparty,
+            changeHolder = changeHolder ?: flowIdentity.ourIdentity,
+            additionalQueryCriteria = additionalQueryCriteria
         )
     }
 }

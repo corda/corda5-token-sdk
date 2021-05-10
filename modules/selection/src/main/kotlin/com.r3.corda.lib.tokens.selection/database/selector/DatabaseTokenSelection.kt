@@ -1,6 +1,5 @@
 package com.r3.corda.lib.tokens.selection.database.selector
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
@@ -11,21 +10,23 @@ import com.r3.corda.lib.tokens.selection.database.config.PAGE_SIZE_DEFAULT
 import com.r3.corda.lib.tokens.selection.database.config.RETRY_CAP_DEFAULT
 import com.r3.corda.lib.tokens.selection.database.config.RETRY_SLEEP_DEFAULT
 import com.r3.corda.lib.tokens.selection.memory.internal.Holder
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.flows.FlowLogic
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.AnonymousParty
-import net.corda.core.node.ServiceHub
-import net.corda.core.node.services.Vault
-import net.corda.core.node.services.queryBy
-import net.corda.core.node.services.vault.DEFAULT_PAGE_NUM
-import net.corda.core.node.services.vault.PageSpecification
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.node.services.vault.Sort
-import net.corda.core.utilities.contextLogger
-import net.corda.core.utilities.millis
-import net.corda.core.utilities.toNonEmptySet
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.AnonymousParty
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.util.contextLogger
+import net.corda.v5.base.util.millis
+import net.corda.v5.base.util.toNonEmptySet
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.services.Vault
+import net.corda.v5.ledger.services.VaultService
+import net.corda.v5.ledger.services.queryBy
+import net.corda.v5.ledger.services.vault.DEFAULT_PAGE_NUM
+import net.corda.v5.ledger.services.vault.PageSpecification
+import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.services.vault.Sort
 import java.util.*
 
 /**
@@ -42,11 +43,13 @@ import java.util.*
  * @param services for performing vault queries.
  */
 class DatabaseTokenSelection @JvmOverloads constructor(
-        override val services: ServiceHub,
-        private val maxRetries: Int = MAX_RETRIES_DEFAULT,
-        private val retrySleep: Int = RETRY_SLEEP_DEFAULT,
-        private val retryCap: Int = RETRY_CAP_DEFAULT,
-        private val pageSize: Int = PAGE_SIZE_DEFAULT
+    private val vaultService: VaultService,
+    private val identityService: IdentityService,
+    private val flowEngine: FlowEngine,
+    private val maxRetries: Int = MAX_RETRIES_DEFAULT,
+    private val retrySleep: Int = RETRY_SLEEP_DEFAULT,
+    private val retryCap: Int = RETRY_CAP_DEFAULT,
+    private val pageSize: Int = PAGE_SIZE_DEFAULT
 ) : Selector() {
 
     companion object {
@@ -59,13 +62,13 @@ class DatabaseTokenSelection @JvmOverloads constructor(
      * @return the amount of claimed tokens (effectively the sum of values of the states in [stateAndRefs]
      * */
     private fun executeQuery(
-            requiredAmount: Amount<TokenType>,
-            lockId: UUID,
-            additionalCriteria: QueryCriteria,
-            sorter: Sort,
-            stateAndRefs: MutableList<StateAndRef<FungibleToken>>,
-            includeSoftLocked: Boolean,
-            softLockingType: QueryCriteria.SoftLockingType = QueryCriteria.SoftLockingType.UNLOCKED_ONLY
+        requiredAmount: Amount<TokenType>,
+        lockId: UUID,
+        additionalCriteria: QueryCriteria,
+        sorter: Sort,
+        stateAndRefs: MutableList<StateAndRef<FungibleToken>>,
+        includeSoftLocked: Boolean,
+        softLockingType: QueryCriteria.SoftLockingType = QueryCriteria.SoftLockingType.UNLOCKED_ONLY
     ): Amount<TokenType> {
         // Didn't need to select any tokens.
         if (requiredAmount.quantity == 0L) {
@@ -94,7 +97,7 @@ class DatabaseTokenSelection @JvmOverloads constructor(
 
         do {
             val pageSpec = PageSpecification(pageNumber = pageNumber, pageSize = pageSize)
-            val results: Vault.Page<FungibleToken> = services.vaultService.queryBy(baseCriteria.and(additionalCriteria), pageSpec, sorter)
+            val results: Vault.Page<FungibleToken> = vaultService.queryBy(baseCriteria.and(additionalCriteria), pageSpec, sorter)
 
             for (state in results.states) {
                 stateAndRefs += state
@@ -111,7 +114,7 @@ class DatabaseTokenSelection @JvmOverloads constructor(
         // No tokens available.
         if (stateAndRefs.isEmpty()) return Amount(0, requiredAmount.token)
 
-       return claimedAmountWithToken
+        return claimedAmountWithToken
     }
 
     /**
@@ -131,7 +134,7 @@ class DatabaseTokenSelection @JvmOverloads constructor(
         return if (claimedAmount >= requiredAmount) {
             // We picked enough tokensToIssue, so softlock and go.
             logger.trace("TokenType selection for $requiredAmount retrieved ${stateAndRefs.count()} states totalling $claimedAmount: $stateAndRefs")
-            services.vaultService.softLockReserve(lockId, stateAndRefs.map { it.ref }.toNonEmptySet())
+            vaultService.softLockReserve(lockId, stateAndRefs.map { it.ref }.toNonEmptySet())
             true
         } else {
             logger.trace("TokenType selection requested $requiredAmount but retrieved $claimedAmount with state refs: ${stateAndRefs.map { it.ref }}")
@@ -139,13 +142,12 @@ class DatabaseTokenSelection @JvmOverloads constructor(
         }
     }
 
-
     @Suspendable
     override fun selectTokens(
-            holder: Holder,
-            lockId: UUID,
-            requiredAmount: Amount<TokenType>,
-            queryBy: TokenQueryBy
+        holder: Holder,
+        lockId: UUID,
+        requiredAmount: Amount<TokenType>,
+        queryBy: TokenQueryBy
     ): List<StateAndRef<FungibleToken>> {
         val criteria = constructQueryCriteria(requiredAmount, holder, queryBy)
         val stateAndRefs = mutableListOf<StateAndRef<FungibleToken>>()
@@ -158,11 +160,12 @@ class DatabaseTokenSelection @JvmOverloads constructor(
                 if (retryCount != maxRetries) {
                     stateAndRefs.clear()
                     val durationMillis = (minOf(retrySleep.shl(retryCount), retryCap / 2) * (1.0 + Math.random())).toInt()
-                    FlowLogic.sleep(durationMillis.millis)
+                    flowEngine.sleep(durationMillis.millis)
                 } else {
                     // if there is enough soft locked tokens available to satisfy the amount then we need to throw
                     // [InsufficientNotLockedBalanceException] instead
-                    val amountWithSoftLocked = executeQuery(requiredAmount, lockId, criteria, sortByStateRefAscending(), mutableListOf(), true)
+                    val amountWithSoftLocked =
+                        executeQuery(requiredAmount, lockId, criteria, sortByStateRefAscending(), mutableListOf(), true)
                     if (amountWithSoftLocked < requiredAmount) {
                         logger.warn("Insufficient spendable states identified for $requiredAmount.")
                         throw InsufficientBalanceException("Insufficient spendable states identified for $requiredAmount.")
@@ -206,8 +209,8 @@ class DatabaseTokenSelection @JvmOverloads constructor(
             is Holder.KeyIdentity -> {
                 // We want the AbstractParty that this key refers to, unfortunately, partyFromKey returns always well known party
                 // for that key, so afterwards we need to construct AnonymousParty.
-                val knownParty: AbstractParty = services.identityService.partyFromKey(holder.owningKey)
-                        ?: AnonymousParty(holder.owningKey)
+                val knownParty: AbstractParty = identityService.partyFromKey(holder.owningKey)
+                    ?: AnonymousParty(holder.owningKey)
                 val holderParty = if (knownParty.owningKey == holder.owningKey) knownParty else AnonymousParty(holder.owningKey)
                 tokenAmountWithHolderCriteria(token, holderParty)
             }

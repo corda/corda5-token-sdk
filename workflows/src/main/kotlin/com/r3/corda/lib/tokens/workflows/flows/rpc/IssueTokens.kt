@@ -1,6 +1,5 @@
 package com.r3.corda.lib.tokens.workflows.flows.rpc
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.workflows.flows.issue.ConfidentialIssueTokensFlow
 import com.r3.corda.lib.tokens.workflows.flows.issue.ConfidentialIssueTokensFlowHandler
@@ -8,9 +7,19 @@ import com.r3.corda.lib.tokens.workflows.flows.issue.IssueTokensFlow
 import com.r3.corda.lib.tokens.workflows.flows.issue.IssueTokensFlowHandler
 import com.r3.corda.lib.tokens.workflows.utilities.sessionsForParticipants
 import com.r3.corda.lib.tokens.workflows.utilities.sessionsForParties
-import net.corda.core.flows.*
-import net.corda.core.identity.Party
-import net.corda.core.transactions.SignedTransaction
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.InitiatedBy
+import net.corda.v5.application.flows.InitiatingFlow
+import net.corda.v5.application.flows.StartableByRPC
+import net.corda.v5.application.flows.StartableByService
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.FlowMessaging
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.transactions.SignedTransaction
 
 /**
  * A flow for issuing fungible or non-fungible tokens which initiates its own participantSessions. This is the case when
@@ -28,13 +37,22 @@ class IssueTokens
 constructor(
         val tokensToIssue: List<AbstractToken>,
         val observers: List<Party> = emptyList()
-) : FlowLogic<SignedTransaction>() {
+) : Flow<SignedTransaction> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var flowMessaging: FlowMessaging
+
+    @CordaInject
+    lateinit var identityService: IdentityService
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val observerSessions = sessionsForParties(observers)
-        val participantSessions = sessionsForParticipants(tokensToIssue)
-        return subFlow(IssueTokensFlow(tokensToIssue, participantSessions, observerSessions))
+        val observerSessions = sessionsForParties(identityService, flowMessaging, observers)
+        val participantSessions = sessionsForParticipants(identityService, flowMessaging, tokensToIssue)
+        return flowEngine.subFlow(IssueTokensFlow(tokensToIssue, participantSessions, observerSessions))
     }
 }
 
@@ -42,9 +60,13 @@ constructor(
  * Responder flow for [IssueTokens].
  */
 @InitiatedBy(IssueTokens::class)
-class IssueTokensHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class IssueTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
-    override fun call() = subFlow(IssueTokensFlowHandler(otherSession))
+    override fun call() = flowEngine.subFlow(IssueTokensFlowHandler(otherSession))
 }
 
 /**
@@ -63,12 +85,22 @@ class ConfidentialIssueTokens
 constructor(
         val tokensToIssue: List<AbstractToken>,
         val observers: List<Party> = emptyList()
-) : FlowLogic<SignedTransaction>() {
+) : Flow<SignedTransaction> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var flowMessaging: FlowMessaging
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
     @Suspendable
     override fun call(): SignedTransaction {
-        val observerSessions = sessionsForParties(observers)
-        val participantSessions = sessionsForParticipants(tokensToIssue)
-        return subFlow(ConfidentialIssueTokensFlow(tokensToIssue, participantSessions, observerSessions))
+        val observerSessions = sessionsForParties(identityService, flowMessaging, observers)
+        val participantSessions = sessionsForParticipants(identityService, flowMessaging, tokensToIssue)
+        return flowEngine.subFlow(ConfidentialIssueTokensFlow(tokensToIssue, participantSessions, observerSessions))
     }
 }
 
@@ -76,7 +108,10 @@ constructor(
  * Responder flow for [ConfidentialIssueTokens].
  */
 @InitiatedBy(ConfidentialIssueTokens::class)
-class ConfidentialIssueTokensHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class ConfidentialIssueTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
-    override fun call() = subFlow(ConfidentialIssueTokensFlowHandler(otherSession))
+    override fun call() = flowEngine.subFlow(ConfidentialIssueTokensFlowHandler(otherSession))
 }

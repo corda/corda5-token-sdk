@@ -1,11 +1,13 @@
 package com.r3.corda.lib.tokens.workflows.internal.flows.confidential
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.ci.workflows.RequestKeyFlow
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.identity.AnonymousParty
-import net.corda.core.identity.Party
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.identity.AnonymousParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.base.annotations.Suspendable
 
 /**
  * This flow notifies prospective token holders that they must generate a new key pair. As this is an in-line sub-flow,
@@ -14,9 +16,13 @@ import net.corda.core.identity.Party
  * [ActionRequest.DO_NOTHING].
  */
 class AnonymisePartiesFlow(
-        val parties: List<Party>,
-        val sessions: List<FlowSession>
-) : FlowLogic<Map<Party, AnonymousParty>>() {
+    val parties: List<Party>,
+    val sessions: List<FlowSession>
+) : Flow<Map<Party, AnonymousParty>> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call(): Map<Party, AnonymousParty> {
         val sessionParties = sessions.map(FlowSession::counterparty)
@@ -27,7 +33,7 @@ class AnonymisePartiesFlow(
             val party = session.counterparty
             if (party in parties) {
                 session.send(ActionRequest.CREATE_NEW_KEY)
-                val anonParty = subFlow(RequestKeyFlow(session))
+                val anonParty = flowEngine.subFlow(RequestKeyFlow(session))
                 Pair(party, anonParty)
             } else {
                 session.send(ActionRequest.DO_NOTHING)

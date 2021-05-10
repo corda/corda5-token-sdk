@@ -1,14 +1,17 @@
 package com.r3.corda.lib.tokens.workflows.flows.redeem
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.Amount
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.AnonymousParty
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.transactions.SignedTransaction
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.AnonymousParty
+import net.corda.v5.application.node.services.KeyManagementService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.transactions.SignedTransaction
 
 /**
  * Version of [RedeemFungibleTokensFlow] using confidential identity for a change owner.
@@ -25,22 +28,28 @@ import net.corda.core.transactions.SignedTransaction
 class ConfidentialRedeemFungibleTokensFlow
 @JvmOverloads
 constructor(
-        val amount: Amount<TokenType>,
-        val issuerSession: FlowSession,
-        val observerSessions: List<FlowSession> = emptyList(),
-        val additionalQueryCriteria: QueryCriteria? = null,
-        val changeHolder: AbstractParty? = null
-) : FlowLogic<SignedTransaction>() {
+    val amount: Amount<TokenType>,
+    val issuerSession: FlowSession,
+    val observerSessions: List<FlowSession> = emptyList(),
+    val additionalQueryCriteria: QueryCriteria? = null,
+    val changeHolder: AbstractParty? = null
+) : Flow<SignedTransaction> {
+    @CordaInject
+    lateinit var keyManagementService: KeyManagementService
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call(): SignedTransaction {
         // If a change holder key is not specified then one will be created for you. NB. If you want to use accounts
         // with tokens, then you must generate and allocate the key to an account up-front and pass the key in as the
         // "changeHolder".
         val confidentialHolder = changeHolder ?: let {
-            val key = serviceHub.keyManagementService.freshKey()
+            val key = keyManagementService.freshKey()
             AnonymousParty(key)
         }
-        return subFlow(RedeemFungibleTokensFlow(
+        return flowEngine.subFlow(RedeemFungibleTokensFlow(
                 amount = amount,
                 issuerSession = issuerSession,
                 changeHolder = confidentialHolder,  // This will never be null.

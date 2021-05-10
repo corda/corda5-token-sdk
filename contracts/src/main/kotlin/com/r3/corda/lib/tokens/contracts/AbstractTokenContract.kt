@@ -8,10 +8,18 @@ import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.*
-import net.corda.core.crypto.SecureHash
-import net.corda.core.internal.uncheckedCast
-import net.corda.core.transactions.LedgerTransaction
+import net.corda.v5.base.internal.uncheckedCast
+import net.corda.v5.crypto.SecureHash
+import net.corda.v5.ledger.contracts.Attachment
+import net.corda.v5.ledger.contracts.CommandWithParties
+import net.corda.v5.ledger.contracts.Contract
+import net.corda.v5.ledger.contracts.ContractClassName
+import net.corda.v5.ledger.contracts.ContractState
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.contracts.TransactionState
+import net.corda.v5.ledger.contracts.select
+import net.corda.v5.ledger.transactions.LedgerTransaction
+
 /**
  * This is an abstract contract which contains common functionality used by [FungibleTokenContract] and
  * [NonFungibleTokenContract]. It works by grouping tokens by type and then verifying each group individually. It must
@@ -124,8 +132,8 @@ abstract class AbstractTokenContract<AT : AbstractToken> : Contract {
 		}
 
 
-		val allMatchedCommands = groupsAndCommands.map { it.first.first() }.toSet()
-		val extraCommands = (tokenCommands - allMatchedCommands).toSet()
+//		val allMatchedCommands = groupsAndCommands.map { it.first.first() }.toSet()
+//		val extraCommands = (tokenCommands - allMatchedCommands).toSet()
 	}
 
 	private fun groupMatchesCommand(it: CommandWithParties<TokenCommand>, group: IndexedInOutGroup<AbstractToken, TokenInfo>): Boolean {

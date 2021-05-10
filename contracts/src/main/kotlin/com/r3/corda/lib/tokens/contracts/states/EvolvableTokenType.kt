@@ -2,10 +2,10 @@ package com.r3.corda.lib.tokens.contracts.states
 
 import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.LinearPointer
-import net.corda.core.contracts.LinearState
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.ledger.contracts.LinearPointer
+import net.corda.v5.ledger.contracts.LinearState
 
 /**
  * [EvolvableTokenType]s are for storing token reference data that we expect to change over time.

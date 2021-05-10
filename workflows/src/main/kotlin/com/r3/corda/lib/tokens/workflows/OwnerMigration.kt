@@ -9,18 +9,18 @@ import liquibase.exception.ValidationErrors
 import liquibase.resource.ResourceAccessor
 import liquibase.statement.SqlStatement
 import liquibase.statement.core.UpdateStatement
-import net.corda.core.contracts.StateRef
-import net.corda.core.crypto.SecureHash
-import net.corda.core.crypto.toStringShort
-import net.corda.core.internal.readFully
-import net.corda.core.serialization.SerializationContext
-import net.corda.core.serialization.deserialize
-import net.corda.core.transactions.SignedTransaction
-import net.corda.core.utilities.contextLogger
-import net.corda.serialization.internal.AMQP_STORAGE_CONTEXT
-import net.corda.serialization.internal.CordaSerializationMagic
-import net.corda.serialization.internal.SerializationFactoryImpl
-import net.corda.serialization.internal.amqp.AbstractAMQPSerializationScheme
+import net.corda.internal.serialization.CordaSerializationMagic
+import net.corda.internal.serialization.SerializationFactoryImpl
+import net.corda.v5.application.serialization.deserialize
+import net.corda.v5.application.serialization.internal.AMQP_STORAGE_CONTEXT
+import net.corda.v5.application.serialization.internal.AbstractAMQPSerializationScheme
+import net.corda.v5.base.internal.readFully
+import net.corda.v5.base.util.contextLogger
+import net.corda.v5.crypto.SecureHash
+import net.corda.v5.crypto.toStringShort
+import net.corda.v5.ledger.contracts.StateRef
+import net.corda.v5.ledger.transactions.SignedTransaction
+import net.corda.v5.serialization.SerializationContext
 import java.sql.ResultSet
 
 
@@ -30,7 +30,7 @@ class OwnerMigration : CustomSqlChange {
 		private val logger = contextLogger()
 	}
 
-	private object AMQPInspectorSerializationScheme : AbstractAMQPSerializationScheme(emptyList()) {
+	private object AMQPInspectorSerializationScheme : AbstractAMQPSerializationScheme() {
 		override fun canDeserializeVersion(magic: CordaSerializationMagic, target: SerializationContext.UseCase): Boolean {
 			return true
 		}

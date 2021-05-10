@@ -4,14 +4,15 @@ import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.ContractState
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.crypto.SecureHash
-import net.corda.core.crypto.sha256
-import net.corda.core.identity.Party
-import net.corda.core.internal.location
-import net.corda.core.transactions.LedgerTransaction
+import net.corda.v5.application.identity.Party
+import net.corda.v5.base.internal.location
+import net.corda.v5.crypto.SecureHash
+import net.corda.v5.crypto.sha256
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.ContractState
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.transactions.LedgerTransaction
+import net.corda.v5.ledger.transactions.outputsOfType
 
 // Transaction helpers.
 

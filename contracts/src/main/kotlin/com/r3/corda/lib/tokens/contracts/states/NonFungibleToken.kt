@@ -8,16 +8,15 @@ import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.getAttachmentIdForGenericParam
 import com.r3.corda.lib.tokens.contracts.utilities.holderString
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.BelongsToContract
-import net.corda.core.contracts.LinearState
-import net.corda.core.contracts.UniqueIdentifier
-import net.corda.core.crypto.SecureHash
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
-import net.corda.core.schemas.MappedSchema
-import net.corda.core.schemas.PersistentState
-import net.corda.core.schemas.QueryableState
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.node.services.persistence.MappedSchema
+import net.corda.v5.crypto.SecureHash
+import net.corda.v5.ledger.UniqueIdentifier
+import net.corda.v5.ledger.contracts.BelongsToContract
+import net.corda.v5.ledger.contracts.LinearState
+import net.corda.v5.ledger.schemas.PersistentState
+import net.corda.v5.ledger.schemas.QueryableState
 
 /**
  * This class is for handling the issuer and holder relationship for non-fungible token types. Non-fungible tokens
@@ -38,10 +37,10 @@ import net.corda.core.schemas.QueryableState
  */
 @BelongsToContract(NonFungibleTokenContract::class)
 open class NonFungibleToken @JvmOverloads constructor(
-        val token: IssuedTokenType,
-        override val holder: AbstractParty,
-        override val linearId: UniqueIdentifier,
-        override val tokenTypeJarHash: SecureHash? = token.tokenType.getAttachmentIdForGenericParam()
+    val token: IssuedTokenType,
+    override val holder: AbstractParty,
+    override val linearId: UniqueIdentifier,
+    override val tokenTypeJarHash: SecureHash? = token.tokenType.getAttachmentIdForGenericParam()
 ) : AbstractToken, QueryableState, LinearState {
 
     override val issuedTokenType: IssuedTokenType get() = token

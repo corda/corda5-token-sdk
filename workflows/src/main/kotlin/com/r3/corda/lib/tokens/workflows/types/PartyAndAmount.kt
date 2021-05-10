@@ -1,9 +1,9 @@
 package com.r3.corda.lib.tokens.workflows.types
 
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.Amount
-import net.corda.core.identity.AbstractParty
-import net.corda.core.serialization.CordaSerializable
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.base.annotations.CordaSerializable
+import net.corda.v5.ledger.contracts.Amount
 
 /**
  * A simple holder for a (possibly anonymous) [AbstractParty] and a quantity of tokens.

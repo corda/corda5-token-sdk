@@ -1,9 +1,9 @@
 package com.r3.corda.lib.tokens.testing.contracts
 
 import com.r3.corda.lib.tokens.contracts.EvolvableTokenContract
-import net.corda.core.contracts.Contract
-import net.corda.core.contracts.requireThat
-import net.corda.core.transactions.LedgerTransaction
+import net.corda.v5.ledger.contracts.Contract
+import net.corda.v5.ledger.contracts.requireThat
+import net.corda.v5.ledger.transactions.LedgerTransaction
 
 class TestEvolvableTokenContract : EvolvableTokenContract(), Contract {
 

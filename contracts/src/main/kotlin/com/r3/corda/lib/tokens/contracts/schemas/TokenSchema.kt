@@ -1,6 +1,6 @@
 package com.r3.corda.lib.tokens.contracts.schemas
 
-import net.corda.core.schemas.MappedSchema
+import net.corda.v5.application.node.services.persistence.MappedSchema
 
 /**
  * Here, schemas can be added for commonly used [EvolvableTokenType]s.

@@ -1,6 +1,5 @@
 package com.r3.corda.lib.tokens.workflows.flows.issue
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.commands.IssueTokenCommand
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
@@ -10,10 +9,15 @@ import com.r3.corda.lib.tokens.workflows.internal.flows.distribution.UpdateDistr
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFinalityFlow
 import com.r3.corda.lib.tokens.workflows.utilities.addTokenTypeJar
 import com.r3.corda.lib.tokens.workflows.utilities.getPreferredNotary
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.transactions.SignedTransaction
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.v5.application.cordapp.CordappProvider
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.services.NotaryAwareNetworkMapCache
+import net.corda.v5.ledger.transactions.SignedTransaction
+import net.corda.v5.ledger.transactions.TransactionBuilderFactory
 
 /**
  * Use this flow to issue fungible or non-fungible tokens. It should be called as an in-line sub-flow, therefore you
@@ -46,10 +50,22 @@ import net.corda.core.transactions.TransactionBuilder
 class IssueTokensFlow
 @JvmOverloads
 constructor(
-        val tokensToIssue: List<AbstractToken>,
-        val participantSessions: List<FlowSession>,
-        val observerSessions: List<FlowSession> = emptyList()
-) : FlowLogic<SignedTransaction>() {
+    val tokensToIssue: List<AbstractToken>,
+    val participantSessions: List<FlowSession>,
+    val observerSessions: List<FlowSession> = emptyList()
+) : Flow<SignedTransaction> {
+
+    @CordaInject
+    lateinit var transactionBuilderFactory: TransactionBuilderFactory
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var notaryAwareNetworkMapCache: NotaryAwareNetworkMapCache
+
+    @CordaInject
+    lateinit var cordappProvider: CordappProvider
 
     /** Issue a single [FungibleToken]. */
     @JvmOverloads
@@ -76,19 +92,22 @@ constructor(
     @Suspendable
     override fun call(): SignedTransaction {
         // Initialise the transaction builder with a preferred notary or choose a random notary.
-        val transactionBuilder = TransactionBuilder(notary = getPreferredNotary(serviceHub))
+        val transactionBuilder =
+            transactionBuilderFactory
+                .create()
+                .setNotary(getPreferredNotary(notaryAwareNetworkMapCache, cordappProvider.appConfig))
         // Add all the specified tokensToIssue to the transaction. The correct commands and signing keys are also added.
         addIssueTokens(transactionBuilder, tokensToIssue)
         addTokenTypeJar(tokensToIssue, transactionBuilder)
         // Create new participantSessions if this is started as a top level flow.
-        val signedTransaction = subFlow(
+        val signedTransaction = flowEngine.subFlow(
                 ObserverAwareFinalityFlow(
                         transactionBuilder = transactionBuilder,
                         allSessions = participantSessions + observerSessions
                 )
         )
         // Update the distribution list.
-        subFlow(UpdateDistributionListFlow(signedTransaction))
+        flowEngine.subFlow(UpdateDistributionListFlow(signedTransaction))
         // Return the newly created transaction.
         return signedTransaction
     }

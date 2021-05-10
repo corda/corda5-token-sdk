@@ -51,11 +51,16 @@ compileKotlin{
 }
 
 dependencies {
+    //implementation 'android.arch.persistence.room:runtime:1.1.1'
+    implementation "org.liquibase:liquibase-core:$liquibaseVersion"
+    implementation "org.hibernate:hibernate-core:$hibernateVersion"
+
     // Kotlin.
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    //annotationProcessor 'android.arch.persistence.room:compiler:1.1.1'
 
     // Corda dependencies.
-    cordaCompile("$corda_release_group:corda-core:$corda_release_version") {
+    cordaCompile("$corda_release_group:corda-application:$corda_release_version") {
         changing = true
     }
 
@@ -63,11 +68,19 @@ dependencies {
         changing = true
     }
 
+    cordaCompile("$corda_release_group:corda-ledger:$corda_release_version") {
+        changing = true
+    }
+
+    cordaCompile("$corda_release_group:corda-flows:$corda_release_version") {
+        changing = true
+    }
+
     // Logging.
     testCompile "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
 
     // Testing.
-    testCompile "$corda_release_group:corda-node-driver:$corda_release_version"
+    testCompile "$corda_release_group:corda-node-driver:$legacy_corda_release_version"
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile "junit:junit:$junit_version"
 

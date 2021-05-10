@@ -1,6 +1,5 @@
 package com.r3.corda.lib.tokens.workflows.internal.testflows
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.ci.workflows.SyncKeyMappingFlow
 import com.r3.corda.lib.ci.workflows.SyncKeyMappingFlowHandler
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
@@ -9,6 +8,7 @@ import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.selection.InsufficientBalanceException
 import com.r3.corda.lib.tokens.selection.database.selector.DatabaseTokenSelection
 import com.r3.corda.lib.tokens.selection.memory.selector.LocalTokenSelector
+import com.r3.corda.lib.tokens.selection.memory.services.VaultWatcherService
 import com.r3.corda.lib.tokens.testing.states.House
 import com.r3.corda.lib.tokens.workflows.flows.move.addMoveNonFungibleTokens
 import com.r3.corda.lib.tokens.workflows.flows.move.addMoveTokens
@@ -21,17 +21,39 @@ import com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFi
 import com.r3.corda.lib.tokens.workflows.internal.schemas.DistributionRecord
 import com.r3.corda.lib.tokens.workflows.utilities.getPreferredNotary
 import com.r3.corda.lib.tokens.workflows.utilities.ourSigningKeys
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.contracts.StateRef
-import net.corda.core.flows.*
-import net.corda.core.identity.Party
-import net.corda.core.serialization.CordaSerializable
-import net.corda.core.transactions.SignedTransaction
-import net.corda.core.transactions.TransactionBuilder
-import net.corda.core.utilities.seconds
-import net.corda.core.utilities.toNonEmptySet
-import net.corda.core.utilities.unwrap
+import net.corda.systemflows.CollectSignaturesFlow
+import net.corda.systemflows.ReceiveStateAndRefFlow
+import net.corda.systemflows.SendStateAndRefFlow
+import net.corda.systemflows.SignTransactionFlow
+import net.corda.v5.application.cordapp.CordappProvider
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.InitiatedBy
+import net.corda.v5.application.flows.InitiatingFlow
+import net.corda.v5.application.flows.StartableByRPC
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.FlowMessaging
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.node.NodeInfo
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.application.node.services.KeyManagementService
+import net.corda.v5.application.node.services.NetworkMapCache
+import net.corda.v5.application.node.services.PersistenceService
+import net.corda.v5.application.utilities.unwrap
+import net.corda.v5.base.annotations.CordaSerializable
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.util.contextLogger
+import net.corda.v5.base.util.seconds
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.services.NotaryAwareNetworkMapCache
+import net.corda.v5.ledger.services.StateRefLoaderService
+import net.corda.v5.ledger.services.TransactionMappingService
+import net.corda.v5.ledger.services.TransactionService
+import net.corda.v5.ledger.services.VaultService
+import net.corda.v5.ledger.transactions.SignedTransaction
+import net.corda.v5.ledger.transactions.TransactionBuilderFactory
 import java.time.Duration
 import java.time.temporal.ChronoUnit
 
@@ -41,32 +63,75 @@ private class DvPNotification(val amount: Amount<TokenType>)
 
 @StartableByRPC
 @InitiatingFlow
-class DvPFlow(val house: House, val newOwner: Party) : FlowLogic<SignedTransaction>() {
+class DvPFlow(val house: House, val newOwner: Party) : Flow<SignedTransaction> {
+
+    @CordaInject
+    lateinit var transactionBuilderFactory: TransactionBuilderFactory
+
+    @CordaInject
+    lateinit var vaultService: VaultService
+
+    @CordaInject
+    lateinit var flowMessaging: FlowMessaging
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var transactionService: TransactionService
+
+    @CordaInject
+    lateinit var transactionMappingService: TransactionMappingService
+
+    @CordaInject
+    lateinit var keyManagementService: KeyManagementService
+
+    @CordaInject
+    lateinit var networkMapCache: NotaryAwareNetworkMapCache
+
+    @CordaInject
+    lateinit var cordappProvider: CordappProvider
+
     @Suspendable
     override fun call(): SignedTransaction {
-        val txBuilder = TransactionBuilder(notary = getPreferredNotary(serviceHub))
-        addMoveNonFungibleTokens(txBuilder, serviceHub, house.toPointer<House>(), newOwner)
-        val session = initiateFlow(newOwner)
+        val txBuilder = transactionBuilderFactory.create().setNotary(getPreferredNotary(networkMapCache, cordappProvider.appConfig))
+        addMoveNonFungibleTokens(txBuilder, vaultService, house.toPointer<House>(), newOwner)
+        val session = flowMessaging.initiateFlow(newOwner)
         // Ask for input stateAndRefs - send notification with the amount to exchange.
         session.send(DvPNotification(house.valuation))
         // TODO add some checks for inputs and outputs
-        val inputs = subFlow(ReceiveStateAndRefFlow<FungibleToken>(session))
+        val inputs = flowEngine.subFlow(ReceiveStateAndRefFlow<FungibleToken>(session))
         // Receive outputs (this is just quick and dirty, we could calculate them on our side of the flow).
         val outputs = session.receive<List<FungibleToken>>().unwrap { it }
         addMoveTokens(txBuilder, inputs, outputs)
         // Synchronise any confidential identities
-        subFlow(SyncKeyMappingFlow(session, txBuilder.toWireTransaction(serviceHub)))
-        val ourSigningKeys = txBuilder.toLedgerTransaction(serviceHub).ourSigningKeys(serviceHub)
-        val initialStx = serviceHub.signInitialTransaction(txBuilder, signingPubKeys = ourSigningKeys)
-        val stx = subFlow(CollectSignaturesFlow(initialStx, listOf(session), ourSigningKeys))
+        flowEngine.subFlow(SyncKeyMappingFlow(session, txBuilder.toWireTransaction()))
+        val ourSigningKeys = transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction()).ourSigningKeys(keyManagementService)
+        val initialStx = transactionService.signInitial(txBuilder, signingPubKeys = ourSigningKeys)
+        val stx = flowEngine.subFlow(CollectSignaturesFlow(initialStx, listOf(session), ourSigningKeys))
         // Update distribution list.
-        subFlow(UpdateDistributionListFlow(stx))
-        return subFlow(ObserverAwareFinalityFlow(stx, listOf(session)))
+        flowEngine.subFlow(UpdateDistributionListFlow(stx))
+        return flowEngine.subFlow(ObserverAwareFinalityFlow(stx, listOf(session)))
     }
 }
 
 @InitiatedBy(DvPFlow::class)
-class DvPFlowHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class DvPFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var keyManagementService: KeyManagementService
+
+    @CordaInject
+    lateinit var vaultService: VaultService
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
+    @CordaInject
+    lateinit var nodeInfo: NodeInfo
+
     @Suspendable
     override fun call() {
         // Receive notification with house price.
@@ -74,36 +139,47 @@ class DvPFlowHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
         // Chose state and refs to send back.
         // TODO This is API pain, we assumed that we could just modify TransactionBuilder, but... it cannot be sent over the wire, because non-serializable
         // We need custom serializer and some custom flows to do checks.
-        val changeHolder = serviceHub.keyManagementService.freshKeyAndCert(ourIdentityAndCert, false).party.anonymise()
-        val (inputs, outputs) = DatabaseTokenSelection(serviceHub).generateMove(
-                lockId = runId.uuid,
+        val changeHolder = keyManagementService.freshKeyAndCert(ourIdentityAndCert, false).party.anonymise()
+        val (inputs, outputs) =
+            DatabaseTokenSelection(vaultService, identityService, flowEngine).generateMove(
+                identityService,
+                nodeInfo,
+                lockId = flowEngine.runId.uuid,
                 partiesAndAmounts = listOf(Pair(otherSession.counterparty, dvPNotification.amount)),
                 changeHolder = changeHolder
         )
-        subFlow(SendStateAndRefFlow(otherSession, inputs))
+        flowEngine.subFlow(SendStateAndRefFlow(otherSession, inputs))
         otherSession.send(outputs)
-        subFlow(SyncKeyMappingFlowHandler(otherSession))
-        subFlow(object : SignTransactionFlow(otherSession) {
+        flowEngine.subFlow(SyncKeyMappingFlowHandler(otherSession))
+        flowEngine.subFlow(object : SignTransactionFlow(otherSession) {
             override fun checkTransaction(stx: SignedTransaction) {}
         }
         )
-        subFlow(ObserverAwareFinalityFlowHandler(otherSession))
+        flowEngine.subFlow(ObserverAwareFinalityFlowHandler(otherSession))
     }
 }
 
 @StartableByRPC
-class GetDistributionList(val housePtr: TokenPointer<House>) : FlowLogic<List<DistributionRecord>>() {
+class GetDistributionList(val housePtr: TokenPointer<House>) : Flow<List<DistributionRecord>> {
+    @CordaInject
+    lateinit var persistenceService: PersistenceService
     @Suspendable
     override fun call(): List<DistributionRecord> {
-        return getDistributionList(serviceHub, housePtr.pointer.pointer)
+        return getDistributionList(persistenceService, housePtr.pointer.pointer)
     }
 }
 
 @StartableByRPC
-class CheckTokenPointer(val housePtr: TokenPointer<House>) : FlowLogic<House>() {
+class CheckTokenPointer(val housePtr: TokenPointer<House>) : Flow<House> {
+    @CordaInject
+    lateinit var vaultService: VaultService
+
+    @CordaInject
+    lateinit var stateRefLoaderService: StateRefLoaderService
+
     @Suspendable
     override fun call(): House {
-        return housePtr.pointer.resolve(serviceHub).state.data
+        return housePtr.pointer.resolve(vaultService, stateRefLoaderService).state.data
     }
 }
 
@@ -112,10 +188,13 @@ class CheckTokenPointer(val housePtr: TokenPointer<House>) : FlowLogic<House>() 
 class RedeemNonFungibleHouse(
         val housePtr: TokenPointer<House>,
         val issuerParty: Party
-) : FlowLogic<SignedTransaction>() {
+) : Flow<SignedTransaction> {
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call(): SignedTransaction {
-        return subFlow(RedeemNonFungibleTokens(housePtr, issuerParty, emptyList()))
+        return flowEngine.subFlow(RedeemNonFungibleTokens(housePtr, issuerParty, emptyList()))
     }
 }
 
@@ -123,37 +202,57 @@ class RedeemNonFungibleHouse(
 class RedeemFungibleGBP(
         val amount: Amount<TokenType>,
         val issuerParty: Party
-) : FlowLogic<SignedTransaction>() {
+) : Flow<SignedTransaction> {
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call(): SignedTransaction {
-        return subFlow(RedeemFungibleTokens(amount, issuerParty, emptyList(), null))
+        return flowEngine.subFlow(RedeemFungibleTokens(amount, issuerParty, emptyList(), null))
     }
 }
 
 // Helper flow for selection testing
 @StartableByRPC
-class SelectAndLockFlow(val amount: Amount<TokenType>, val delay: Duration = 1.seconds) : FlowLogic<Unit>() {
+class SelectAndLockFlow(val amount: Amount<TokenType>, val delay: Duration = 1.seconds) : Flow<Unit> {
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var vaultWatcherService: VaultWatcherService
+
     @Suspendable
     override fun call() {
-        val selector = LocalTokenSelector(serviceHub)
+        val selector = LocalTokenSelector(vaultWatcherService)
         selector.selectTokens(amount)
-        sleep(delay)
+        flowEngine.sleep(delay)
     }
 }
 
 // Helper flow for selection testing
 @StartableByRPC
-class JustLocalSelect(val amount: Amount<TokenType>, val timeBetweenSelects: Duration = Duration.of(10, ChronoUnit.SECONDS), val maxSelectAttempts: Int = 5) : FlowLogic<List<StateAndRef<FungibleToken>>>() {
+class JustLocalSelect(val amount: Amount<TokenType>, val timeBetweenSelects: Duration = Duration.of(10, ChronoUnit.SECONDS), val maxSelectAttempts: Int = 5) : Flow<List<StateAndRef<FungibleToken>>> {
+
+    companion object {
+        val logger = contextLogger()
+    }
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var vaultWatcherService: VaultWatcherService
+
     @Suspendable
     override fun call(): List<StateAndRef<FungibleToken>> {
-        val selector = LocalTokenSelector(serviceHub)
+        val selector = LocalTokenSelector(vaultWatcherService)
         var selectionAttempts = 0
         while (selectionAttempts < maxSelectAttempts) {
             try {
                 return selector.selectTokens(amount)
             } catch (e: InsufficientBalanceException) {
                 logger.error("failed to select", e)
-                sleep(timeBetweenSelects, true)
+                flowEngine.sleep(timeBetweenSelects)
                 selectionAttempts++
             }
         }

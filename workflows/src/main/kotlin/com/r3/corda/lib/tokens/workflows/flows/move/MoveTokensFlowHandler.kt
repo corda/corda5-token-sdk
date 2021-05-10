@@ -1,19 +1,28 @@
 package com.r3.corda.lib.tokens.workflows.flows.move
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFinalityFlowHandler
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.node.NodeInfo
+import net.corda.v5.base.annotations.Suspendable
 
 /**
  * Responder flow for [MoveTokensFlow], [MoveFungibleTokensFlow], [MoveNonFungibleTokensFlow]
  */
-class MoveTokensFlowHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class MoveTokensFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
+    @CordaInject
+    lateinit var nodeInfo: NodeInfo
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call() {
         // Resolve the move transaction.
-        if (!serviceHub.myInfo.isLegalIdentity(otherSession.counterparty)) {
-            subFlow(ObserverAwareFinalityFlowHandler(otherSession))
+        if (!nodeInfo.isLegalIdentity(otherSession.counterparty)) {
+            flowEngine.subFlow(ObserverAwareFinalityFlowHandler(otherSession))
         }
     }
 }

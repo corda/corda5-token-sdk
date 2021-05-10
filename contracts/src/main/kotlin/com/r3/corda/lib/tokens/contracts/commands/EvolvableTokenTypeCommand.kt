@@ -1,8 +1,8 @@
 package com.r3.corda.lib.tokens.contracts.commands
 
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
-import net.corda.core.contracts.CommandData
-import net.corda.core.contracts.TypeOnlyCommandData
+import net.corda.v5.ledger.contracts.CommandData
+import net.corda.v5.ledger.contracts.TypeOnlyCommandData
 
 /**
  * A standard set of commands for creating and updating [EvolvableTokenType]s. Additional commands can be added

@@ -1,20 +1,29 @@
 package com.r3.corda.lib.tokens.workflows.internal.flows.distribution
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.commands.IssueTokenCommand
 import com.r3.corda.lib.tokens.contracts.commands.MoveTokenCommand
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.types.TokenPointer
-import net.corda.core.contracts.Command
-import net.corda.core.contracts.TransactionState
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.InitiatingFlow
-import net.corda.core.transactions.SignedTransaction
-import net.corda.core.utilities.ProgressTracker
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.InitiatingFlow
+import net.corda.v5.application.flows.flowservices.CustomProgressTracker
+import net.corda.v5.application.flows.flowservices.FlowIdentity
+import net.corda.v5.application.flows.flowservices.FlowMessaging
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.application.node.services.PersistenceService
+import net.corda.v5.application.utilities.ProgressTracker
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.Command
+import net.corda.v5.ledger.contracts.TransactionState
+import net.corda.v5.ledger.services.StateRefLoaderService
+import net.corda.v5.ledger.services.VaultService
+import net.corda.v5.ledger.transactions.SignedTransaction
+import org.apache.activemq.artemis.core.protocol.core.impl.wireformat.SessionConsumerFlowCreditMessage
 
 // TODO: Handle updates of the distribution list for observers.
 @InitiatingFlow
-class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : FlowLogic<Unit>() {
+class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : Flow<Unit>, CustomProgressTracker {
 
     companion object {
         object ADD_DIST_LIST : ProgressTracker.Step("Adding to distribution list.")
@@ -24,6 +33,24 @@ class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : Flo
     }
 
     override val progressTracker: ProgressTracker = tracker()
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
+    @CordaInject
+    lateinit var flowMessaging: FlowMessaging
+
+    @CordaInject
+    lateinit var flowIdentity: FlowIdentity
+
+    @CordaInject
+    lateinit var persistenceService: PersistenceService
+
+    @CordaInject
+    lateinit var vaultService: VaultService
+
+    @CordaInject
+    lateinit var stateRefLoaderService: StateRefLoaderService
 
     @Suspendable
     override fun call() {
@@ -50,7 +77,7 @@ class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : Flo
             val issueStates: List<AbstractToken> = tokensWithTokenPointers.filter {
                 it.tokenType in issueTypes
             }
-            addToDistributionList(issueStates)
+            addToDistributionList(identityService, persistenceService, issueStates)
         }
         if (moveCmds.isNotEmpty()) {
             // If it's a move then we need to call back to the issuer to update the distribution lists with the new
@@ -58,7 +85,7 @@ class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : Flo
             val moveTypes = moveCmds.map { it.token.tokenType }
             progressTracker.currentStep = UPDATE_DIST_LIST
             val moveStates = tokensWithTokenPointers.filter { it.tokenType in moveTypes }
-            updateDistributionList(moveStates)
+            updateDistributionList(identityService, vaultService, stateRefLoaderService, flowMessaging, flowIdentity.ourIdentity, moveStates)
         }
     }
 }

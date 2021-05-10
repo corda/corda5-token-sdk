@@ -1,6 +1,6 @@
 package com.r3.corda.lib.tokens.workflows
 
-import net.corda.core.flows.FlowException
+import net.corda.v5.application.flows.FlowException
 
 /**
  * A dedicated exception for the TokenBuilder class.

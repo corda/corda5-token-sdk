@@ -1,18 +1,30 @@
 package com.r3.corda.lib.tokens.workflows.flows.rpc
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.workflows.flows.move.*
 import com.r3.corda.lib.tokens.workflows.types.PartyAndAmount
 import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import com.r3.corda.lib.tokens.workflows.utilities.sessionsForParties
-import net.corda.core.contracts.Amount
-import net.corda.core.flows.*
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.AnonymousParty
-import net.corda.core.identity.Party
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.transactions.SignedTransaction
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowException
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.InitiatedBy
+import net.corda.v5.application.flows.InitiatingFlow
+import net.corda.v5.application.flows.StartableByRPC
+import net.corda.v5.application.flows.StartableByService
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.FlowIdentity
+import net.corda.v5.application.flows.flowservices.FlowMessaging
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.AnonymousParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.application.node.services.KeyManagementService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.transactions.SignedTransaction
 
 /**
  * Initiating flow used to move amounts of tokens to parties, [partiesAndAmounts] specifies what amount of tokens is moved
@@ -33,11 +45,11 @@ import net.corda.core.transactions.SignedTransaction
 class MoveFungibleTokens
 @JvmOverloads
 constructor(
-        val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
-        val observers: List<Party> = emptyList(),
-        val queryCriteria: QueryCriteria? = null,
-        val changeHolder: AbstractParty? = null
-) : FlowLogic<SignedTransaction>() {
+    val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+    val observers: List<Party> = emptyList(),
+    val queryCriteria: QueryCriteria? = null,
+    val changeHolder: AbstractParty? = null
+) : Flow<SignedTransaction> {
 
     @JvmOverloads
     constructor(
@@ -49,12 +61,21 @@ constructor(
 
     constructor(amount: Amount<TokenType>, holder: AbstractParty) : this(PartyAndAmount(holder, amount), emptyList())
 
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var flowMessaging: FlowMessaging
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
     @Suspendable
     override fun call(): SignedTransaction {
         val participants = partiesAndAmounts.map(PartyAndAmount<*>::party)
-        val observerSessions = sessionsForParties(observers)
-        val participantSessions = sessionsForParties(participants)
-        return subFlow(MoveFungibleTokensFlow(
+        val observerSessions = sessionsForParties(identityService, flowMessaging, observers)
+        val participantSessions = sessionsForParties(identityService, flowMessaging, participants)
+        return flowEngine.subFlow(MoveFungibleTokensFlow(
                 partiesAndAmounts = partiesAndAmounts,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
@@ -68,9 +89,12 @@ constructor(
  * Responder flow for [MoveFungibleTokens].
  */
 @InitiatedBy(MoveFungibleTokens::class)
-class MoveFungibleTokensHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class MoveFungibleTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
-    override fun call() = subFlow(MoveTokensFlowHandler(otherSession))
+    override fun call() = flowEngine.subFlow(MoveTokensFlowHandler(otherSession))
 }
 
 /**
@@ -93,12 +117,22 @@ constructor(
         val partyAndToken: PartyAndToken,
         val observers: List<Party> = emptyList(),
         val queryCriteria: QueryCriteria? = null
-) : FlowLogic<SignedTransaction>() {
+) : Flow<SignedTransaction> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var flowMessaging: FlowMessaging
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
     @Suspendable
     override fun call(): SignedTransaction {
-        val observerSessions = sessionsForParties(observers)
-        val participantSessions = sessionsForParties(listOf(partyAndToken.party))
-        return subFlow(MoveNonFungibleTokensFlow(
+        val observerSessions = sessionsForParties(identityService, flowMessaging, observers)
+        val participantSessions = sessionsForParties(identityService, flowMessaging, listOf(partyAndToken.party))
+        return flowEngine.subFlow(MoveNonFungibleTokensFlow(
                 partyAndToken = partyAndToken,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
@@ -111,9 +145,13 @@ constructor(
  * Responder flow for [MoveNonFungibleTokens].
  */
 @InitiatedBy(MoveNonFungibleTokens::class)
-class MoveNonFungibleTokensHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class MoveNonFungibleTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
-    override fun call() = subFlow(MoveTokensFlowHandler(otherSession))
+    override fun call() = flowEngine.subFlow(MoveTokensFlowHandler(otherSession))
 }
 
 /* Confidential flows. */
@@ -138,7 +176,7 @@ class ConfidentialMoveFungibleTokens(
         val observers: List<Party>,
         val queryCriteria: QueryCriteria? = null,
         val changeHolder: AbstractParty? = null
-) : FlowLogic<SignedTransaction>() {
+) : Flow<SignedTransaction> {
 
     constructor(
             partyAndAmount: PartyAndAmount<TokenType>,
@@ -147,22 +185,37 @@ class ConfidentialMoveFungibleTokens(
             changeHolder: AbstractParty? = null
     ) : this(listOf(partyAndAmount), observers, queryCriteria, changeHolder)
 
+    @CordaInject
+    lateinit var keyManagementService: KeyManagementService
+
+    @CordaInject
+    lateinit var flowMessaging: FlowMessaging
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
+    @CordaInject
+    lateinit var flowIdentity: FlowIdentity
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call(): SignedTransaction {
         val participants = partiesAndAmounts.map(PartyAndAmount<*>::party)
-        val observerSessions = sessionsForParties(observers)
-        val participantSessions = sessionsForParties(participants)
+        val observerSessions = sessionsForParties(identityService, flowMessaging, observers)
+        val participantSessions = sessionsForParties(identityService, flowMessaging, participants)
         val confidentialHolder = changeHolder ?: let {
-            val key = serviceHub.keyManagementService.freshKey()
+            val key = keyManagementService.freshKey()
             try {
-                serviceHub.identityService.registerKey(key, ourIdentity)
+                identityService.registerKey(key, flowIdentity.ourIdentity)
             } catch (e: Exception) {
-                throw FlowException("Could not register a new key for party: $ourIdentity as the provided public key is already registered " +
+                throw FlowException("Could not register a new key for party: ${flowIdentity.ourIdentity} as the provided public key is already registered " +
                         "or registered to a different party.")
             }
             AnonymousParty(key)
         }
-        return subFlow(ConfidentialMoveFungibleTokensFlow(
+        return flowEngine.subFlow(ConfidentialMoveFungibleTokensFlow(
                 partiesAndAmounts = partiesAndAmounts,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
@@ -176,9 +229,13 @@ class ConfidentialMoveFungibleTokens(
  * Responder flow for [ConfidentialMoveFungibleTokens]
  */
 @InitiatedBy(ConfidentialMoveFungibleTokens::class)
-class ConfidentialMoveFungibleTokensHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class ConfidentialMoveFungibleTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
-    override fun call() = subFlow(ConfidentialMoveTokensFlowHandler(otherSession))
+    override fun call() = flowEngine.subFlow(ConfidentialMoveTokensFlowHandler(otherSession))
 }
 
 /**
@@ -199,12 +256,22 @@ class ConfidentialMoveNonFungibleTokens(
         val partyAndToken: PartyAndToken,
         val observers: List<Party>,
         val queryCriteria: QueryCriteria? = null
-) : FlowLogic<SignedTransaction>() {
+) : Flow<SignedTransaction> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var flowMessaging: FlowMessaging
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
     @Suspendable
     override fun call(): SignedTransaction {
-        val observerSessions = sessionsForParties(observers)
-        val participantSessions = sessionsForParties(listOf(partyAndToken.party))
-        return subFlow(ConfidentialMoveNonFungibleTokensFlow(
+        val observerSessions = sessionsForParties(identityService, flowMessaging, observers)
+        val participantSessions = sessionsForParties(identityService, flowMessaging, listOf(partyAndToken.party))
+        return flowEngine.subFlow(ConfidentialMoveNonFungibleTokensFlow(
                 partyAndToken = partyAndToken,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
@@ -217,7 +284,11 @@ class ConfidentialMoveNonFungibleTokens(
  * Responder flow for [ConfidentialMoveNonFungibleTokens].
  */
 @InitiatedBy(ConfidentialMoveNonFungibleTokens::class)
-class ConfidentialMoveNonFungibleTokensHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class ConfidentialMoveNonFungibleTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
-    override fun call() = subFlow(ConfidentialMoveTokensFlowHandler(otherSession))
+    override fun call() = flowEngine.subFlow(ConfidentialMoveTokensFlowHandler(otherSession))
 }

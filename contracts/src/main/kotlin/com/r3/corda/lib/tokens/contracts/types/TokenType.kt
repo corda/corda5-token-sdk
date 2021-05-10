@@ -3,9 +3,9 @@ package com.r3.corda.lib.tokens.contracts.types
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
-import net.corda.core.DoNotImplement
-import net.corda.core.contracts.TokenizableAssetInfo
-import net.corda.core.serialization.CordaSerializable
+import net.corda.v5.base.annotations.CordaSerializable
+import net.corda.v5.base.annotations.DoNotImplement
+import net.corda.v5.ledger.contracts.TokenizableAssetInfo
 import java.math.BigDecimal
 
 /**

@@ -1,8 +1,8 @@
 package com.r3.corda.lib.tokens.workflows.internal.schemas
 
-import net.corda.core.identity.Party
-import net.corda.core.schemas.MappedSchema
-import net.corda.core.serialization.CordaSerializable
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.node.services.persistence.MappedSchema
+import net.corda.v5.base.annotations.CordaSerializable
 import org.hibernate.annotations.Type
 import java.util.*
 import javax.persistence.*

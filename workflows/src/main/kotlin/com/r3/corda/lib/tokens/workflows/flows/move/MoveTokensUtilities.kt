@@ -1,7 +1,6 @@
 @file:JvmName("MoveTokensUtilities")
 package com.r3.corda.lib.tokens.workflows.flows.move
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.commands.MoveTokenCommand
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
@@ -13,12 +12,16 @@ import com.r3.corda.lib.tokens.workflows.types.PartyAndAmount
 import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import com.r3.corda.lib.tokens.workflows.types.toPairs
 import com.r3.corda.lib.tokens.workflows.utilities.addTokenTypeJar
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.identity.AbstractParty
-import net.corda.core.node.ServiceHub
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.node.NodeInfo
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.services.VaultService
+import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /* For fungible tokens. */
 
@@ -27,9 +30,9 @@ import net.corda.core.transactions.TransactionBuilder
  */
 @Suspendable
 fun addMoveTokens(
-        transactionBuilder: TransactionBuilder,
-        inputs: List<StateAndRef<AbstractToken>>,
-        outputs: List<AbstractToken>
+    transactionBuilder: TransactionBuilder,
+    inputs: List<StateAndRef<AbstractToken>>,
+    outputs: List<AbstractToken>
 ): TransactionBuilder {
     val outputGroups: Map<IssuedTokenType, List<AbstractToken>> = outputs.groupBy { it.issuedTokenType }
     val inputGroups: Map<IssuedTokenType, List<StateAndRef<AbstractToken>>> = inputs.groupBy {
@@ -43,14 +46,14 @@ fun addMoveTokens(
     transactionBuilder.apply {
         // Add a notary to the transaction.
         // TODO: Deal with notary change.
-        notary = inputs.map { it.state.notary }.toSet().single()
+        setNotary(inputs.map { it.state.notary }.toSet().single())
         outputGroups.forEach { issuedTokenType: IssuedTokenType, outputStates: List<AbstractToken> ->
             val inputGroup = inputGroups[issuedTokenType]
                     ?: throw IllegalArgumentException("No corresponding inputs for the outputs issued token type: $issuedTokenType")
             val keys = inputGroup.map { it.state.data.holder.owningKey }
 
-            var inputStartingIdx = inputStates().size
-            var outputStartingIdx = outputStates().size
+            var inputStartingIdx = inputStates.size
+            var outputStartingIdx = outputStates.size
 
             val inputIdx = inputGroup.map {
                 addInputState(it)
@@ -93,16 +96,20 @@ fun addMoveTokens(
 @Suspendable
 @JvmOverloads
 fun addMoveFungibleTokens(
-        transactionBuilder: TransactionBuilder,
-        serviceHub: ServiceHub,
-        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
-        changeHolder: AbstractParty,
-        queryCriteria: QueryCriteria? = null
+    transactionBuilder: TransactionBuilder,
+    vaultService: VaultService,
+    identityService: IdentityService,
+    flowEngine: FlowEngine,
+    nodeInfo: NodeInfo,
+    partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+    changeHolder: AbstractParty,
+    queryCriteria: QueryCriteria? = null
 ): TransactionBuilder {
     // TODO For now default to database query, but switch this line on after we can change API in 2.0
 //    val selector: Selector = ConfigSelection.getPreferredSelection(serviceHub)
-    val selector = DatabaseTokenSelection(serviceHub)
-    val (inputs, outputs) = selector.generateMove(partiesAndAmounts.toPairs(), changeHolder, TokenQueryBy(queryCriteria = queryCriteria), transactionBuilder.lockId)
+    val selector = DatabaseTokenSelection(vaultService, identityService, flowEngine)
+    val (inputs, outputs) =
+        selector.generateMove(identityService, nodeInfo, partiesAndAmounts.toPairs(), changeHolder, TokenQueryBy(queryCriteria = queryCriteria), transactionBuilder.lockId)
     return addMoveTokens(transactionBuilder = transactionBuilder, inputs = inputs, outputs = outputs)
 }
 
@@ -116,19 +123,25 @@ fun addMoveFungibleTokens(
 @Suspendable
 @JvmOverloads
 fun addMoveFungibleTokens(
-        transactionBuilder: TransactionBuilder,
-        serviceHub: ServiceHub,
-        amount: Amount<TokenType>,
-        holder: AbstractParty,
-        changeHolder: AbstractParty,
-        queryCriteria: QueryCriteria? = null
+    transactionBuilder: TransactionBuilder,
+    vaultService: VaultService,
+    identityService: IdentityService,
+    flowEngine: FlowEngine,
+    nodeInfo: NodeInfo,
+    amount: Amount<TokenType>,
+    holder: AbstractParty,
+    changeHolder: AbstractParty,
+    queryCriteria: QueryCriteria? = null
 ): TransactionBuilder {
     return addMoveFungibleTokens(
-            transactionBuilder = transactionBuilder,
-            serviceHub = serviceHub,
-            partiesAndAmounts = listOf(PartyAndAmount(holder, amount)),
-            changeHolder = changeHolder,
-            queryCriteria = queryCriteria
+        transactionBuilder = transactionBuilder,
+        vaultService = vaultService,
+        identityService = identityService,
+        flowEngine = flowEngine,
+        nodeInfo = nodeInfo,
+        partiesAndAmounts = listOf(PartyAndAmount(holder, amount)),
+        changeHolder = changeHolder,
+        queryCriteria = queryCriteria
     )
 }
 
@@ -142,12 +155,12 @@ fun addMoveFungibleTokens(
 @JvmOverloads
 fun addMoveNonFungibleTokens(
         transactionBuilder: TransactionBuilder,
-        serviceHub: ServiceHub,
+        vaultService: VaultService,
         token: TokenType,
         holder: AbstractParty,
         queryCriteria: QueryCriteria? = null
 ): TransactionBuilder {
-    return generateMoveNonFungible(transactionBuilder, PartyAndToken(holder, token), serviceHub.vaultService, queryCriteria)
+    return generateMoveNonFungible(transactionBuilder, PartyAndToken(holder, token), vaultService, queryCriteria)
 }
 
 /**
@@ -158,9 +171,9 @@ fun addMoveNonFungibleTokens(
 @JvmOverloads
 fun addMoveNonFungibleTokens(
         transactionBuilder: TransactionBuilder,
-        serviceHub: ServiceHub,
+        vaultService: VaultService,
         partyAndToken: PartyAndToken,
         queryCriteria: QueryCriteria? = null
 ): TransactionBuilder {
-    return generateMoveNonFungible(transactionBuilder, partyAndToken, serviceHub.vaultService, queryCriteria)
+    return generateMoveNonFungible(transactionBuilder, partyAndToken, vaultService, queryCriteria)
 }

@@ -3,7 +3,7 @@ package com.r3.corda.lib.tokens.money
 
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.amount
-import net.corda.core.contracts.Amount
+import net.corda.v5.ledger.contracts.Amount
 
 /** Helpers for creating amounts of fixed token definitions. */
 

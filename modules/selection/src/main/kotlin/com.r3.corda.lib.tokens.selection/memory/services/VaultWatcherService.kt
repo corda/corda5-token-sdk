@@ -4,23 +4,28 @@ import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.withoutIssuer
-import com.r3.corda.lib.tokens.selection.memory.config.InMemorySelectionConfig
 import com.r3.corda.lib.tokens.selection.InsufficientBalanceException
 import com.r3.corda.lib.tokens.selection.InsufficientNotLockedBalanceException
+import com.r3.corda.lib.tokens.selection.memory.config.InMemorySelectionConfig
 import com.r3.corda.lib.tokens.selection.memory.internal.Holder
 import com.r3.corda.lib.tokens.selection.memory.internal.lookupExternalIdFromKey
 import com.r3.corda.lib.tokens.selection.sortByStateRefAscending
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.internal.uncheckedCast
-import net.corda.core.node.AppServiceHub
-import net.corda.core.node.services.CordaService
-import net.corda.core.node.services.Vault
-import net.corda.core.node.services.vault.DEFAULT_PAGE_NUM
-import net.corda.core.node.services.vault.PageSpecification
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.serialization.SingletonSerializeAsToken
-import net.corda.core.utilities.contextLogger
+import net.corda.v5.application.cordapp.CordappProvider
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInjectPreStart
+import net.corda.v5.application.node.services.CordaService
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.application.node.services.KeyManagementService
+import net.corda.v5.application.node.services.ServiceLifecycleEvent
+import net.corda.v5.application.node.services.ServiceLifecycleEvent.SERVICE_START
+import net.corda.v5.base.internal.uncheckedCast
+import net.corda.v5.base.util.contextLogger
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.services.Vault
+import net.corda.v5.ledger.services.VaultService
+import net.corda.v5.ledger.services.vault.DEFAULT_PAGE_NUM
+import net.corda.v5.ledger.services.vault.PageSpecification
+import net.corda.v5.ledger.services.vault.QueryCriteria
 import rx.Observable
 import java.time.Duration
 import java.util.concurrent.*
@@ -34,13 +39,14 @@ val EMPTY_BUCKET = TokenBucket()
 
 const val PLACE_HOLDER: String = "THIS_IS_A_PLACE_HOLDER"
 
-@CordaService
-class VaultWatcherService(private val tokenObserver: TokenObserver,
-                          private val providedConfig: InMemorySelectionConfig) : SingletonSerializeAsToken() {
+class VaultWatcherService : CordaService {
+
+    private lateinit var tokenObserver: TokenObserver
+    private lateinit var providedConfig: InMemorySelectionConfig
 
     private val __backingMap: ConcurrentMap<StateAndRef<FungibleToken>, String> = ConcurrentHashMap()
     private val __indexed: ConcurrentMap<Class<out Holder>, ConcurrentMap<TokenIndex, TokenBucket>> = ConcurrentHashMap(
-            providedConfig.indexingStrategies.map { it.ownerType to ConcurrentHashMap<TokenIndex, TokenBucket>() }.toMap()
+        providedConfig.indexingStrategies.map { it.ownerType to ConcurrentHashMap<TokenIndex, TokenBucket>() }.toMap()
     )
 
     private val indexViewCreationLock: ReentrantReadWriteLock = ReentrantReadWriteLock()
@@ -64,75 +70,94 @@ class VaultWatcherService(private val tokenObserver: TokenObserver,
                 }
             }
         }
-
     }
 
-    constructor(appServiceHub: AppServiceHub) : this(getObservableFromAppServiceHub(appServiceHub), InMemorySelectionConfig.parse(appServiceHub.getAppContext().config))
+    @CordaInjectPreStart
+    lateinit var cordappProvider: CordappProvider
+
+    @CordaInjectPreStart
+    lateinit var vaultService: VaultService
+
+    @CordaInjectPreStart
+    lateinit var identityService: IdentityService
+
+    @CordaInjectPreStart
+    lateinit var keyManagementService: KeyManagementService
+
+    @CordaInjectPreStart
+    lateinit var vaultWatcherService: VaultWatcherService
+
+    override fun onEvent(event: ServiceLifecycleEvent) {
+        if (event == SERVICE_START) {
+            tokenObserver = getObservableFromAppConfig()
+            providedConfig = InMemorySelectionConfig.parse(cordappProvider.appConfig, vaultWatcherService)
+        }
+    }
 
     companion object {
         val LOG = contextLogger()
+    }
 
-        private fun getObservableFromAppServiceHub(appServiceHub: AppServiceHub): TokenObserver {
-            val config = appServiceHub.cordappProvider.getAppContext().config
-            val configOptions: InMemorySelectionConfig = InMemorySelectionConfig.parse(config)
+    private fun getObservableFromAppConfig(): TokenObserver {
+        val config = cordappProvider.appConfig
+        val configOptions: InMemorySelectionConfig = InMemorySelectionConfig.parse(config, vaultWatcherService)
 
-            if (!configOptions.enabled) {
-                LOG.info("Disabling inMemory token selection - refer to documentation on how to enable")
-                return TokenObserver(emptyList(), Observable.empty(), { _, _ ->
-                    Holder.UnmappedIdentity()
-                })
-            }
-
-            val ownerProvider: (StateAndRef<FungibleToken>, IndexingType) -> Holder = { token, indexingType ->
-                when (indexingType) {
-                    IndexingType.PUBLIC_KEY -> Holder.KeyIdentity(token.state.data.holder.owningKey)
-                    IndexingType.EXTERNAL_ID -> {
-                        val owningKey = token.state.data.holder.owningKey
-                        lookupExternalIdFromKey(owningKey, appServiceHub)
-                    }
-                }
-            }
-
-
-            val pageSize = 1000
-            var currentPage = DEFAULT_PAGE_NUM
-            val (_, vaultObservable) = appServiceHub.vaultService.trackBy(
-                    contractStateType = FungibleToken::class.java,
-                    paging = PageSpecification(pageNumber = currentPage, pageSize = pageSize),
-                    criteria = QueryCriteria.VaultQueryCriteria(status = Vault.StateStatus.ALL),
-                    sorting = sortByStateRefAscending())
-
-            // we use the UPDATER thread for two reasons
-            // 1 this means we return the service before all states are loaded, and so do not hold up the node startup
-            // 2 because all updates to the cache (addition / removal) are also done via UPDATER, this means that until we have finished loading all updates are buffered preventing out of order updates
-            val asyncLoader = object : ((Vault.Update<FungibleToken>) -> Unit) -> Unit {
-                override fun invoke(callback: (Vault.Update<FungibleToken>) -> Unit) {
-                    LOG.info("Starting async token loading from vault")
-                    UPDATER.submit {
-                        try {
-                            var shouldLoop = true
-                            while (shouldLoop) {
-                                val newlyLoadedStates = appServiceHub.vaultService.queryBy(
-                                        contractStateType = FungibleToken::class.java,
-                                        paging = PageSpecification(pageNumber = currentPage, pageSize = pageSize),
-                                        criteria = QueryCriteria.VaultQueryCriteria(),
-                                        sorting = sortByStateRefAscending()
-                                ).states.toSet()
-                                LOG.info("publishing ${newlyLoadedStates.size} to async state loading callback")
-                                callback(Vault.Update(emptySet(), newlyLoadedStates))
-                                shouldLoop = newlyLoadedStates.isNotEmpty()
-                                LOG.debug("shouldLoop=${shouldLoop}")
-                                currentPage++
-                            }
-                            LOG.info("finished token loading")
-                        } catch (t: Throwable) {
-                            LOG.error("Token Loading Failed due to: ", t)
-                        }
-                    }
-                }
-            }
-            return TokenObserver(emptyList(), uncheckedCast(vaultObservable), ownerProvider, asyncLoader)
+        if (!configOptions.enabled) {
+            LOG.info("Disabling inMemory token selection - refer to documentation on how to enable")
+            return TokenObserver(emptyList(), Observable.empty(), { _, _ ->
+                Holder.UnmappedIdentity()
+            })
         }
+
+        val ownerProvider: (StateAndRef<FungibleToken>, IndexingType) -> Holder = { token, indexingType ->
+            when (indexingType) {
+                IndexingType.PUBLIC_KEY -> Holder.KeyIdentity(token.state.data.holder.owningKey)
+                IndexingType.EXTERNAL_ID -> {
+                    val owningKey = token.state.data.holder.owningKey
+                    lookupExternalIdFromKey(owningKey, identityService, keyManagementService)
+                }
+            }
+        }
+
+        val pageSize = 1000
+        var currentPage = DEFAULT_PAGE_NUM
+        val (_, vaultObservable) = vaultService.trackBy(
+            contractStateType = FungibleToken::class.java,
+            paging = PageSpecification(pageNumber = currentPage, pageSize = pageSize),
+            criteria = QueryCriteria.VaultQueryCriteria(status = Vault.StateStatus.ALL),
+            sorting = sortByStateRefAscending()
+        )
+
+        // we use the UPDATER thread for two reasons
+        // 1 this means we return the service before all states are loaded, and so do not hold up the node startup
+        // 2 because all updates to the cache (addition / removal) are also done via UPDATER, this means that until we have finished loading all updates are buffered preventing out of order updates
+        val asyncLoader = object : ((Vault.Update<FungibleToken>) -> Unit) -> Unit {
+            override fun invoke(callback: (Vault.Update<FungibleToken>) -> Unit) {
+                LOG.info("Starting async token loading from vault")
+                UPDATER.submit {
+                    try {
+                        var shouldLoop = true
+                        while (shouldLoop) {
+                            val newlyLoadedStates = vaultService.queryBy(
+                                contractStateType = FungibleToken::class.java,
+                                paging = PageSpecification(pageNumber = currentPage, pageSize = pageSize),
+                                criteria = QueryCriteria.VaultQueryCriteria(),
+                                sorting = sortByStateRefAscending()
+                            ).states.toSet()
+                            LOG.info("publishing ${newlyLoadedStates.size} to async state loading callback")
+                            callback(Vault.Update(emptySet(), newlyLoadedStates))
+                            shouldLoop = newlyLoadedStates.isNotEmpty()
+                            LOG.debug("shouldLoop=${shouldLoop}")
+                            currentPage++
+                        }
+                        LOG.info("finished token loading")
+                    } catch (t: Throwable) {
+                        LOG.error("Token Loading Failed due to: ", t)
+                    }
+                }
+            }
+        }
+        return TokenObserver(emptyList(), uncheckedCast(vaultObservable), ownerProvider, asyncLoader)
     }
 
     init {
@@ -167,12 +192,12 @@ class VaultWatcherService(private val tokenObserver: TokenObserver,
             for (stateAndRef in stateAndRefs) {
                 val existingMark = __backingMap.remove(stateAndRef)
                 existingMark
-                        ?: LOG.warn("Attempted to remove existing token ${stateAndRef.ref}, but it was not found this suggests incorrect vault behaviours")
+                    ?: LOG.warn("Attempted to remove existing token ${stateAndRef.ref}, but it was not found this suggests incorrect vault behaviours")
                 for (key in __indexed.keys) {
                     val index = processToken(stateAndRef, IndexingType.fromHolder(key))
                     val indexedViewForHolder = __indexed[key]
                     indexedViewForHolder
-                            ?: LOG.warn("tried to obtain an indexed view for holder type: $key but was not found in set of indexed views")
+                        ?: LOG.warn("tried to obtain an indexed view for holder type: $key but was not found in set of indexed views")
 
                     val bucketForIndex: TokenBucket? = indexedViewForHolder?.get(index)
                     bucketForIndex?.remove(stateAndRef)
@@ -191,7 +216,7 @@ class VaultWatcherService(private val tokenObserver: TokenObserver,
                 for (key in __indexed.keys) {
                     val index = processToken(stateAndRef, IndexingType.fromHolder(key))
                     val indexedViewForHolder = __indexed[key]
-                            ?: throw IllegalStateException("tried to obtain an indexed view for holder type: $key but was not found in set of indexed views")
+                        ?: throw IllegalStateException("tried to obtain an indexed view for holder type: $key but was not found in set of indexed views")
                     val bucketForIndex: TokenBucket = indexedViewForHolder.computeIfAbsent(index) {
                         TokenBucket()
                     }
@@ -227,24 +252,25 @@ class VaultWatcherService(private val tokenObserver: TokenObserver,
     }
 
     fun selectTokens(
-            owner: Holder,
-            requiredAmount: Amount<TokenType>,
-            predicate: ((StateAndRef<FungibleToken>) -> Boolean) = { true },
-            allowShortfall: Boolean = false,
-            autoUnlockDelay: Duration = Duration.ofMinutes(5),
-            selectionId: String
+        owner: Holder,
+        requiredAmount: Amount<TokenType>,
+        predicate: ((StateAndRef<FungibleToken>) -> Boolean) = { true },
+        allowShortfall: Boolean = false,
+        autoUnlockDelay: Duration = Duration.ofMinutes(5),
+        selectionId: String
     ): List<StateAndRef<FungibleToken>> {
         //we have to handle both cases
         //1 when passed a raw TokenType - it's likely that the selecting entity does not care about the issuer and so we cannot constrain all selections to using IssuedTokenType
         //2 when passed an IssuedTokenType - it's likely that the selecting entity does care about the issuer, and so we must filter all tokens which do not match the issuer.
-        val enrichedPredicate: AtomicReference<(StateAndRef<FungibleToken>) -> Boolean> = AtomicReference(if (requiredAmount.token is IssuedTokenType) {
-            val issuer = (requiredAmount.token as IssuedTokenType).issuer
-            { token ->
-                predicate(token) && token.state.data.issuer == issuer
-            }
-        } else {
-            predicate
-        })
+        val enrichedPredicate: AtomicReference<(StateAndRef<FungibleToken>) -> Boolean> =
+            AtomicReference(if (requiredAmount.token is IssuedTokenType) {
+                val issuer = (requiredAmount.token as IssuedTokenType).issuer
+                { token ->
+                    predicate(token) && token.state.data.issuer == issuer
+                }
+            } else {
+                predicate
+            })
 
         val lockedTokens = mutableListOf<StateAndRef<FungibleToken>>()
         val bucket: Iterable<StateAndRef<FungibleToken>> = if (owner is Holder.TokenOnly) {
@@ -312,26 +338,29 @@ class VaultWatcherService(private val tokenObserver: TokenObserver,
         __backingMap.replace(it, selectionId, PLACE_HOLDER)
     }
 
-    private fun getTokenBucket(idx: Holder,
-                               tokenClass: Class<*>,
-                               tokenIdentifier: String,
-                               mapToSelectFrom: ConcurrentMap<TokenIndex, TokenBucket>): TokenBucket {
+    private fun getTokenBucket(
+        idx: Holder,
+        tokenClass: Class<*>,
+        tokenIdentifier: String,
+        mapToSelectFrom: ConcurrentMap<TokenIndex, TokenBucket>
+    ): TokenBucket {
         return mapToSelectFrom[TokenIndex(idx, tokenClass, tokenIdentifier)] ?: EMPTY_BUCKET
     }
-
 }
 
-class TokenObserver(val initialValues: List<StateAndRef<FungibleToken>>,
-                    val source: Observable<Vault.Update<FungibleToken>>,
-                    val ownerProvider: ((StateAndRef<FungibleToken>, VaultWatcherService.IndexingType) -> Holder),
-                    inline val asyncLoader: ((Vault.Update<FungibleToken>) -> Unit) -> Unit = { _ -> }) {
+class TokenObserver(
+    val initialValues: List<StateAndRef<FungibleToken>>,
+    val source: Observable<Vault.Update<FungibleToken>>,
+    val ownerProvider: ((StateAndRef<FungibleToken>, VaultWatcherService.IndexingType) -> Holder),
+    inline val asyncLoader: ((Vault.Update<FungibleToken>) -> Unit) -> Unit = { _ -> }
+) {
 
     fun startLoading(loadingCallBack: (Vault.Update<FungibleToken>) -> Unit) {
         asyncLoader(loadingCallBack)
     }
 }
 
-class TokenBucket(set: MutableSet<StateAndRef<FungibleToken>> = ConcurrentHashMap<StateAndRef<FungibleToken>, Boolean>().keySet(true)) : MutableSet<StateAndRef<FungibleToken>> by set
-
+class TokenBucket(set: MutableSet<StateAndRef<FungibleToken>> = ConcurrentHashMap<StateAndRef<FungibleToken>, Boolean>().keySet(true)) :
+    MutableSet<StateAndRef<FungibleToken>> by set
 
 data class TokenIndex(val owner: Holder, val tokenClazz: Class<*>, val tokenIdentifier: String)

@@ -2,7 +2,7 @@ package com.r3.corda.lib.tokens.contracts;
 
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken;
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType;
-import net.corda.core.contracts.UniqueIdentifier;
+import net.corda.v5.ledger.UniqueIdentifier;
 import org.junit.Test;
 
 import static com.r3.corda.lib.tokens.testing.states.Rubles.RUB;

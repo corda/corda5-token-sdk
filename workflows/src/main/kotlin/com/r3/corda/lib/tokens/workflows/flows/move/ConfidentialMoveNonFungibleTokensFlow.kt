@@ -1,15 +1,18 @@
 package com.r3.corda.lib.tokens.workflows.flows.move
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.workflows.flows.confidential.ConfidentialTokensFlow
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.TransactionRole
 import com.r3.corda.lib.tokens.workflows.internal.selection.generateMoveNonFungible
 import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.transactions.SignedTransaction
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.services.VaultService
+import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.transactions.SignedTransaction
 
 /**
  * Version of [MoveNonFungibleTokensFlow] using confidential identities. Confidential identities are generated and
@@ -26,18 +29,25 @@ import net.corda.core.transactions.SignedTransaction
 class ConfidentialMoveNonFungibleTokensFlow
 @JvmOverloads
 constructor(
-        val partyAndToken: PartyAndToken,
-        val participantSessions: List<FlowSession>,
-        val observerSessions: List<FlowSession> = emptyList(),
-        val queryCriteria: QueryCriteria? = null
-) : FlowLogic<SignedTransaction>() {
+    val partyAndToken: PartyAndToken,
+    val participantSessions: List<FlowSession>,
+    val observerSessions: List<FlowSession> = emptyList(),
+    val queryCriteria: QueryCriteria? = null
+) : Flow<SignedTransaction> {
+
+    @CordaInject
+    lateinit var vaultService: VaultService
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call(): SignedTransaction {
-        val (input, output) = generateMoveNonFungible(partyAndToken, serviceHub.vaultService, queryCriteria)
+        val (input, output) = generateMoveNonFungible(partyAndToken, vaultService, queryCriteria)
         // TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role
         participantSessions.forEach { it.send(TransactionRole.PARTICIPANT) }
         observerSessions.forEach { it.send(TransactionRole.OBSERVER) }
-        val confidentialOutput = subFlow(ConfidentialTokensFlow(listOf(output), participantSessions)).single()
-        return subFlow(MoveTokensFlow(input, confidentialOutput, participantSessions, observerSessions))
+        val confidentialOutput = flowEngine.subFlow(ConfidentialTokensFlow(listOf(output), participantSessions)).single()
+        return flowEngine.subFlow(MoveTokensFlow(input, confidentialOutput, participantSessions, observerSessions))
     }
 }

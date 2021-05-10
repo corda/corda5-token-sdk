@@ -1,7 +1,7 @@
 package com.r3.corda.lib.tokens.contracts
 
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.Amount
+import net.corda.v5.ledger.contracts.Amount
 
 class CommonTokens {
 

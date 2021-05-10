@@ -1,22 +1,26 @@
 @file:JvmName("FlowUtilities")
 package com.r3.corda.lib.tokens.workflows.utilities
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.workflows.internal.flows.distribution.hasDistributionRecord
 import com.r3.corda.lib.tokens.workflows.internal.schemas.DistributionRecord
-import net.corda.core.contracts.CommandWithParties
-import net.corda.core.contracts.ContractState
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.contracts.UniqueIdentifier
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
-import net.corda.core.node.ServiceHub
-import net.corda.core.node.services.IdentityService
-import net.corda.core.transactions.LedgerTransaction
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowMessaging
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.application.node.services.KeyManagementService
+import net.corda.v5.application.node.services.PersistenceService
+import net.corda.v5.application.node.services.runWithEntityManager
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.util.contextLogger
+import net.corda.v5.ledger.UniqueIdentifier
+import net.corda.v5.ledger.contracts.CommandWithParties
+import net.corda.v5.ledger.contracts.ContractState
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.transactions.LedgerTransaction
+import net.corda.v5.ledger.transactions.TransactionBuilder
 import java.security.PublicKey
 
 /**
@@ -24,14 +28,14 @@ import java.security.PublicKey
  * TODO: Add some error handling.
  */
 @Suspendable
-fun FlowLogic<*>.addPartyToDistributionList(party: Party, linearId: UniqueIdentifier) {
+fun Flow<*>.addPartyToDistributionList(persistenceService: PersistenceService, party: Party, linearId: UniqueIdentifier) {
     // Create an persist a new entity.
-    val hasRecord = hasDistributionRecord(serviceHub, linearId, party)
+    val hasRecord = hasDistributionRecord(persistenceService, linearId, party)
     if (!hasRecord) {
         val distributionRecord = DistributionRecord(linearId.id, party)
-        serviceHub.withEntityManager { persist(distributionRecord) }
+        persistenceService.runWithEntityManager { persist(distributionRecord) }
     } else {
-        logger.info("Already stored a distribution record for $party and $linearId.")
+        contextLogger().info("Already stored a distribution record for $party and $linearId.")
     }
 
 }
@@ -44,17 +48,17 @@ val LedgerTransaction.participants: List<AbstractParty>
     }
 
 @Suspendable
-fun LedgerTransaction.ourSigningKeys(services: ServiceHub): List<PublicKey> {
+fun LedgerTransaction.ourSigningKeys(keyManagementService: KeyManagementService): List<PublicKey> {
     val signingKeys = commands.flatMap(CommandWithParties<*>::signers)
-    return services.keyManagementService.filterMyKeys(signingKeys).toList()
+    return keyManagementService.filterMyKeys(signingKeys).toList()
 }
 
 @Suspendable
-fun AbstractParty.toParty(services: ServiceHub) = services.identityService.requireKnownConfidentialIdentity(this)
+fun AbstractParty.toParty(identityService: IdentityService) = identityService.requireKnownConfidentialIdentity(this)
 
 @Suspendable
-fun List<AbstractParty>.toWellKnownParties(services: ServiceHub): List<Party> {
-    return map(services.identityService::requireKnownConfidentialIdentity)
+fun List<AbstractParty>.toWellKnownParties(identityService: IdentityService): List<Party> {
+    return map(identityService::requireKnownConfidentialIdentity)
 }
 
 // Needs to deal with confidential identities.
@@ -68,15 +72,15 @@ fun requireSessionsForParticipants(participants: Collection<Party>, sessions: Li
 }
 
 @Suspendable
-fun FlowLogic<*>.sessionsForParticipants(states: List<ContractState>): List<FlowSession> {
+fun Flow<*>.sessionsForParticipants(identityService: IdentityService, flowMessaging: FlowMessaging, states: List<ContractState>): List<FlowSession> {
     val stateParties = states.flatMap(ContractState::participants)
-    return sessionsForParties(stateParties)
+    return sessionsForParties(identityService, flowMessaging, stateParties)
 }
 
 @Suspendable
-fun FlowLogic<*>.sessionsForParties(parties: List<AbstractParty>): List<FlowSession> {
-    val wellKnownParties = parties.toWellKnownParties(serviceHub)
-    return wellKnownParties.map(::initiateFlow)
+fun Flow<*>.sessionsForParties(identityService: IdentityService, flowMessaging: FlowMessaging, parties: List<AbstractParty>): List<FlowSession> {
+    val wellKnownParties = parties.toWellKnownParties(identityService)
+    return wellKnownParties.map(flowMessaging::initiateFlow)
 }
 
 // Extension function that has nicer error message than the default one from [IdentityService::requireWellKnownPartyFromAnonymous].
@@ -93,7 +97,7 @@ fun addTokenTypeJar(tokens: List<AbstractToken>, transactionBuilder: Transaction
     tokens.forEach {
         // If there's no JAR hash then we don't need to do anything.
         val hash = it.tokenTypeJarHash ?: return
-        if (!transactionBuilder.attachments().contains(hash)) {
+        if (!transactionBuilder.attachments.contains(hash)) {
             transactionBuilder.addAttachment(hash)
         }
     }

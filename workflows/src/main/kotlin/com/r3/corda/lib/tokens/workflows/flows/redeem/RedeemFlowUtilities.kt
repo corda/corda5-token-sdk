@@ -1,7 +1,6 @@
 @file:JvmName("RedeemFlowUtilities")
 package com.r3.corda.lib.tokens.workflows.flows.redeem
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.commands.RedeemTokenCommand
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
@@ -16,13 +15,16 @@ import com.r3.corda.lib.tokens.workflows.utilities.addNotaryWithCheck
 import com.r3.corda.lib.tokens.workflows.utilities.addTokenTypeJar
 import com.r3.corda.lib.tokens.workflows.utilities.heldTokensByTokenIssuer
 import com.r3.corda.lib.tokens.workflows.utilities.tokenAmountWithIssuerCriteria
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
-import net.corda.core.node.ServiceHub
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.services.VaultService
+import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /**
  * Add redeeming of multiple [inputs] to the [transactionBuilder] with possible [changeOutput].
@@ -30,9 +32,9 @@ import net.corda.core.transactions.TransactionBuilder
 @Suspendable
 @JvmOverloads
 fun addTokensToRedeem(
-        transactionBuilder: TransactionBuilder,
-        inputs: List<StateAndRef<AbstractToken>>,
-        changeOutput: AbstractToken? = null
+    transactionBuilder: TransactionBuilder,
+    inputs: List<StateAndRef<AbstractToken>>,
+    changeOutput: AbstractToken? = null
 ): TransactionBuilder {
     checkSameIssuer(inputs, changeOutput?.issuer)
     checkSameNotary(inputs)
@@ -46,8 +48,8 @@ fun addTokensToRedeem(
     val issuerKey = firstState.data.issuer.owningKey
     val moveKeys = inputs.map { it.state.data.holder.owningKey }
 
-    var inputIdx = transactionBuilder.inputStates().size
-    val outputIdx = transactionBuilder.outputStates().size
+    var inputIdx = transactionBuilder.inputStates.size
+    val outputIdx = transactionBuilder.outputStates.size
     transactionBuilder.apply {
         val inputIndicies = inputs.map {
             addInputState(it)
@@ -73,11 +75,11 @@ fun addTokensToRedeem(
 @Suspendable
 fun addNonFungibleTokensToRedeem(
         transactionBuilder: TransactionBuilder,
-        serviceHub: ServiceHub,
+        vaultService: VaultService,
         heldToken: TokenType,
         issuer: Party
 ): TransactionBuilder {
-    val heldTokenStateAndRef = serviceHub.vaultService.heldTokensByTokenIssuer(heldToken, issuer).states
+    val heldTokenStateAndRef = vaultService.heldTokensByTokenIssuer(heldToken, issuer).states
     check(heldTokenStateAndRef.size == 1) {
         "Exactly one held token of a particular type $heldToken should be in the vault at any one time."
     }
@@ -94,16 +96,18 @@ fun addNonFungibleTokensToRedeem(
 @Suspendable
 @JvmOverloads
 fun addFungibleTokensToRedeem(
-        transactionBuilder: TransactionBuilder,
-        serviceHub: ServiceHub,
-        amount: Amount<TokenType>,
-        issuer: Party,
-        changeHolder: AbstractParty,
-        additionalQueryCriteria: QueryCriteria? = null
+    transactionBuilder: TransactionBuilder,
+    vaultService: VaultService,
+    identityService: IdentityService,
+    flowEngine: FlowEngine,
+    amount: Amount<TokenType>,
+    issuer: Party,
+    changeHolder: AbstractParty,
+    additionalQueryCriteria: QueryCriteria? = null
 ): TransactionBuilder {
     // TODO For now default to database query, but switch this line on after we can change API in 2.0
 //    val selector: Selector = ConfigSelection.getPreferredSelection(serviceHub)
-    val selector = DatabaseTokenSelection(serviceHub)
+    val selector = DatabaseTokenSelection(vaultService, identityService, flowEngine)
     val baseCriteria = tokenAmountWithIssuerCriteria(amount.token, issuer)
     val queryCriteria = additionalQueryCriteria?.let { baseCriteria.and(it) } ?: baseCriteria
     val fungibleStates = selector.selectTokens(amount, TokenQueryBy(issuer = issuer, queryCriteria = queryCriteria), transactionBuilder.lockId)

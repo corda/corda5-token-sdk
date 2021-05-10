@@ -2,26 +2,26 @@
 
 package com.r3.corda.lib.tokens.workflows.utilities
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.internal.schemas.PersistentFungibleToken
 import com.r3.corda.lib.tokens.contracts.internal.schemas.PersistentNonFungibleToken
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.LinearState
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.contracts.UniqueIdentifier
-import net.corda.core.crypto.toStringShort
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
-import net.corda.core.node.services.Vault
-import net.corda.core.node.services.VaultService
-import net.corda.core.node.services.queryBy
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.node.services.vault.Sort
-import net.corda.core.node.services.vault.SortAttribute
-import net.corda.core.node.services.vault.builder
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.crypto.toStringShort
+import net.corda.v5.ledger.UniqueIdentifier
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.LinearState
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.services.Vault
+import net.corda.v5.ledger.services.VaultService
+import net.corda.v5.ledger.services.queryBy
+import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.services.vault.Sort
+import net.corda.v5.ledger.services.vault.SortAttribute
+import net.corda.v5.ledger.services.vault.builder
 
 // TODO Revisit this API and add documentation.
 /** Miscellaneous helpers. */

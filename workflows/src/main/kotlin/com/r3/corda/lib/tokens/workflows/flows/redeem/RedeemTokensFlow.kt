@@ -1,11 +1,11 @@
 package com.r3.corda.lib.tokens.workflows.flows.redeem
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.flows.FlowSession
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /**
  * General inlined flow used to redeem any type of tokens with the issuer. Should be called on tokens' owner side.
@@ -23,10 +23,10 @@ import net.corda.core.transactions.TransactionBuilder
 class RedeemTokensFlow
 @JvmOverloads
 constructor(
-        val inputs: List<StateAndRef<AbstractToken>>,
-        val changeOutput: AbstractToken?,
-        override val issuerSession: FlowSession,
-        override val observerSessions: List<FlowSession> = emptyList()
+    val inputs: List<StateAndRef<AbstractToken>>,
+    val changeOutput: AbstractToken?,
+    override val issuerSession: FlowSession,
+    override val observerSessions: List<FlowSession> = emptyList()
 ) : AbstractRedeemTokensFlow() {
     @Suspendable
     override fun generateExit(transactionBuilder: TransactionBuilder) {

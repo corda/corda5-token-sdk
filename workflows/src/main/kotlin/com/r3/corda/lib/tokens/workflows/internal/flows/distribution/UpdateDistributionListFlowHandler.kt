@@ -1,14 +1,24 @@
 package com.r3.corda.lib.tokens.workflows.internal.flows.distribution
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.workflows.utilities.addPartyToDistributionList
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.flows.InitiatedBy
-import net.corda.core.utilities.unwrap
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.InitiatedBy
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.application.node.services.PersistenceService
+import net.corda.v5.application.utilities.unwrap
+import net.corda.v5.base.annotations.Suspendable
 
 @InitiatedBy(UpdateDistributionListFlow::class)
-class UpdateDistributionListFlowHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class UpdateDistributionListFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
+    @CordaInject
+    lateinit var persistenceService: PersistenceService
+
     @Suspendable
     override fun call() {
         val distListUpdate = otherSession.receive<DistributionListUpdate>().unwrap {
@@ -20,7 +30,7 @@ class UpdateDistributionListFlowHandler(val otherSession: FlowSession) : FlowLog
             it
         }
         // Check that receiver is well known party.
-        serviceHub.identityService.requireWellKnownPartyFromAnonymous(distListUpdate.receiver)
-        addPartyToDistributionList(distListUpdate.receiver, distListUpdate.linearId)
+        identityService.requireWellKnownPartyFromAnonymous(distListUpdate.receiver)
+        addPartyToDistributionList(persistenceService, distListUpdate.receiver, distListUpdate.linearId)
     }
 }

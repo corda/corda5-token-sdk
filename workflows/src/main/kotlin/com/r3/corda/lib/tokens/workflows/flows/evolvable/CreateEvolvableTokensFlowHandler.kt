@@ -1,16 +1,22 @@
 package com.r3.corda.lib.tokens.workflows.flows.evolvable
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFinalityFlowHandler
-import net.corda.core.contracts.requireThat
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.flows.SignTransactionFlow
-import net.corda.core.transactions.SignedTransaction
-import net.corda.core.utilities.unwrap
+import net.corda.systemflows.SignTransactionFlow
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.utilities.unwrap
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.requireThat
+import net.corda.v5.ledger.transactions.SignedTransaction
 
 /** In-line counter-flow to [CreateEvolvableTokensFlow]. */
-class CreateEvolvableTokensFlowHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class CreateEvolvableTokensFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call() {
         // Receive the notification
@@ -23,10 +29,10 @@ class CreateEvolvableTokensFlowHandler(val otherSession: FlowSession) : FlowLogi
                     // TODO
                 }
             }
-            subFlow(signTransactionFlow)
+            flowEngine.subFlow(signTransactionFlow)
         }
 
         // Resolve the creation transaction.
-        subFlow(ObserverAwareFinalityFlowHandler(otherSession))
+        flowEngine.subFlow(ObserverAwareFinalityFlowHandler(otherSession))
     }
 }

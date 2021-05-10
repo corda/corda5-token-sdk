@@ -194,7 +194,7 @@ involving agreements, tokens, assets (liabilities), etc.
 
 
 To aid understanding of the (rather complex looking) diagram, it can be split into three parts:
-1. A *light grey* area which corresponds to types defined in corda-core
+1. A *light grey* area which corresponds to types defined in corda-application
 2. A *darker grey* area which corresponds to new types defined in the token SDK
 3. A *even darker area* which contains types that will be defined by CorDapp developers in their own apps
 

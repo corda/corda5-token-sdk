@@ -3,8 +3,8 @@ package com.r3.corda.lib.tokens.workflows.utilities
 
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
-import net.corda.core.contracts.UniqueIdentifier
-import net.corda.core.identity.AbstractParty
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.ledger.UniqueIdentifier
 
 /**
  * Creates a [NonFungibleToken] from an [IssuedTokenType].

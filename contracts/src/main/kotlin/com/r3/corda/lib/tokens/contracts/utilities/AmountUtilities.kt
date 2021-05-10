@@ -3,9 +3,9 @@ package com.r3.corda.lib.tokens.contracts.utilities
 
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.Amount
-import net.corda.core.identity.Party
-import net.corda.core.internal.uncheckedCast
+import net.corda.v5.application.identity.Party
+import net.corda.v5.base.internal.uncheckedCast
+import net.corda.v5.ledger.contracts.Amount
 import java.math.BigDecimal
 
 // -------------------------------------------------------------------------------

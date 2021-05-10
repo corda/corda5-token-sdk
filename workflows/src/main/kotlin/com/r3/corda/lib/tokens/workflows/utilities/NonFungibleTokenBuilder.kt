@@ -6,8 +6,7 @@ import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.heldBy
 import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
 import com.r3.corda.lib.tokens.workflows.TokenBuilderException
-import net.corda.core.contracts.Amount
-import net.corda.core.identity.Party
+import net.corda.v5.application.identity.Party
 
 /**
  * A utility class designed for Java developers to more easily access Kotlin DSL

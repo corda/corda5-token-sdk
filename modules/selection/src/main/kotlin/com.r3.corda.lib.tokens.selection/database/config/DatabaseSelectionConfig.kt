@@ -1,14 +1,16 @@
 package com.r3.corda.lib.tokens.selection.database.config
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.selection.api.ConfigSelection
 import com.r3.corda.lib.tokens.selection.api.Selector
 import com.r3.corda.lib.tokens.selection.api.StateSelectionConfig
 import com.r3.corda.lib.tokens.selection.database.selector.DatabaseTokenSelection
 import com.r3.corda.lib.tokens.selection.memory.config.InMemorySelectionConfig
 import com.r3.corda.lib.tokens.selection.memory.config.getIntOrNull
-import net.corda.core.cordapp.CordappConfig
-import net.corda.core.node.ServiceHub
+import net.corda.v5.application.cordapp.CordappConfig
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.services.VaultService
 import org.slf4j.LoggerFactory
 
 const val MAX_RETRIES_DEFAULT = 8
@@ -35,7 +37,11 @@ data class DatabaseSelectionConfig @JvmOverloads constructor(
     }
 
     @Suspendable
-    override fun toSelector(services: ServiceHub): DatabaseTokenSelection {
-        return DatabaseTokenSelection(services, maxRetries, retrySleep, retryCap, pageSize)
+    override fun toSelector(
+        vaultService: VaultService,
+        identityService: IdentityService,
+        flowEngine: FlowEngine,
+    ): DatabaseTokenSelection {
+        return DatabaseTokenSelection(vaultService, identityService, flowEngine, maxRetries, retrySleep, retryCap, pageSize)
     }
 }

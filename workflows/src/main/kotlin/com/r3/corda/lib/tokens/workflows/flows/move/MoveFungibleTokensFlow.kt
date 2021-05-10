@@ -1,12 +1,17 @@
 package com.r3.corda.lib.tokens.workflows.flows.move
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.workflows.types.PartyAndAmount
-import net.corda.core.flows.FlowSession
-import net.corda.core.identity.AbstractParty
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowIdentity
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.node.NodeInfo
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.services.VaultService
+import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /**
  * Inlined flow used to move amounts of tokens to parties, [partiesAndAmounts] specifies what amount of tokens is moved
@@ -25,30 +30,45 @@ import net.corda.core.transactions.TransactionBuilder
 class MoveFungibleTokensFlow
 @JvmOverloads
 constructor(
-        val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
-        override val participantSessions: List<FlowSession>,
-        override val observerSessions: List<FlowSession> = emptyList(),
-        val queryCriteria: QueryCriteria? = null,
-        val changeHolder: AbstractParty? = null
+    val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+    override val participantSessions: List<FlowSession>,
+    override val observerSessions: List<FlowSession> = emptyList(),
+    val queryCriteria: QueryCriteria? = null,
+    val changeHolder: AbstractParty? = null
 ) : AbstractMoveTokensFlow() {
+
+    @CordaInject
+    lateinit var flowIdentity: FlowIdentity
+
+    @CordaInject
+    lateinit var vaultService: VaultService
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
+    @CordaInject
+    lateinit var nodeInfo: NodeInfo
 
     @JvmOverloads
     constructor(
-            partyAndAmount: PartyAndAmount<TokenType>,
-            queryCriteria: QueryCriteria? = null,
-            participantSessions: List<FlowSession>,
-            observerSessions: List<FlowSession> = emptyList(),
-            changeHolder: AbstractParty? = null
+        partyAndAmount: PartyAndAmount<TokenType>,
+        queryCriteria: QueryCriteria? = null,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession> = emptyList(),
+        changeHolder: AbstractParty? = null
     ) : this(listOf(partyAndAmount), participantSessions, observerSessions, queryCriteria, changeHolder)
 
     @Suspendable
     override fun addMove(transactionBuilder: TransactionBuilder) {
         addMoveFungibleTokens(
-                transactionBuilder = transactionBuilder,
-                serviceHub = serviceHub,
-                partiesAndAmounts = partiesAndAmounts,
-                changeHolder = changeHolder ?: ourIdentity,
-                queryCriteria = queryCriteria
+            transactionBuilder = transactionBuilder,
+            vaultService,
+            identityService,
+            flowEngine,
+            nodeInfo,
+            partiesAndAmounts = partiesAndAmounts,
+            changeHolder = changeHolder ?: flowIdentity.ourIdentity,
+            queryCriteria = queryCriteria
         )
     }
 }

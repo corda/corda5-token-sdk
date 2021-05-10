@@ -1,12 +1,11 @@
 @file:JvmName("IssueTokensUtilities")
 package com.r3.corda.lib.tokens.workflows.flows.issue
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.commands.IssueTokenCommand
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
-import net.corda.core.identity.Party
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /**
  * A function that adds a list of output [AbstractToken] states to a [TransactionBuilder]. It automatically adds
@@ -21,7 +20,7 @@ fun addIssueTokens(transactionBuilder: TransactionBuilder, outputs: List<Abstrac
             val issuers = states.map { it.issuer }.toSet()
             require(issuers.size == 1) { "All tokensToIssue must have the same issuer." }
             val issuer = issuers.single()
-            var startingIndex = outputStates().size
+            var startingIndex = outputStates.size
             val indexesAdded = states.map { state ->
                 addOutputState(state)
                 startingIndex++

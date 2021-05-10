@@ -1,9 +1,9 @@
 package com.r3.corda.lib.tokens.workflows.flows.redeem
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.flows.FlowSession
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /**
  * Inlined flow used to redeem [NonFungibleToken] [heldToken] issued by the particular issuer.
@@ -13,17 +13,17 @@ import net.corda.core.transactions.TransactionBuilder
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
  */
 class RedeemNonFungibleTokensFlow(
-        val heldToken: TokenType,
-        override val issuerSession: FlowSession,
-        override val observerSessions: List<FlowSession>
+    val heldToken: TokenType,
+    override val issuerSession: FlowSession,
+    override val observerSessions: List<FlowSession>
 ) : AbstractRedeemTokensFlow() {
     @Suspendable
     override fun generateExit(transactionBuilder: TransactionBuilder) {
         addNonFungibleTokensToRedeem(
-                transactionBuilder = transactionBuilder,
-                serviceHub = serviceHub,
-                heldToken = heldToken,
-                issuer = issuerSession.counterparty
+            transactionBuilder = transactionBuilder,
+            vaultService = vaultService,
+            heldToken = heldToken,
+            issuer = issuerSession.counterparty
         )
     }
 }

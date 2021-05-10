@@ -1,16 +1,24 @@
 package com.r3.corda.lib.tokens.workflows.flows.redeem
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.ci.workflows.SyncKeyMappingFlow
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFinalityFlow
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.TransactionRole
 import com.r3.corda.lib.tokens.workflows.utilities.ourSigningKeys
-import net.corda.core.flows.CollectSignaturesFlow
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.transactions.SignedTransaction
-import net.corda.core.transactions.TransactionBuilder
-import net.corda.core.utilities.ProgressTracker
+import net.corda.systemflows.CollectSignaturesFlow
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.CustomProgressTracker
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.node.services.KeyManagementService
+import net.corda.v5.application.utilities.ProgressTracker
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.services.TransactionMappingService
+import net.corda.v5.ledger.services.TransactionService
+import net.corda.v5.ledger.services.VaultService
+import net.corda.v5.ledger.transactions.SignedTransaction
+import net.corda.v5.ledger.transactions.TransactionBuilder
+import net.corda.v5.ledger.transactions.TransactionBuilderFactory
 
 /**
  * Abstract class for the redeem token flows family.
@@ -20,7 +28,7 @@ import net.corda.core.utilities.ProgressTracker
  * identities from the states to redeem with the issuer (bear in mind that issuer usually isn't involved in move of tokens),
  * collects signatures and finalises transaction with observers if present.
  */
-abstract class AbstractRedeemTokensFlow : FlowLogic<SignedTransaction>() {
+abstract class AbstractRedeemTokensFlow : Flow<SignedTransaction>, CustomProgressTracker {
 
     abstract val issuerSession: FlowSession
     abstract val observerSessions: List<FlowSession>
@@ -36,6 +44,24 @@ abstract class AbstractRedeemTokensFlow : FlowLogic<SignedTransaction>() {
 
     override val progressTracker: ProgressTracker = tracker()
 
+    @CordaInject
+    lateinit var transactionBuilderFactory: TransactionBuilderFactory
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var transactionMappingService: TransactionMappingService
+
+    @CordaInject
+    lateinit var keyManagementService: KeyManagementService
+
+    @CordaInject
+    lateinit var transactionService: TransactionService
+
+    @CordaInject
+    lateinit var vaultService: VaultService
+
     /**
      * Add redeem of tokens to the [transactionBuilder]. Modifies builder.
      */
@@ -46,19 +72,20 @@ abstract class AbstractRedeemTokensFlow : FlowLogic<SignedTransaction>() {
     override fun call(): SignedTransaction {
         issuerSession.send(TransactionRole.PARTICIPANT)
         observerSessions.forEach { it.send(TransactionRole.OBSERVER) }
-        val txBuilder = TransactionBuilder()
+        val txBuilder = transactionBuilderFactory.create()
         progressTracker.currentStep = SELECTING_STATES
         generateExit(txBuilder)
         // First synchronise identities between issuer and our states.
         // TODO: Only do this if necessary.
         progressTracker.currentStep = SYNC_IDS
-        subFlow(SyncKeyMappingFlow(issuerSession, txBuilder.toWireTransaction(serviceHub)))
-        val ourSigningKeys = txBuilder.toLedgerTransaction(serviceHub).ourSigningKeys(serviceHub)
-        val partialStx = serviceHub.signInitialTransaction(txBuilder, ourSigningKeys)
+        flowEngine.subFlow(SyncKeyMappingFlow(issuerSession, txBuilder.toWireTransaction()))
+        val ourSigningKeys = transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction())
+            .ourSigningKeys(keyManagementService)
+        val partialStx = transactionService.signInitial(txBuilder, ourSigningKeys)
         // Call collect signatures flow, issuer should perform all the checks for redeeming states.
         progressTracker.currentStep = COLLECT_SIGS
-        val stx = subFlow(CollectSignaturesFlow(partialStx, listOf(issuerSession), ourSigningKeys))
+        val stx = flowEngine.subFlow(CollectSignaturesFlow(partialStx, listOf(issuerSession), ourSigningKeys))
         progressTracker.currentStep = FINALISING_TX
-        return subFlow(ObserverAwareFinalityFlow(stx, observerSessions + issuerSession))
+        return flowEngine.subFlow(ObserverAwareFinalityFlow(stx, observerSessions + issuerSession))
     }
 }

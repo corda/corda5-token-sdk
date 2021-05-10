@@ -1,14 +1,18 @@
 package com.r3.corda.lib.tokens.workflows.flows.move
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.workflows.internal.flows.distribution.UpdateDistributionListFlow
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFinalityFlow
-import net.corda.core.flows.FinalityFlow
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.transactions.SignedTransaction
-import net.corda.core.transactions.TransactionBuilder
-import net.corda.core.utilities.ProgressTracker
+import net.corda.systemflows.FinalityFlow
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.CustomProgressTracker
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.utilities.ProgressTracker
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.transactions.SignedTransaction
+import net.corda.v5.ledger.transactions.TransactionBuilder
+import net.corda.v5.ledger.transactions.TransactionBuilderFactory
 
 /**
  * An abstract class for the move tokens flows family.
@@ -22,9 +26,15 @@ import net.corda.core.utilities.ProgressTracker
  * @property participantSessions a list of flow participantSessions for the transaction participants.
  * @property observerSessions a list of flow participantSessions for the transaction observers.
  */
-abstract class AbstractMoveTokensFlow : FlowLogic<SignedTransaction>() {
+abstract class AbstractMoveTokensFlow : Flow<SignedTransaction>, CustomProgressTracker {
     abstract val participantSessions: List<FlowSession>
     abstract val observerSessions: List<FlowSession>
+
+    @CordaInject
+    lateinit var transactionBuilderFactory: TransactionBuilderFactory
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
 
     companion object {
         object GENERATE : ProgressTracker.Step("Generating tokens to move.")
@@ -48,14 +58,14 @@ abstract class AbstractMoveTokensFlow : FlowLogic<SignedTransaction>() {
     @Suspendable
     override fun call(): SignedTransaction {
         // Initialise the transaction builder with no notary.
-        val transactionBuilder = TransactionBuilder()
+        val transactionBuilder = transactionBuilderFactory.create()
         progressTracker.currentStep = GENERATE
         // Add all the specified inputs and outputs to the transaction.
         // The correct commands and signing keys are also added.
         addMove(transactionBuilder)
         progressTracker.currentStep = RECORDING
         // Create new participantSessions if this is started as a top level flow.
-        val signedTransaction = subFlow(
+        val signedTransaction = flowEngine.subFlow(
                 ObserverAwareFinalityFlow(
                         transactionBuilder = transactionBuilder,
                         allSessions = participantSessions + observerSessions
@@ -63,7 +73,7 @@ abstract class AbstractMoveTokensFlow : FlowLogic<SignedTransaction>() {
         )
         progressTracker.currentStep = UPDATING
         // Update the distribution list.
-        subFlow(UpdateDistributionListFlow(signedTransaction))
+        flowEngine.subFlow(UpdateDistributionListFlow(signedTransaction))
         // Return the newly created transaction.
         return signedTransaction
     }

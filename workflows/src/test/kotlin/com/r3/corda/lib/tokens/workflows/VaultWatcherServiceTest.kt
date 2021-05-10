@@ -1,5 +1,6 @@
 package com.r3.corda.lib.tokens.workflows
 
+import com.natpryce.hamkrest.isIn
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
@@ -15,19 +16,6 @@ import com.r3.corda.lib.tokens.selection.memory.internal.Holder
 import com.r3.corda.lib.tokens.selection.memory.services.TokenObserver
 import com.r3.corda.lib.tokens.selection.memory.services.VaultWatcherService
 import com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.contracts.StateRef
-import net.corda.core.contracts.TransactionState
-import net.corda.core.crypto.Crypto
-import net.corda.core.crypto.SecureHash
-import net.corda.core.identity.AnonymousParty
-import net.corda.core.identity.CordaX500Name
-import net.corda.core.identity.Party
-import net.corda.core.internal.sumByLong
-import net.corda.core.internal.uncheckedCast
-import net.corda.core.node.services.Vault
-import net.corda.core.utilities.getOrThrow
 import net.corda.nodeapi.internal.persistence.CordaPersistence
 import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.core.ALICE_NAME
@@ -38,6 +26,18 @@ import net.corda.testing.node.MockServices
 import net.corda.testing.node.internal.InternalMockNetwork
 import net.corda.testing.node.internal.InternalMockNodeParameters
 import net.corda.testing.node.internal.startFlow
+import net.corda.v5.application.identity.AnonymousParty
+import net.corda.v5.application.identity.CordaX500Name
+import net.corda.v5.application.identity.Party
+import net.corda.v5.base.concurrent.getOrThrow
+import net.corda.v5.base.internal.uncheckedCast
+import net.corda.v5.crypto.Crypto
+import net.corda.v5.crypto.SecureHash
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.contracts.StateRef
+import net.corda.v5.ledger.contracts.TransactionState
+import net.corda.v5.ledger.services.Vault
 import org.hamcrest.CoreMatchers.*
 import org.hamcrest.Matchers.greaterThanOrEqualTo
 import org.hamcrest.Matchers.isIn

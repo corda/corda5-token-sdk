@@ -18,13 +18,12 @@ import com.r3.corda.lib.tokens.workflows.utilities.heldBy
 import com.r3.corda.lib.tokens.workflows.utilities.heldTokensByToken
 import com.r3.corda.lib.tokens.workflows.utilities.tokenAmountsByToken
 import com.r3.corda.lib.tokens.workflows.utilities.tokenBalance
-import net.corda.core.identity.Party
-import net.corda.core.utilities.getOrThrow
 import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.node.MockNetwork
 import net.corda.testing.node.MockNetworkParameters
 import net.corda.testing.node.StartedMockNode
 import net.corda.testing.node.TestCordapp
+import net.corda.v5.application.identity.Party
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.After
 import org.junit.Before

@@ -1,6 +1,5 @@
 package com.r3.corda.lib.tokens.workflows.flows.move
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.selection.TokenQueryBy
 import com.r3.corda.lib.tokens.selection.database.selector.DatabaseTokenSelection
@@ -8,11 +7,17 @@ import com.r3.corda.lib.tokens.workflows.flows.confidential.ConfidentialTokensFl
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.TransactionRole
 import com.r3.corda.lib.tokens.workflows.types.PartyAndAmount
 import com.r3.corda.lib.tokens.workflows.types.toPairs
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.identity.AbstractParty
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.transactions.SignedTransaction
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.node.NodeInfo
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.services.VaultService
+import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.transactions.SignedTransaction
 
 /**
  * Version of [MoveFungibleTokensFlow] using confidential identities. Confidential identities are generated and
@@ -30,37 +35,51 @@ import net.corda.core.transactions.SignedTransaction
 class ConfidentialMoveFungibleTokensFlow
 @JvmOverloads
 constructor(
-        val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
-        val participantSessions: List<FlowSession>,
-        val changeHolder: AbstractParty,
-        val observerSessions: List<FlowSession> = emptyList(),
-        val queryCriteria: QueryCriteria? = null
-) : FlowLogic<SignedTransaction>() {
+    val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+    val participantSessions: List<FlowSession>,
+    val changeHolder: AbstractParty,
+    val observerSessions: List<FlowSession> = emptyList(),
+    val queryCriteria: QueryCriteria? = null
+) : Flow<SignedTransaction> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var vaultService: VaultService
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
+    @CordaInject
+    lateinit var nodeInfo: NodeInfo
 
     @JvmOverloads
     constructor(
-            partyAndAmount: PartyAndAmount<TokenType>,
-            participantSessions: List<FlowSession>,
-            changeHolder: AbstractParty,
-            queryCriteria: QueryCriteria? = null,
-            observerSessions: List<FlowSession> = emptyList()
+        partyAndAmount: PartyAndAmount<TokenType>,
+        participantSessions: List<FlowSession>,
+        changeHolder: AbstractParty,
+        queryCriteria: QueryCriteria? = null,
+        observerSessions: List<FlowSession> = emptyList()
 
     ) : this(listOf(partyAndAmount), participantSessions, changeHolder, observerSessions, queryCriteria)
 
     @Suspendable
     override fun call(): SignedTransaction {
         // TODO add in memory selection too
-        val tokenSelection = DatabaseTokenSelection(serviceHub)
+        val tokenSelection = DatabaseTokenSelection(vaultService, identityService, flowEngine)
         val (inputs, outputs) = tokenSelection.generateMove(
-                lockId = stateMachine.id.uuid,
-                partiesAndAmounts = partiesAndAmounts.toPairs(),
-                changeHolder = changeHolder,
-                queryBy = TokenQueryBy(queryCriteria = queryCriteria)
+            identityService,
+            nodeInfo,
+            lockId = flowEngine.runId.uuid,
+            partiesAndAmounts = partiesAndAmounts.toPairs(),
+            changeHolder = changeHolder,
+            queryBy = TokenQueryBy(queryCriteria = queryCriteria)
         )
         // TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role
         participantSessions.forEach { it.send(TransactionRole.PARTICIPANT) }
         observerSessions.forEach { it.send(TransactionRole.OBSERVER) }
-        val confidentialOutputs = subFlow(ConfidentialTokensFlow(outputs, participantSessions))
-        return subFlow(MoveTokensFlow(inputs, confidentialOutputs, participantSessions, observerSessions))
+        val confidentialOutputs = flowEngine.subFlow(ConfidentialTokensFlow(outputs, participantSessions))
+        return flowEngine.subFlow(MoveTokensFlow(inputs, confidentialOutputs, participantSessions, observerSessions))
     }
 }

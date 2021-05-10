@@ -1,16 +1,16 @@
 @file:JvmName("SelectionUtilities")
 package com.r3.corda.lib.tokens.selection
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.internal.schemas.PersistentFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.CordaRuntimeException
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.node.services.vault.Sort
-import net.corda.core.node.services.vault.SortAttribute
-import net.corda.core.node.services.vault.builder
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.exceptions.CordaRuntimeException
+import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.services.vault.Sort
+import net.corda.v5.ledger.services.vault.SortAttribute
+import net.corda.v5.ledger.services.vault.builder
 
 // TODO clean up the module structure of token-sdk, because these function and types (eg PartyAndAmount) should be separate from workflows
 // Sorts a query by state ref ascending.

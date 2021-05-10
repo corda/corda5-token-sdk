@@ -1,10 +1,9 @@
 package com.r3.corda.lib.tokens.contracts.internal.schemas
 
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
-import net.corda.core.schemas.MappedSchema
-import net.corda.core.schemas.PersistentState
-import java.security.PublicKey
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.node.services.persistence.MappedSchema
+import net.corda.v5.ledger.schemas.PersistentState
 import javax.persistence.*
 
 object FungibleTokenSchema

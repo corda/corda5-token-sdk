@@ -5,12 +5,11 @@ import com.r3.corda.lib.tokens.contracts.FungibleTokenContract
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.BelongsToContract
-import net.corda.core.contracts.Contract
-import net.corda.core.identity.AbstractParty
-import net.corda.core.transactions.LedgerTransaction
-
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.BelongsToContract
+import net.corda.v5.ledger.contracts.Contract
+import net.corda.v5.ledger.transactions.LedgerTransaction
 
 class Ruble : TokenType("рубль", 0) {
     override fun equals(other: Any?): Boolean {
@@ -42,8 +41,10 @@ data class Appartment(val id: String = "Foo") : TokenType(id, 0)
  * Test class only used to test that are grouped by Contract as well as TokenType
  */
 @BelongsToContract(DodgeTokenContract::class)
-open class DodgeToken(amount: Amount<IssuedTokenType>,
-                      holder: AbstractParty) : FungibleToken(amount, holder)
+open class DodgeToken(
+    amount: Amount<IssuedTokenType>,
+    holder: AbstractParty
+) : FungibleToken(amount, holder)
 
 open class DodgeTokenContract : Contract {
     override fun verify(tx: LedgerTransaction) {
@@ -54,5 +55,7 @@ open class DodgeTokenContract : Contract {
  * Test class only used to test that tokens cannot change class during a move
  */
 @BelongsToContract(FungibleTokenContract::class)
-open class RubleToken(amount: Amount<IssuedTokenType>,
-                      holder: AbstractParty) : FungibleToken(amount, holder)
+open class RubleToken(
+    amount: Amount<IssuedTokenType>,
+    holder: AbstractParty
+) : FungibleToken(amount, holder)

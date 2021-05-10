@@ -4,12 +4,11 @@ import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.TransactionState
-import net.corda.core.crypto.toStringShort
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.AnonymousParty
-import net.corda.core.identity.Party
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.crypto.toStringShort
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.TransactionState
 
 class TokenUtilities
 

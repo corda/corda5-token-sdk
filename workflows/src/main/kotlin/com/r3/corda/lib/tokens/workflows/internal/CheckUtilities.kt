@@ -1,11 +1,11 @@
 @file:JvmName("CheckUtilities")
 package com.r3.corda.lib.tokens.workflows.internal
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.identity.Party
-import net.corda.core.node.services.IdentityService
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.StateAndRef
 
 // Check that all states share the same notary.
 @Suspendable
@@ -33,9 +33,9 @@ internal fun checkSameIssuer(
 // Should be called after synchronising identities step.
 @Suspendable
 internal fun checkOwner(
-        identityService: IdentityService,
-        stateAndRefs: List<StateAndRef<AbstractToken>>,
-        counterparty: Party
+    identityService: IdentityService,
+    stateAndRefs: List<StateAndRef<AbstractToken>>,
+    counterparty: Party
 ) {
     val owners = stateAndRefs.map { identityService.wellKnownPartyFromAnonymous(it.state.data.holder) }
     check(owners.all { it != null }) {

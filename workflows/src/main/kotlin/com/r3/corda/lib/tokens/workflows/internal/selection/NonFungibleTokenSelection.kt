@@ -1,6 +1,5 @@
 package com.r3.corda.lib.tokens.workflows.internal.selection
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.commands.MoveTokenCommand
 import com.r3.corda.lib.tokens.contracts.commands.RedeemTokenCommand
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
@@ -9,17 +8,18 @@ import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import com.r3.corda.lib.tokens.workflows.utilities.addNotaryWithCheck
 import com.r3.corda.lib.tokens.workflows.utilities.addTokenTypeJar
 import com.r3.corda.lib.tokens.workflows.utilities.heldTokenCriteria
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.node.services.VaultService
-import net.corda.core.node.services.queryBy
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.services.VaultService
+import net.corda.v5.ledger.services.queryBy
+import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.transactions.TransactionBuilder
 
 @Suspendable
 fun generateMoveNonFungible(
-        partyAndToken: PartyAndToken,
-        vaultService: VaultService,
-        queryCriteria: QueryCriteria?
+    partyAndToken: PartyAndToken,
+    vaultService: VaultService,
+    queryCriteria: QueryCriteria?
 ): Pair<StateAndRef<NonFungibleToken>, NonFungibleToken> {
     val query = queryCriteria ?: heldTokenCriteria(partyAndToken.token)
     val criteria = heldTokenCriteria(partyAndToken.token).and(query)
@@ -37,10 +37,10 @@ fun generateMoveNonFungible(
 
 @Suspendable
 fun generateMoveNonFungible(
-        transactionBuilder: TransactionBuilder,
-        partyAndToken: PartyAndToken,
-        vaultService: VaultService,
-        queryCriteria: QueryCriteria?
+    transactionBuilder: TransactionBuilder,
+    partyAndToken: PartyAndToken,
+    vaultService: VaultService,
+    queryCriteria: QueryCriteria?
 ): TransactionBuilder {
     val (input, output) = generateMoveNonFungible(partyAndToken, vaultService, queryCriteria)
     val notary = input.state.notary
@@ -49,14 +49,13 @@ fun generateMoveNonFungible(
     val signingKey = input.state.data.holder.owningKey
 
     return transactionBuilder.apply {
-        val currentInputSize = inputStates().size
-        val currentOutputSize = outputStates().size
+        val currentInputSize = inputStates.size
+        val currentOutputSize = outputStates.size
         addInputState(input)
         addOutputState(state = output withNotary notary)
         addCommand(MoveTokenCommand(output.token, inputs = listOf(currentInputSize), outputs = listOf(currentOutputSize)), signingKey)
     }
 }
-
 
 // All check should be performed before.
 @Suspendable
@@ -66,7 +65,7 @@ fun generateExitNonFungible(txBuilder: TransactionBuilder, moveStateAndRef: Stat
     val issuerKey = nonFungibleToken.token.issuer.owningKey
     val moveKey = nonFungibleToken.holder.owningKey
     txBuilder.apply {
-        val currentInputSize = inputStates().size
+        val currentInputSize = inputStates.size
         addInputState(moveStateAndRef)
         addCommand(RedeemTokenCommand(nonFungibleToken.token, listOf(currentInputSize)), issuerKey, moveKey)
     }

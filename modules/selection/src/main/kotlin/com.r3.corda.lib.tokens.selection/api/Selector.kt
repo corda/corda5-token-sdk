@@ -1,20 +1,19 @@
 package com.r3.corda.lib.tokens.selection.api
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
-import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.heldBy
 import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
 import com.r3.corda.lib.tokens.contracts.utilities.sumTokenStateAndRefs
 import com.r3.corda.lib.tokens.selection.TokenQueryBy
 import com.r3.corda.lib.tokens.selection.memory.internal.Holder
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.Amount.Companion.sumOrThrow
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.flows.FlowLogic
-import net.corda.core.identity.AbstractParty
-import net.corda.core.node.ServiceHub
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.node.NodeInfo
+import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.Amount.Companion.sumOrThrow
+import net.corda.v5.ledger.contracts.StateAndRef
 import java.security.PublicKey
 import java.util.*
 
@@ -22,7 +21,6 @@ import java.util.*
  * Interface that provides fungible state selection methods in flow.
  */
 abstract class Selector {
-    abstract val services: ServiceHub
 
     /**
      * Select [FungibleToken]s that cover [requiredAmount]. Notice that this
@@ -31,7 +29,7 @@ abstract class Selector {
      * Set [TokenQueryBy.issuer] to specify issuer.
      * Calling selectTokens multiple time with the same lockId will return next unlocked states.
      *
-     * @param lockId id used to lock the states for spend, defaults to [FlowLogic] runID
+     * @param lockId id used to lock the states for spend
      * @param requiredAmount amount that should be spent
      * @param queryBy narrows down tokens to spend, see [TokenQueryBy]
      * @return List of [FungibleToken]s that satisfy the amount to spend, empty list if none found.
@@ -40,9 +38,9 @@ abstract class Selector {
     @Suspendable
     @JvmOverloads
     fun selectTokens(
-            requiredAmount: Amount<TokenType>,
-            queryBy: TokenQueryBy = TokenQueryBy(),
-            lockId: UUID = FlowLogic.currentTopLevel?.runId?.uuid ?: UUID.randomUUID()
+        requiredAmount: Amount<TokenType>,
+        queryBy: TokenQueryBy = TokenQueryBy(),
+        lockId: UUID = UUID.randomUUID()
     ): List<StateAndRef<FungibleToken>> {
         return selectTokens(Holder.TokenOnly(), lockId, requiredAmount, queryBy)
     }
@@ -55,7 +53,7 @@ abstract class Selector {
      * Calling selectTokens multiple time with the same lockId will return next unlocked states.
      *
      * @param externalId external id that states should be selected from
-     * @param lockId id used to lock the states for spend, defaults to [FlowLogic] runID
+     * @param lockId id used to lock the states for spend
      * @param requiredAmount amount that should be spent
      * @param queryBy narrows down tokens to spend, see [TokenQueryBy]
      * @return List of [FungibleToken]s that satisfy the amount to spend, empty list if none found.
@@ -64,10 +62,10 @@ abstract class Selector {
     @Suspendable
     @JvmOverloads
     fun selectTokens(
-            externalId: UUID,
-            requiredAmount: Amount<TokenType>,
-            queryBy: TokenQueryBy = TokenQueryBy(),
-            lockId: UUID = FlowLogic.currentTopLevel?.runId?.uuid ?: UUID.randomUUID()
+        externalId: UUID,
+        requiredAmount: Amount<TokenType>,
+        queryBy: TokenQueryBy = TokenQueryBy(),
+        lockId: UUID = UUID.randomUUID()
     ): List<StateAndRef<FungibleToken>> {
         return selectTokens(Holder.fromUUID(externalId), lockId, requiredAmount, queryBy)
     }
@@ -80,7 +78,7 @@ abstract class Selector {
      * Calling selectTokens multiple time with the same lockId will return next unlocked states.
      *
      * @param holdingKey key that holds the states to select
-     * @param lockId id used to lock the states for spend, defaults to [FlowLogic] runID
+     * @param lockId id used to lock the states for spend
      * @param requiredAmount amount that should be spent
      * @param queryBy narrows down tokens to spend, see [TokenQueryBy]
      * @return List of [FungibleToken]s that satisfy the amount to spend, empty list if none found.
@@ -89,10 +87,10 @@ abstract class Selector {
     @Suspendable
     @JvmOverloads
     fun selectTokens(
-            holdingKey: PublicKey,
-            requiredAmount: Amount<TokenType>,
-            queryBy: TokenQueryBy = TokenQueryBy(),
-            lockId: UUID = FlowLogic.currentTopLevel?.runId?.uuid ?: UUID.randomUUID()
+        holdingKey: PublicKey,
+        requiredAmount: Amount<TokenType>,
+        queryBy: TokenQueryBy = TokenQueryBy(),
+        lockId: UUID = UUID.randomUUID()
     ): List<StateAndRef<FungibleToken>> {
         return selectTokens(Holder.KeyIdentity(holdingKey), lockId, requiredAmount, queryBy)
     }
@@ -109,12 +107,14 @@ abstract class Selector {
     @Suspendable
     @JvmOverloads
     fun generateMove(
-            partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
-            changeHolder: AbstractParty,
-            queryBy: TokenQueryBy = TokenQueryBy(),
-            lockId: UUID = FlowLogic.currentTopLevel?.runId?.uuid ?: UUID.randomUUID()
+        identityService: IdentityService,
+        nodeInfo: NodeInfo,
+        partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
+        changeHolder: AbstractParty,
+        queryBy: TokenQueryBy = TokenQueryBy(),
+        lockId: UUID = UUID.randomUUID()
     ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
-        return generateMove(Holder.TokenOnly(), lockId, partiesAndAmounts, changeHolder, queryBy)
+        return generateMove(identityService, nodeInfo, Holder.TokenOnly(), lockId, partiesAndAmounts, changeHolder, queryBy)
     }
 
     /**
@@ -129,13 +129,15 @@ abstract class Selector {
     @Suspendable
     @JvmOverloads
     fun generateMove(
-            externalId: UUID,
-            partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
-            changeHolder: AbstractParty,
-            queryBy: TokenQueryBy = TokenQueryBy(),
-            lockId: UUID = FlowLogic.currentTopLevel?.runId?.uuid ?: UUID.randomUUID()
+        identityService: IdentityService,
+        nodeInfo: NodeInfo,
+        externalId: UUID,
+        partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
+        changeHolder: AbstractParty,
+        queryBy: TokenQueryBy = TokenQueryBy(),
+        lockId: UUID = UUID.randomUUID()
     ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
-        return generateMove(Holder.fromUUID(externalId), lockId, partiesAndAmounts, changeHolder, queryBy)
+        return generateMove(identityService, nodeInfo, Holder.fromUUID(externalId), lockId, partiesAndAmounts, changeHolder, queryBy)
     }
 
     /**
@@ -150,30 +152,34 @@ abstract class Selector {
     @Suspendable
     @JvmOverloads
     fun generateMove(
-            holdingKey: PublicKey,
-            partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
-            changeHolder: AbstractParty,
-            queryBy: TokenQueryBy = TokenQueryBy(),
-            lockId: UUID = FlowLogic.currentTopLevel?.runId?.uuid ?: UUID.randomUUID()
+        identityService: IdentityService,
+        nodeInfo: NodeInfo,
+        holdingKey: PublicKey,
+        partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
+        changeHolder: AbstractParty,
+        queryBy: TokenQueryBy = TokenQueryBy(),
+        lockId: UUID = UUID.randomUUID()
     ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
-        return generateMove(Holder.KeyIdentity(holdingKey), lockId, partiesAndAmounts, changeHolder, queryBy)
+        return generateMove(identityService, nodeInfo, Holder.KeyIdentity(holdingKey), lockId, partiesAndAmounts, changeHolder, queryBy)
     }
 
     @Suspendable
     protected abstract fun selectTokens(
-            holder: Holder,
-            lockId: UUID,
-            requiredAmount: Amount<TokenType>,
-            queryBy: TokenQueryBy
+        holder: Holder,
+        lockId: UUID,
+        requiredAmount: Amount<TokenType>,
+        queryBy: TokenQueryBy
     ): List<StateAndRef<FungibleToken>>
 
     @Suspendable
     private fun generateMove(
-            holder: Holder,
-            lockId: UUID = FlowLogic.currentTopLevel?.runId?.uuid ?: UUID.randomUUID(),
-            partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
-            changeHolder: AbstractParty,
-            queryBy: TokenQueryBy = TokenQueryBy()
+        identityService: IdentityService,
+        myInfo: NodeInfo,
+        holder: Holder,
+        lockId: UUID = UUID.randomUUID(),
+        partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
+        changeHolder: AbstractParty,
+        queryBy: TokenQueryBy = TokenQueryBy()
     ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
         // Grab some tokens from the vault and soft-lock.
         // Only supports moves of the same token instance currently.
@@ -187,8 +193,8 @@ abstract class Selector {
         }
 
         // Check that the change identity belongs to the node that called generateMove.
-        val ownerId = services.identityService.wellKnownPartyFromAnonymous(changeHolder)
-        check(ownerId != null && services.myInfo.isLegalIdentity(ownerId)) {
+        val ownerId = identityService.wellKnownPartyFromAnonymous(changeHolder)
+        check(ownerId != null && myInfo.isLegalIdentity(ownerId)) {
             "Owner of the change: $changeHolder is not the identity that belongs to the node."
         }
 
@@ -253,9 +259,9 @@ abstract class Selector {
      */
     @Suspendable
     fun generateExit(
-            exitStates: List<StateAndRef<FungibleToken>>,
-            amount: Amount<TokenType>,
-            changeHolder: AbstractParty
+        exitStates: List<StateAndRef<FungibleToken>>,
+        amount: Amount<TokenType>,
+        changeHolder: AbstractParty
     ): Pair<List<StateAndRef<FungibleToken>>, FungibleToken?> {
         check(exitStates.isNotEmpty()) {
             "Exiting empty list of states"
@@ -270,9 +276,9 @@ abstract class Selector {
     }
 
     private fun change(
-            exitStates: List<StateAndRef<FungibleToken>>,
-            amount: Amount<TokenType>,
-            changeOwner: AbstractParty
+        exitStates: List<StateAndRef<FungibleToken>>,
+        amount: Amount<TokenType>,
+        changeOwner: AbstractParty
     ): FungibleToken? {
         val assetsSum = exitStates.sumTokenStateAndRefs()
         val difference = assetsSum - amount.issuedBy(exitStates.first().state.data.amount.token.issuer)

@@ -9,7 +9,7 @@ private final void deterministic(Configuration configuration) {
     if (configuration.state == Configuration.State.UNRESOLVED) {
         // Ensure that this module uses the deterministic Corda artifacts.
         configuration.resolutionStrategy.dependencySubstitution {
-            substitute module("$corda_release_group:corda-serialization") with module("$corda_release_group:corda-serialization-deterministic:$corda_release_version")
+            substitute module("$corda_release_group:corda-serialization") with module("$corda_release_group:corda-serialization-deterministic:$legacy_corda_release_version")
             substitute module("$corda_release_group:corda-core") with module("$corda_release_group:corda-core-deterministic:$corda_release_version")
         }
     }

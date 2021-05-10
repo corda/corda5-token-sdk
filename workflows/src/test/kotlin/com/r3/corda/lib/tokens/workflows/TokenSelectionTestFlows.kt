@@ -1,6 +1,5 @@
 package com.r3.corda.lib.tokens.workflows
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.selection.TokenQueryBy
@@ -12,6 +11,7 @@ import net.corda.core.contracts.StateAndRef
 import net.corda.core.flows.FlowLogic
 import net.corda.core.internal.FlowAsyncOperation
 import net.corda.core.internal.executeAsync
+import net.corda.v5.base.annotations.Suspendable
 import java.security.PublicKey
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors

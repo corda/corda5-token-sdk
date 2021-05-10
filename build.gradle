@@ -1,13 +1,18 @@
-import static org.gradle.api.JavaVersion.VERSION_1_8
+import static org.gradle.api.JavaVersion.VERSION_11
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 buildscript {
     ext {
+        artifactoryContextUrl='https://software.r3.com/artifactory'
+        cordaArtifactoryUsername = System.getenv('CORDA_ARTIFACTORY_USERNAME') ?: System.getProperty('corda.artifactory.username')
+        cordaArtifactoryPassword = System.getenv('CORDA_ARTIFACTORY_PASSWORD') ?: System.getProperty('corda.artifactory.password')
         corda_release_group = 'net.corda'
-        corda_release_version = '4.3'
+        corda_release_version = '1.0.1620392171540-rc'
+        legacy_corda_release_version = '4.3'
         tokens_release_group = "com.r3.corda.lib.tokens"
         tokens_release_version = "1.2-SNAPSHOT"
         corda_gradle_plugins_version = '5.0.8'
-        kotlin_version = '1.2.71'
+        kotlin_version = '1.4.21'
         junit_version = '4.12'
         dokka_version = '0.9.17'
         slf4j_version = '1.7.25'
@@ -18,14 +23,25 @@ buildscript {
         aetherVersion = '1.0.0.v20140518'
         mavenVersion = '3.1.0'
         maven_resolver_version = "1.1.1"
+        liquibaseVersion = '3.6.3'
+        hibernateVersion = '5.4.3.Final'
+        jfrogArtifactoryPluginVersion='4.18.0'
     }
 
     repositories {
         jcenter()
         mavenCentral()
         mavenLocal()
-        maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-releases" }
+        maven { url "$artifactoryContextUrl/corda-releases" }
         maven { url "https://repo.gradle.org/gradle/libs-releases-local/" }
+        //needed for C5 binaries
+        maven {
+            url = "$artifactoryContextUrl/corda-os-maven-unstable"
+            credentials {
+                username = cordaArtifactoryUsername
+                password = cordaArtifactoryPassword
+            }
+        }
     }
 
     dependencies {
@@ -39,7 +55,7 @@ buildscript {
 }
 
 plugins {
-    id "com.jfrog.artifactory" version "4.7.5"
+    id "com.jfrog.artifactory" version "$jfrogArtifactoryPluginVersion"
 }
 
 allprojects {
@@ -72,16 +88,34 @@ subprojects {
         maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-lib-dev" }
         maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-lib" }
         maven { url "https://repo.gradle.org/gradle/libs-releases-local/" }
+        //needed for C5 binaries
+        maven {
+            url = "$artifactoryContextUrl/corda-os-maven-unstable"
+            credentials {
+                username = cordaArtifactoryUsername
+                password = cordaArtifactoryPassword
+            }
+        }
+        maven {
+            url = "$artifactoryContextUrl/corda-dependencies"
+        }
     }
 
     apply plugin: 'kotlin'
 
-    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile) {
+    tasks.withType(KotlinCompile) {
         kotlinOptions {
-            languageVersion = "1.2"
-            apiVersion = "1.2"
-            jvmTarget = VERSION_1_8
+            allWarningsAsErrors = true
+            languageVersion = "1.4"
+            apiVersion = "1.4"
+            jvmTarget = VERSION_11
             javaParameters = true   // Useful for reflection.
+            freeCompilerArgs += [
+                "-Xjvm-default=all",
+                // Prevent Kotlin from warning about kotlin.* classes inside the OSGi bundle.
+                "-Xskip-runtime-version-check",
+                "-java-parameters"
+            ]
         }
     }
 
@@ -138,25 +172,25 @@ configure(publishProjects) { subproject ->
 }
 
 
-artifactory {
-    publish {
-        contextUrl = 'https://ci-artifactory.corda.r3cev.com/artifactory'
-        repository {
-            repoKey = 'corda-lib-dev'
-            username = System.getenv('CORDA_ARTIFACTORY_USERNAME') ?: System.getProperty('corda.artifactory.username')
-            password = System.getenv('CORDA_ARTIFACTORY_PASSWORD') ?: System.getProperty('corda.artifactory.password')
-        }
-
-        defaults {
-            if (publishProjects.contains(project)) {
-                publications(project.name)
-            }
-        }
-    }
-}
+//artifactory {
+//    publish {
+//        contextUrl = 'https://ci-artifactory.corda.r3cev.com/artifactory'
+//        repository {
+//            repoKey = 'corda-lib-dev'
+//            username = System.getenv('CORDA_ARTIFACTORY_USERNAME') ?: System.getProperty('corda.artifactory.username')
+//            password = System.getenv('CORDA_ARTIFACTORY_PASSWORD') ?: System.getProperty('corda.artifactory.password')
+//        }
+//
+//        defaults {
+//            if (publishProjects.contains(project)) {
+//                publications(project.name)
+//            }
+//        }
+//    }
+//}
 
 wrapper {
-    gradleVersion = "5.6"
+    gradleVersion = "6.8.3"
     distributionType = Wrapper.DistributionType.ALL
 }
 
