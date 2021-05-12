@@ -1,5 +1,7 @@
 package com.r3.corda.lib.tokens.contracts
 
+import com.r3.corda.lib.tokens.contracts.CommonTokens.Companion.GBP
+import com.r3.corda.lib.tokens.contracts.CommonTokens.Companion.USD
 import com.r3.corda.lib.tokens.contracts.commands.IssueTokenCommand
 import com.r3.corda.lib.tokens.contracts.commands.MoveTokenCommand
 import com.r3.corda.lib.tokens.contracts.commands.RedeemTokenCommand
@@ -12,8 +14,6 @@ import com.r3.corda.lib.tokens.testing.states.DodgeToken
 import com.r3.corda.lib.tokens.testing.states.DodgeTokenContract
 import com.r3.corda.lib.tokens.testing.states.RUB
 import com.r3.corda.lib.tokens.testing.states.RubleToken
-import com.r3.corda.lib.tokens.contracts.CommonTokens.Companion.USD
-import com.r3.corda.lib.tokens.contracts.CommonTokens.Companion.GBP
 import org.junit.Test
 
 // TODO: Some of these tests are testing AbstractToken and should be moved into the super-class.
@@ -276,7 +276,6 @@ class FungibleTokenTests : ContractTestCommon() {
         }
     }
 
-
     @Test
     fun `should be possible to redeem single token without change output`() {
         val issuedToken = GBP issuedBy ISSUER.party
@@ -346,7 +345,6 @@ class FungibleTokenTests : ContractTestCommon() {
             this `fails with` "There is a token group with no assigned command!"
         }
     }
-
 
     @Test
     fun `should allow redemption of two separate groups`() {

@@ -23,7 +23,6 @@ import java.math.BigDecimal
 @CordaSerializable
 data class IssuedTokenType(val issuer: Party, val tokenType: TokenType) : TokenType(tokenType.tokenIdentifier, tokenType.fractionDigits) {
 
-
     /**
      * This is required by [Amount] to determine the default fraction digits when adding or subtracting amounts of
      * [IssuedTokenType].

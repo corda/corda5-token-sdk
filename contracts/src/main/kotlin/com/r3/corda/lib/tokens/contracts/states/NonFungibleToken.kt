@@ -57,10 +57,10 @@ open class NonFungibleToken @JvmOverloads constructor(
 
     override fun generateMappedObject(schema: MappedSchema): PersistentState = when (schema) {
         is NonFungibleTokenSchemaV1 -> PersistentNonFungibleToken(
-                issuer = token.issuer,
-                holder = holder,
-                tokenClass = token.tokenType.tokenClass,
-                tokenIdentifier = token.tokenType.tokenIdentifier
+            issuer = token.issuer,
+            holder = holder,
+            tokenClass = token.tokenType.tokenClass,
+            tokenIdentifier = token.tokenType.tokenIdentifier
         )
         else -> throw IllegalArgumentException("Unrecognised schema $schema")
     }
@@ -87,6 +87,4 @@ open class NonFungibleToken @JvmOverloads constructor(
         result = 31 * result + (tokenTypeJarHash?.hashCode() ?: 0)
         return result
     }
-
-
 }

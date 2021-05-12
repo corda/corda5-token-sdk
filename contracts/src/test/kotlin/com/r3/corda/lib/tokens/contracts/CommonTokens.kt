@@ -5,13 +5,12 @@ import net.corda.v5.ledger.contracts.Amount
 
 class CommonTokens {
 
-	companion object {
-		val USD = TokenType("USD", 2)
-		val GBP = TokenType("GBP", 2)
-	}
-
+    companion object {
+        val USD = TokenType("USD", 2)
+        val GBP = TokenType("GBP", 2)
+    }
 }
 
 fun Number.ofType(tt: TokenType): Amount<TokenType> {
-	return Amount(this.toLong(), tt)
+    return Amount(this.toLong(), tt)
 }

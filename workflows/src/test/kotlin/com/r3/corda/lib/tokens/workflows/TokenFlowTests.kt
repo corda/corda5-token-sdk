@@ -7,19 +7,14 @@ import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.heldBy
 import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
 import com.r3.corda.lib.tokens.contracts.utilities.of
-import com.r3.corda.lib.tokens.contracts.utilities.sumIssuedTokensOrNull
 import com.r3.corda.lib.tokens.contracts.utilities.withNotary
 import com.r3.corda.lib.tokens.money.GBP
+import com.r3.corda.lib.tokens.selection.database.selector.DatabaseTokenSelection
 import com.r3.corda.lib.tokens.testing.states.House
+import com.r3.corda.lib.tokens.workflows.flows.rpc.CreateEvolvableTokens
 import com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens
 import com.r3.corda.lib.tokens.workflows.flows.rpc.MoveFungibleTokens
 import com.r3.corda.lib.tokens.workflows.internal.flows.distribution.getDistributionList
-import com.r3.corda.lib.tokens.selection.database.selector.DatabaseTokenSelection
-import com.r3.corda.lib.tokens.workflows.flows.rpc.CreateEvolvableTokens
-import com.r3.corda.lib.tokens.workflows.utilities.getLinearStateById
-import com.r3.corda.lib.tokens.workflows.utilities.tokenAmountsByToken
-import com.r3.corda.lib.tokens.workflows.utilities.tokenBalance
-import com.r3.corda.lib.tokens.workflows.utilities.tokenBalanceForIssuer
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.LinearState
 import net.corda.core.contracts.StateAndRef
@@ -181,7 +176,12 @@ class TokenFlowTests : MockNetworkTest(numberOfNodes = 4) {
     @Test
     fun `moving evolvable token updates distribution list`() {
         //Create evolvable token with 2 maintainers
-        val house = House("24 Leinster Gardens, Bayswater, London", 1_000_000.GBP, listOf(I.legalIdentity(), I2.legalIdentity()), linearId = UniqueIdentifier())
+        val house = House(
+            "24 Leinster Gardens, Bayswater, London",
+            1_000_000.GBP,
+            listOf(I.legalIdentity(), I2.legalIdentity()),
+            linearId = UniqueIdentifier()
+        )
         val housePointer: TokenPointer<House> = house.toPointer()
         val tx = I.createEvolvableToken(house, NOTARY.legalIdentity()).getOrThrow()
         val token = tx.singleOutput<House>()
@@ -215,32 +215,36 @@ class TokenFlowTests : MockNetworkTest(numberOfNodes = 4) {
 
     @Test
     fun `issue to unknown anonymous party`() {
-        val confidentialHolder = A.services.keyManagementService.freshKeyAndCert(A.services.myInfo.chooseIdentityAndCert(), false).party.anonymise()
+        val confidentialHolder =
+            A.services.keyManagementService.freshKeyAndCert(A.services.myInfo.chooseIdentityAndCert(), false).party.anonymise()
         val token = 100 of GBP issuedBy I.legalIdentity() heldBy confidentialHolder
         Assertions.assertThatThrownBy {
             I.startFlow(IssueTokens(listOf(token))).getOrThrow()
-        }.hasMessageContaining("Called flow with anonymous party that node doesn't know about. Make sure that RequestConfidentialIdentity flow is called before.")
+        }
+            .hasMessageContaining("Called flow with anonymous party that node doesn't know about. Make sure that RequestConfidentialIdentity flow is called before.")
     }
 
     @Test
     fun `move to unknown anonymous party`() {
         I.issueFungibleTokens(A, 100.GBP).getOrThrow()
         network.waitQuiescent()
-        val confidentialHolder = B.services.keyManagementService.freshKeyAndCert(B.services.myInfo.chooseIdentityAndCert(), false).party.anonymise()
+        val confidentialHolder =
+            B.services.keyManagementService.freshKeyAndCert(B.services.myInfo.chooseIdentityAndCert(), false).party.anonymise()
         Assertions.assertThatThrownBy {
             A.startFlow(MoveFungibleTokens(50.GBP, confidentialHolder)).getOrThrow()
-        }.hasMessageContaining("Called flow with anonymous party that node doesn't know about. Make sure that RequestConfidentialIdentity flow is called before.")
+        }
+            .hasMessageContaining("Called flow with anonymous party that node doesn't know about. Make sure that RequestConfidentialIdentity flow is called before.")
     }
 
     @Test
     fun `move to anonymous party on the same node`() {
         I.issueFungibleTokens(A, 100.GBP).getOrThrow()
         network.waitQuiescent()
-        val confidentialHolder = A.services.keyManagementService.freshKeyAndCert(A.services.myInfo.chooseIdentityAndCert(), false).party.anonymise()
+        val confidentialHolder =
+            A.services.keyManagementService.freshKeyAndCert(A.services.myInfo.chooseIdentityAndCert(), false).party.anonymise()
         A.startFlow(MoveFungibleTokens(50.GBP, confidentialHolder)).getOrThrow()
         network.waitQuiescent()
     }
-
 
     @Test
     fun `create evolvable token, then issue to the same node twice, expecting only one distribution record`() {
@@ -266,7 +270,7 @@ class TokenFlowTests : MockNetworkTest(numberOfNodes = 4) {
             tokenSelection.selectTokens(requiredAmount = 1 of GBP, lockId = UUID.randomUUID())
         }
         val token2 = A.transaction {
-             tokenSelection.selectTokens(requiredAmount = 1 of GBP, lockId = UUID.randomUUID())
+            tokenSelection.selectTokens(requiredAmount = 1 of GBP, lockId = UUID.randomUUID())
         }
         assertThat(token1).isNotEqualTo(token2)
     }
@@ -286,18 +290,23 @@ class TokenFlowTests : MockNetworkTest(numberOfNodes = 4) {
 
         // Issue 100 tokens to node A
         val tokenPointer = createdTokenType.toPointer(createdTokenType::class.java)
-        val issuedTokenType = IssuedTokenType(createdTokenType.maintainers.first(),
-                tokenPointer)
+        val issuedTokenType = IssuedTokenType(
+            createdTokenType.maintainers.first(),
+            tokenPointer
+        )
         val amountToIssue = Amount(100, issuedTokenType)
-        val token = FungibleToken(amountToIssue,
-                aParty,
-                null)
+        val token = FungibleToken(
+            amountToIssue,
+            aParty,
+            null
+        )
         val flow2 = IssueTokens(listOf(token))
         A.startFlow(flow2).get()
 
         // Confirm node A balance is 100
         var nodeABalance: Amount<*> = A.services.vaultService.tokenBalanceForIssuer(
-                tokenPointer, aParty)
+            tokenPointer, aParty
+        )
         assertThat(nodeABalance.quantity).isEqualTo(100)
 
         // Move 1 token to node B
@@ -308,7 +317,8 @@ class TokenFlowTests : MockNetworkTest(numberOfNodes = 4) {
 
         // Confirm node A balance is 99
         nodeABalance = A.services.vaultService.tokenBalanceForIssuer(
-                tokenPointer, aParty)
+            tokenPointer, aParty
+        )
         assertThat(nodeABalance.quantity).isEqualTo(99)
     }
 }

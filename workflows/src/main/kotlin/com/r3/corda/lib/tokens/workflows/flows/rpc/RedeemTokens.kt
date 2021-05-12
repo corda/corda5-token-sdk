@@ -1,7 +1,11 @@
 package com.r3.corda.lib.tokens.workflows.flows.rpc
 
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import com.r3.corda.lib.tokens.workflows.flows.redeem.*
+import com.r3.corda.lib.tokens.workflows.flows.redeem.ConfidentialRedeemFungibleTokensFlow
+import com.r3.corda.lib.tokens.workflows.flows.redeem.ConfidentialRedeemFungibleTokensFlowHandler
+import com.r3.corda.lib.tokens.workflows.flows.redeem.RedeemFungibleTokensFlow
+import com.r3.corda.lib.tokens.workflows.flows.redeem.RedeemNonFungibleTokensFlow
+import com.r3.corda.lib.tokens.workflows.flows.redeem.RedeemTokensFlowHandler
 import com.r3.corda.lib.tokens.workflows.utilities.sessionsForParties
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession

@@ -25,19 +25,19 @@ import java.math.BigDecimal
 @CordaSerializable
 @DoNotImplement
 open class TokenType(
-        /**
-         * All [TokenType]s must have a [tokenIdentifier], which is typically a 3-4 character, upper case alphabetic string.
-         * The [tokenIdentifier] is used in conjunction with the [tokenClass] to create an instance of a [TokenType], for
-         * example: (FiatCurrency, GBP), (DigitalCurrency, BTC), or (Stock, GOOG). For [TokenPointer]s this property will
-         * contain the linearId of the [EvolvableTokenType] which is pointed to. The linearId can be used to obtain the
-         * underlying [EvolvableTokenType] from the vault.
-         */
-        open val tokenIdentifier: String,
-        /**
-         * The number of fractional digits allowable for this token type. Specifying "0" will only allow integer amounts of
-         * the token type. Specifying "2", allows two decimal places, much like most fiat currencies, and so on...
-         */
-        open val fractionDigits: Int
+    /**
+     * All [TokenType]s must have a [tokenIdentifier], which is typically a 3-4 character, upper case alphabetic string.
+     * The [tokenIdentifier] is used in conjunction with the [tokenClass] to create an instance of a [TokenType], for
+     * example: (FiatCurrency, GBP), (DigitalCurrency, BTC), or (Stock, GOOG). For [TokenPointer]s this property will
+     * contain the linearId of the [EvolvableTokenType] which is pointed to. The linearId can be used to obtain the
+     * underlying [EvolvableTokenType] from the vault.
+     */
+    open val tokenIdentifier: String,
+    /**
+     * The number of fractional digits allowable for this token type. Specifying "0" will only allow integer amounts of
+     * the token type. Specifying "2", allows two decimal places, much like most fiat currencies, and so on...
+     */
+    open val fractionDigits: Int
 ) : TokenizableAssetInfo {
     /**
      * For use by the [Amount] class. There is no need to override this.
@@ -87,6 +87,4 @@ open class TokenType(
     override fun toString(): String {
         return "${javaClass.simpleName}(tokenIdentifier='$tokenIdentifier', fractionDigits=$fractionDigits)"
     }
-
-
 }

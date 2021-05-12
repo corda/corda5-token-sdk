@@ -10,7 +10,6 @@ import com.r3.corda.lib.tokens.money.USD
 import com.r3.corda.lib.tokens.testing.states.Appartment
 import com.r3.corda.lib.tokens.workflows.utilities.*
 import net.corda.core.node.services.Vault
-import net.corda.core.node.services.queryBy
 import net.corda.core.node.services.vault.QueryCriteria
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.node.StartedMockNode
@@ -19,7 +18,6 @@ import org.junit.Test
 import kotlin.test.assertEquals
 
 class TokenQueryTests : MockNetworkTest(numberOfNodes = 3) {
-
 
     lateinit var A: StartedMockNode
     lateinit var I: StartedMockNode
@@ -63,8 +61,8 @@ class TokenQueryTests : MockNetworkTest(numberOfNodes = 3) {
     fun `query for all owned token amounts`() {
         // Query for all tokensToIssue and check they are all returned.
         val query = QueryCriteria.FungibleStateQueryCriteria(
-                contractStateTypes = setOf(FungibleToken::class.java),
-                relevancyStatus = Vault.RelevancyStatus.RELEVANT
+            contractStateTypes = setOf(FungibleToken::class.java),
+            relevancyStatus = Vault.RelevancyStatus.RELEVANT
         )
         val states = A.services.vaultService.queryBy<FungibleToken>(query).states
         assertEquals(allTokens.size, states.size)
@@ -74,8 +72,8 @@ class TokenQueryTests : MockNetworkTest(numberOfNodes = 3) {
     fun `query for all owned tokens`() {
         // Query for all tokensToIssue and check they are all returned.
         val query = QueryCriteria.VaultQueryCriteria(
-                contractStateTypes = setOf(NonFungibleToken::class.java),
-                relevancyStatus = Vault.RelevancyStatus.RELEVANT
+            contractStateTypes = setOf(NonFungibleToken::class.java),
+            relevancyStatus = Vault.RelevancyStatus.RELEVANT
         )
         val states = A.services.vaultService.queryBy<NonFungibleToken>(query).states
         assertEquals(allOtherTokens.size, states.size)

@@ -49,12 +49,14 @@ constructor(
             val key = keyManagementService.freshKey()
             AnonymousParty(key)
         }
-        return flowEngine.subFlow(RedeemFungibleTokensFlow(
+        return flowEngine.subFlow(
+            RedeemFungibleTokensFlow(
                 amount = amount,
                 issuerSession = issuerSession,
                 changeHolder = confidentialHolder,  // This will never be null.
                 observerSessions = observerSessions,
                 additionalQueryCriteria = additionalQueryCriteria
-        ))
+            )
+        )
     }
 }

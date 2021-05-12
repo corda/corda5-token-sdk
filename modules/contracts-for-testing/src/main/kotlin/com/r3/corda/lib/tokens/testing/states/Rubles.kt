@@ -1,4 +1,5 @@
 @file:JvmName("Rubles")
+
 package com.r3.corda.lib.tokens.testing.states
 
 import com.r3.corda.lib.tokens.contracts.FungibleTokenContract
@@ -27,11 +28,11 @@ class PhoBowl : TokenType("PTK", 0) {
         if (!super.equals(other)) return false
         return true
     }
-
 }
 
 @JvmField
 val RUB = Ruble()
+
 @JvmField
 val PTK = PhoBowl()
 

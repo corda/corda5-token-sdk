@@ -1,4 +1,5 @@
 @file:JvmName("EvolvableTokenUtilities")
+
 package com.r3.corda.lib.tokens.workflows.flows.evolvable
 
 import com.r3.corda.lib.tokens.contracts.commands.Create
@@ -26,23 +27,23 @@ fun <T : EvolvableTokenType> addCreateEvolvableToken(
     val maintainers = state.data.maintainers.toSet()
     val signingKeys = maintainers.map { it.owningKey }
     return transactionBuilder
-            .addCommand(data = Create(), keys = signingKeys)
-            .addOutputState(state = state)
+        .addCommand(data = Create(), keys = signingKeys)
+        .addOutputState(state = state)
 }
 
 fun <T : EvolvableTokenType> addCreateEvolvableToken(
-        transactionBuilder: TransactionBuilder,
-        evolvableToken: T,
-        contract: ContractClassName,
-        notary: Party
+    transactionBuilder: TransactionBuilder,
+    evolvableToken: T,
+    contract: ContractClassName,
+    notary: Party
 ): TransactionBuilder {
     return addCreateEvolvableToken(transactionBuilder, TransactionState(evolvableToken, contract, notary))
 }
 
 fun <T : EvolvableTokenType> addCreateEvolvableToken(
-        transactionBuilder: TransactionBuilder,
-        evolvableToken: T,
-        notary: Party
+    transactionBuilder: TransactionBuilder,
+    evolvableToken: T,
+    notary: Party
 ): TransactionBuilder {
     return addCreateEvolvableToken(transactionBuilder, evolvableToken withNotary notary)
 }
@@ -61,14 +62,15 @@ fun addUpdateEvolvableToken(
     val maintainers = (oldState.maintainers + newState.maintainers).toSet()
     val signingKeys = maintainers.map { it.owningKey }
     return transactionBuilder
-            .addCommand(data = Update(), keys = signingKeys)
-            .addInputState(oldStateAndRef)
-            .addOutputState(state = newState, contract = oldStateAndRef.state.contract)
+        .addCommand(data = Update(), keys = signingKeys)
+        .addInputState(oldStateAndRef)
+        .addOutputState(state = newState, contract = oldStateAndRef.state.contract)
 }
 
 internal fun Iterable<EvolvableTokenType>.maintainers(): Set<Party> = fold(emptySet(), { acc, txState -> acc.plus(txState.maintainers) })
 
-internal fun Iterable<EvolvableTokenType>.participants(): Set<AbstractParty> = fold(emptySet(), { acc, txState -> acc.plus(txState.participants) })
+internal fun Iterable<EvolvableTokenType>.participants(): Set<AbstractParty> =
+    fold(emptySet(), { acc, txState -> acc.plus(txState.participants) })
 
 internal fun Iterable<EvolvableTokenType>.otherMaintainers(ourIdentity: Party) = maintainers().minus(ourIdentity)
 

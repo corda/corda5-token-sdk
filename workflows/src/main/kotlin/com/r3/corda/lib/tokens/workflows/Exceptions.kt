@@ -7,4 +7,4 @@ import net.corda.v5.application.flows.FlowException
  *
  * @param exceptionMessage The message to be included in the exception thrown.
  */
-class TokenBuilderException(exceptionMessage: String): FlowException(exceptionMessage)
+class TokenBuilderException(exceptionMessage: String) : FlowException(exceptionMessage)

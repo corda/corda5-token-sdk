@@ -44,6 +44,7 @@ class RedeemTokensFlowHandler(val otherSession: FlowSession) : Flow<SignedTransa
                 flowEngine.subFlow(object : SignTransactionFlow(otherSession) {
                     @CordaInject
                     lateinit var flowIdentity: FlowIdentity
+
                     // TODO if it is with itself, then we won't perform that check...
                     override fun checkTransaction(stx: SignedTransaction) {
                         val stateAndRefsToRedeem = transactionMappingService.toLedgerTransaction(stx, false).inRefsOfType<AbstractToken>()

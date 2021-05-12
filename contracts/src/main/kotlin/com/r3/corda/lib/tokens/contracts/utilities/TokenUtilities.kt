@@ -23,7 +23,7 @@ class TokenUtilities
 infix fun Amount<IssuedTokenType>.heldBy(owner: AbstractParty): FungibleToken = _heldBy(owner)
 
 internal infix fun Amount<IssuedTokenType>._heldBy(owner: AbstractParty): FungibleToken {
-	return FungibleToken(this, owner)
+    return FungibleToken(this, owner)
 }
 
 // --------------------------
@@ -34,14 +34,14 @@ internal infix fun Amount<IssuedTokenType>._heldBy(owner: AbstractParty): Fungib
 infix fun <T : AbstractToken> T.withNotary(notary: Party): TransactionState<T> = _withNotary(notary)
 
 internal infix fun <T : AbstractToken> T._withNotary(notary: Party): TransactionState<T> {
-	return TransactionState(data = this, notary = notary)
+    return TransactionState(data = this, notary = notary)
 }
 
 /** Adds a notary [Party] to an [EvolvableTokenType], by wrapping it in a [TransactionState]. */
 infix fun <T : EvolvableTokenType> T.withNotary(notary: Party): TransactionState<T> = _withNotary(notary)
 
 internal infix fun <T : EvolvableTokenType> T._withNotary(notary: Party): TransactionState<T> {
-	return TransactionState(data = this, notary = notary)
+    return TransactionState(data = this, notary = notary)
 }
 
 /**
@@ -49,7 +49,7 @@ internal infix fun <T : EvolvableTokenType> T._withNotary(notary: Party): Transa
  * and shortens the public key for [AnonymousParty]s to the first 16 characters.
  */
 val AbstractToken.holderString: String
-	get() =
-		(holder as? Party)?.name?.organisation ?: holder.owningKey.toStringShort().substring(0, 16)
+    get() =
+        (holder as? Party)?.name?.organisation ?: holder.owningKey.toStringShort().substring(0, 16)
 
 infix fun <T : AbstractToken> T.withNewHolder(newHolder: AbstractParty) = withNewHolder(newHolder)

@@ -23,5 +23,4 @@ class HouseContract : EvolvableTokenContract(), Contract {
         require(oldHouse.address == newHouse.address) { "The address cannot change." }
         require(newHouse.valuation > Amount.zero(newHouse.valuation.token)) { "Valuation must be greater than zero." }
     }
-
 }

@@ -33,7 +33,11 @@ constructor(
     val observerSessions: List<FlowSession> = emptyList()
 ) : Flow<SignedTransaction> {
     @JvmOverloads
-    constructor(transactionState: TransactionState<EvolvableTokenType>, participantSessions: List<FlowSession>, observerSessions: List<FlowSession> = emptyList()) :
+    constructor(
+        transactionState: TransactionState<EvolvableTokenType>,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession> = emptyList()
+    ) :
             this(listOf(transactionState), participantSessions, observerSessions)
 
     @CordaSerializable
@@ -73,7 +77,8 @@ constructor(
 
         // Gather signatures from other maintainers
         // Check that we have sessions with all maitainers but not with ourselves
-        val otherMaintainerSessions = participantSessions.filter { it.counterparty in evolvableTokens.otherMaintainers(flowIdentity.ourIdentity) }
+        val otherMaintainerSessions =
+            participantSessions.filter { it.counterparty in evolvableTokens.otherMaintainers(flowIdentity.ourIdentity) }
         otherMaintainerSessions.forEach { it.send(Notification(signatureRequired = true)) }
         val stx = flowEngine.subFlow(
             CollectSignaturesFlow(
@@ -85,7 +90,12 @@ constructor(
         val wellKnownObserverSessions = participantSessions.filter { it.counterparty in wellKnownObservers }
         val allObserverSessions = (wellKnownObserverSessions + observerSessions).toSet()
         allObserverSessions.forEach { it.send(Notification(signatureRequired = false)) }
-        return flowEngine.subFlow(ObserverAwareFinalityFlow(signedTransaction = stx, allSessions = otherMaintainerSessions + allObserverSessions))
+        return flowEngine.subFlow(
+            ObserverAwareFinalityFlow(
+                signedTransaction = stx,
+                allSessions = otherMaintainerSessions + allObserverSessions
+            )
+        )
     }
 
     private fun checkLinearIds(transactionStates: List<TransactionState<EvolvableTokenType>>) {

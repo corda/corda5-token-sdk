@@ -1,4 +1,5 @@
 @file:JvmName("CheckUtilities")
+
 package com.r3.corda.lib.tokens.workflows.internal
 
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
@@ -20,8 +21,8 @@ internal fun checkSameNotary(stateAndRefs: List<StateAndRef<AbstractToken>>) {
 // were issued by this issuer.
 @Suspendable
 internal fun checkSameIssuer(
-        stateAndRefs: List<StateAndRef<AbstractToken>>,
-        issuer: Party? = null
+    stateAndRefs: List<StateAndRef<AbstractToken>>,
+    issuer: Party? = null
 ) {
     val issuerToCheck = issuer ?: stateAndRefs.first().state.data.issuer
     check(stateAndRefs.all { it.state.data.issuer == issuerToCheck }) {

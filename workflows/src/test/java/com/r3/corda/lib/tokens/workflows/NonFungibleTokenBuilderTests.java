@@ -57,9 +57,9 @@ public class NonFungibleTokenBuilderTests {
             new NonFungibleTokenBuilder()
                     .issuedBy(aliceParty)
                     .buildIssuedTokenType();
-            assert(false);
-        } catch(TokenBuilderException ex) {
-            assert(ex.getLocalizedMessage().equals("A token type has not been provided to the builder."));
+            assert (false);
+        } catch (TokenBuilderException ex) {
+            assert (ex.getLocalizedMessage().equals("A token type has not been provided to the builder."));
         }
     }
 
@@ -69,9 +69,9 @@ public class NonFungibleTokenBuilderTests {
             new NonFungibleTokenBuilder()
                     .ofTokenType(FiatCurrency.getInstance("USD"))
                     .buildIssuedTokenType();
-            assert(false);
-        } catch(TokenBuilderException ex) {
-            assert(ex.getLocalizedMessage().equals("A token issuer has not been provided to the builder."));
+            assert (false);
+        } catch (TokenBuilderException ex) {
+            assert (ex.getLocalizedMessage().equals("A token issuer has not been provided to the builder."));
         }
     }
 
@@ -85,9 +85,9 @@ public class NonFungibleTokenBuilderTests {
                     .ofTokenType(FiatCurrency.getInstance("USD"))
                     .issuedBy(aliceParty)
                     .buildNonFungibleToken();
-            assert(false);
-        } catch(TokenBuilderException ex) {
-            assert(ex.getLocalizedMessage().equals("A token holder has not been provided to the builder."));
+            assert (false);
+        } catch (TokenBuilderException ex) {
+            assert (ex.getLocalizedMessage().equals("A token holder has not been provided to the builder."));
         }
     }
 }

@@ -11,9 +11,9 @@ import net.corda.v5.ledger.contracts.BelongsToContract
 // A token representing a house on ledger.
 @BelongsToContract(HouseContract::class)
 data class House(
-        val address: String,
-        val valuation: Amount<TokenType>,
-        override val maintainers: List<Party>,
-        override val fractionDigits: Int = 5,
-        override val linearId: UniqueIdentifier
+    val address: String,
+    val valuation: Amount<TokenType>,
+    override val maintainers: List<Party>,
+    override val fractionDigits: Int = 5,
+    override val linearId: UniqueIdentifier
 ) : EvolvableTokenType()

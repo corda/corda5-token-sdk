@@ -46,8 +46,8 @@ configurations {
     integrationTestRuntime.extendsFrom testRuntime
 }
 
-compileKotlin{
-    dependsOn (selectionProject.jar)
+compileKotlin {
+    dependsOn(selectionProject.jar)
 }
 
 dependencies {

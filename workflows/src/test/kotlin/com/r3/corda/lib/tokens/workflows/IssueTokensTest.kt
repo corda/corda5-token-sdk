@@ -19,7 +19,6 @@ import com.r3.corda.lib.tokens.workflows.utilities.heldBy
 import net.corda.core.contracts.Amount
 import net.corda.core.identity.Party
 import net.corda.core.node.services.queryBy
-import net.corda.core.utilities.getOrThrow
 import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.node.MockNetwork
 import net.corda.testing.node.MockNetworkParameters
@@ -30,7 +29,6 @@ import org.junit.Assert
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
-
 
 class IssueTokensTest {
     lateinit var network: MockNetwork
@@ -43,14 +41,15 @@ class IssueTokensTest {
     @Before
     fun setup() {
         network = MockNetwork(
-                MockNetworkParameters(
-                        networkParameters = testNetworkParameters(minimumPlatformVersion = 4),
-                        cordappsForAllNodes = listOf(TestCordapp.findCordapp("com.r3.corda.lib.tokens.money"),
-                                TestCordapp.findCordapp("com.r3.corda.lib.tokens.contracts"),
-                                TestCordapp.findCordapp("com.r3.corda.lib.tokens.workflows"),
-                                TestCordapp.findCordapp("com.r3.corda.lib.tokens.testing")
-                        )
+            MockNetworkParameters(
+                networkParameters = testNetworkParameters(minimumPlatformVersion = 4),
+                cordappsForAllNodes = listOf(
+                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.money"),
+                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.contracts"),
+                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.workflows"),
+                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.testing")
                 )
+            )
         )
         nodeA = network.createPartyNode()
         nodeB = network.createPartyNode()
@@ -133,7 +132,6 @@ class IssueTokensTest {
         assertEquals(tokenType.holder, issuedToken.state.data.holder, "Holders must be equal")
     }
 
-
     /**
      * It should be possible to issue a single token type to a single party in a single flow
      */
@@ -159,7 +157,6 @@ class IssueTokensTest {
         // Expect proposed and issued tokens' holder to match
         assertEquals(tokenType.holder, issuedToken.state.data.holder, "Holders must be equal")
     }
-
 
     /*
     * This flow checks to issue same type of tokens to multiple parties with observers added
@@ -213,7 +210,6 @@ class IssueTokensTest {
         val statesInNodeA = nodeA.services.vaultService.queryBy<FungibleToken>().states[0]
         //Compare the states
         assertEquals(issueToken, statesInNodeA)
-
     }
 
     /*
@@ -240,7 +236,6 @@ class IssueTokensTest {
         assertEquals(issueToken, statesInNodeA)
         assertEquals(issueToken, statesInNodeB)
     }
-
 
     /**
      * It should be possible to issue multiple token types in a single flow
@@ -270,7 +265,6 @@ class IssueTokensTest {
         Assert.assertEquals(issuedToken[1].state.data.issuedTokenType.tokenType, USD)
     }
 
-
     /*
     *This flow test checks the issue of fungible tokens.
     **/
@@ -290,7 +284,6 @@ class IssueTokensTest {
         //Checking the above states are same
         assertEquals(stateFromtokenIssuedtoNodeA_Tx, usdA)
     }
-
 
     /*
     * This flow test will issue non-fungible tokens

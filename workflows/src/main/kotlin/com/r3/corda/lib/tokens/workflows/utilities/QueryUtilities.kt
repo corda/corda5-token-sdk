@@ -29,9 +29,9 @@ import net.corda.v5.ledger.services.vault.builder
 // Grabs the latest version of a linear state for a specified linear ID.
 inline fun <reified T : LinearState> VaultService.getLinearStateById(linearId: UniqueIdentifier): StateAndRef<T>? {
     val query = QueryCriteria.LinearStateQueryCriteria(
-            linearId = listOf(linearId),
-            status = Vault.StateStatus.UNCONSUMED,
-            relevancyStatus = Vault.RelevancyStatus.ALL
+        linearId = listOf(linearId),
+        status = Vault.StateStatus.UNCONSUMED,
+        relevancyStatus = Vault.RelevancyStatus.ALL
     )
     return queryBy<T>(query).states.singleOrNull()
 }

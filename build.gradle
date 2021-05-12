@@ -1,9 +1,10 @@
-import static org.gradle.api.JavaVersion.VERSION_11
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+import static org.gradle.api.JavaVersion.VERSION_11
 
 buildscript {
     ext {
-        artifactoryContextUrl='https://software.r3.com/artifactory'
+        artifactoryContextUrl = 'https://software.r3.com/artifactory'
         cordaArtifactoryUsername = System.getenv('CORDA_ARTIFACTORY_USERNAME') ?: System.getProperty('corda.artifactory.username')
         cordaArtifactoryPassword = System.getenv('CORDA_ARTIFACTORY_PASSWORD') ?: System.getProperty('corda.artifactory.password')
         corda_release_group = 'net.corda'
@@ -25,7 +26,7 @@ buildscript {
         maven_resolver_version = "1.1.1"
         liquibaseVersion = '3.6.3'
         hibernateVersion = '5.4.3.Final'
-        jfrogArtifactoryPluginVersion='4.18.0'
+        jfrogArtifactoryPluginVersion = '4.18.0'
     }
 
     repositories {
@@ -102,10 +103,10 @@ subprojects {
             jvmTarget = VERSION_11
             javaParameters = true   // Useful for reflection.
             freeCompilerArgs += [
-                "-Xjvm-default=all",
-                // Prevent Kotlin from warning about kotlin.* classes inside the OSGi bundle.
-                "-Xskip-runtime-version-check",
-                "-java-parameters"
+                    "-Xjvm-default=all",
+                    // Prevent Kotlin from warning about kotlin.* classes inside the OSGi bundle.
+                    "-Xskip-runtime-version-check",
+                    "-java-parameters"
             ]
         }
     }
@@ -116,7 +117,7 @@ subprojects {
         }
     }
 
-    tasks.withType(Test){
+    tasks.withType(Test) {
         minHeapSize = "128m"
         maxHeapSize = "4096m"
     }

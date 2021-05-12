@@ -1,4 +1,5 @@
 import org.apache.tools.ant.taskdefs.condition.Os
+
 import static org.gradle.api.JavaVersion.VERSION_11
 
 apply plugin: 'kotlin'
@@ -61,10 +62,10 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
         jvmTarget = VERSION_11
         javaParameters = true   // Useful for reflection.
         freeCompilerArgs += [
-            "-Xjvm-default=all",
-            // Prevent Kotlin from warning about kotlin.* classes inside the OSGi bundle.
-            "-Xskip-runtime-version-check",
-            "-java-parameters"
+                "-Xjvm-default=all",
+                // Prevent Kotlin from warning about kotlin.* classes inside the OSGi bundle.
+                "-Xskip-runtime-version-check",
+                "-java-parameters"
         ]
     }
 }

@@ -32,11 +32,11 @@ class InMemorySelectionTest {
     @Before
     fun setupServices() {
         val mockDbAndServices = MockServices.makeTestDatabaseAndPersistentServices(
-                cordappPackages = listOf("com.r3.corda.lib.tokens.workflows"),
-                initialIdentity = TestIdentity(CordaX500Name("Test", "London", "GB")),
-                networkParameters = testNetworkParameters(minimumPlatformVersion = 4),
-                moreIdentities = emptySet(),
-                moreKeys = emptySet()
+            cordappPackages = listOf("com.r3.corda.lib.tokens.workflows"),
+            initialIdentity = TestIdentity(CordaX500Name("Test", "London", "GB")),
+            networkParameters = testNetworkParameters(minimumPlatformVersion = 4),
+            moreIdentities = emptySet(),
+            moreKeys = emptySet()
         )
         services = mockDbAndServices.second
         database = mockDbAndServices.first
@@ -50,8 +50,24 @@ class InMemorySelectionTest {
         val uuid = UUID.randomUUID()
         val key = services.keyManagementService.freshKey(uuid)
         val amountToIssue: Long = 5
-        VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(amountToIssue, key, VaultWatcherServiceTest.notary1, VaultWatcherServiceTest.issuer1, USD, observable, database)
-        VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(amountToIssue, key, VaultWatcherServiceTest.notary1, VaultWatcherServiceTest.issuer1, GBP, observable, database)
+        VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(
+            amountToIssue,
+            key,
+            VaultWatcherServiceTest.notary1,
+            VaultWatcherServiceTest.issuer1,
+            USD,
+            observable,
+            database
+        )
+        VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(
+            amountToIssue,
+            key,
+            VaultWatcherServiceTest.notary1,
+            VaultWatcherServiceTest.issuer1,
+            GBP,
+            observable,
+            database
+        )
         database.transaction {
             vaultWatcherService.selectTokens(Holder.MappedIdentity(uuid), Amount(10, GBP), selectionId = "abc")
         }
@@ -66,8 +82,24 @@ class InMemorySelectionTest {
 
         // placing two states of 100 and 50 USD into the observer, then soft locking the 100-one.
         // The test should fail with InsufficientNotLockedBalanceException when trying to select 60 USD.
-        val biggerStateAndRef = VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(100, key, VaultWatcherServiceTest.notary1, VaultWatcherServiceTest.issuer1, USD, observable, database)
-        VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(50, key, VaultWatcherServiceTest.notary1, VaultWatcherServiceTest.issuer1, USD, observable, database)
+        val biggerStateAndRef = VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(
+            100,
+            key,
+            VaultWatcherServiceTest.notary1,
+            VaultWatcherServiceTest.issuer1,
+            USD,
+            observable,
+            database
+        )
+        VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(
+            50,
+            key,
+            VaultWatcherServiceTest.notary1,
+            VaultWatcherServiceTest.issuer1,
+            USD,
+            observable,
+            database
+        )
         vaultWatcherService.lockTokensExternal(listOf(biggerStateAndRef), UUID.randomUUID().toString())
 
         database.transaction {
@@ -83,8 +115,24 @@ class InMemorySelectionTest {
         val key1 = services.keyManagementService.freshKey()
         val key2 = services.keyManagementService.freshKey()
         val amountToIssue: Long = 100
-        val stateAndRef1 = VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(amountToIssue, key1, VaultWatcherServiceTest.notary1, VaultWatcherServiceTest.issuer1, GBP, observable, database)
-        val stateAndRef2 = VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(amountToIssue, key2, VaultWatcherServiceTest.notary1, VaultWatcherServiceTest.issuer1, GBP, observable, database)
+        val stateAndRef1 = VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(
+            amountToIssue,
+            key1,
+            VaultWatcherServiceTest.notary1,
+            VaultWatcherServiceTest.issuer1,
+            GBP,
+            observable,
+            database
+        )
+        val stateAndRef2 = VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(
+            amountToIssue,
+            key2,
+            VaultWatcherServiceTest.notary1,
+            VaultWatcherServiceTest.issuer1,
+            GBP,
+            observable,
+            database
+        )
         val selectedTokens1 = selector.selectTokens(holdingKey = key1, requiredAmount = Amount(5, GBP))
         selector.rollback()
         val selectedTokens2 = selector.selectTokens(holdingKey = key2, requiredAmount = Amount(10, GBP))
@@ -102,8 +150,24 @@ class InMemorySelectionTest {
         val key1 = services.keyManagementService.freshKey(uuid1)
         val key2 = services.keyManagementService.freshKey(uuid2)
         val amountToIssue: Long = 100
-        val stateAndRef1 = VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(amountToIssue, key1, VaultWatcherServiceTest.notary1, VaultWatcherServiceTest.issuer1, GBP, observable, database)
-        val stateAndRef2 = VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(amountToIssue, key2, VaultWatcherServiceTest.notary1, VaultWatcherServiceTest.issuer1, GBP, observable, database)
+        val stateAndRef1 = VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(
+            amountToIssue,
+            key1,
+            VaultWatcherServiceTest.notary1,
+            VaultWatcherServiceTest.issuer1,
+            GBP,
+            observable,
+            database
+        )
+        val stateAndRef2 = VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(
+            amountToIssue,
+            key2,
+            VaultWatcherServiceTest.notary1,
+            VaultWatcherServiceTest.issuer1,
+            GBP,
+            observable,
+            database
+        )
         val selectedTokens1 = selector.selectTokens(uuid1, Amount(5, GBP))
         selector.rollback()
         val selectedTokens2 = selector.selectTokens(uuid2, Amount(10, GBP))
@@ -118,8 +182,24 @@ class InMemorySelectionTest {
         val selector = LocalTokenSelector(services, vaultWatcherService)
         val key = services.keyManagementService.freshKey()
         val amountToIssue: Long = 100
-        val stateAndRef1 = VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(amountToIssue, key, VaultWatcherServiceTest.notary1, VaultWatcherServiceTest.issuer1, GBP, observable, database)
-        val stateAndRef2 = VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(amountToIssue, key, VaultWatcherServiceTest.notary1, VaultWatcherServiceTest.issuer1, USD, observable, database)
+        val stateAndRef1 = VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(
+            amountToIssue,
+            key,
+            VaultWatcherServiceTest.notary1,
+            VaultWatcherServiceTest.issuer1,
+            GBP,
+            observable,
+            database
+        )
+        val stateAndRef2 = VaultWatcherServiceTest.createNewFiatCurrencyTokenRef(
+            amountToIssue,
+            key,
+            VaultWatcherServiceTest.notary1,
+            VaultWatcherServiceTest.issuer1,
+            USD,
+            observable,
+            database
+        )
         val selectedTokens1 = selector.selectTokens(Amount(5, GBP))
         selector.rollback()
         val selectedTokens2 = selector.selectTokens(Amount(10, USD))
@@ -129,18 +209,25 @@ class InMemorySelectionTest {
 
     private fun getExternalIdVaultObserver(): Pair<TokenObserver, PublishSubject<Vault.Update<FungibleToken>>> {
         val observable = PublishSubject.create<Vault.Update<FungibleToken>>()
-        return Pair(TokenObserver(listOf(), uncheckedCast(observable), { stateAndRef, _ -> lookupExternalIdFromKey(stateAndRef.state.data.holder.owningKey, services) }), observable)
+        return Pair(
+            TokenObserver(
+                listOf(),
+                uncheckedCast(observable),
+                { stateAndRef, _ -> lookupExternalIdFromKey(stateAndRef.state.data.holder.owningKey, services) }), observable
+        )
     }
 
     private fun getPublicKeyVaultObserver(): Pair<TokenObserver, PublishSubject<Vault.Update<FungibleToken>>> {
         val observable = PublishSubject.create<Vault.Update<FungibleToken>>()
-        return Pair(TokenObserver(listOf(), uncheckedCast(observable)
-                , { stateAndRef, _ -> Holder.KeyIdentity(stateAndRef.state.data.holder.owningKey) }), observable)
+        return Pair(TokenObserver(
+            listOf(),
+            uncheckedCast(observable),
+            { stateAndRef, _ -> Holder.KeyIdentity(stateAndRef.state.data.holder.owningKey) }), observable
+        )
     }
 
     private fun getTokenOnlyVaultObserver(): Pair<TokenObserver, PublishSubject<Vault.Update<FungibleToken>>> {
         val observable = PublishSubject.create<Vault.Update<FungibleToken>>()
-        return Pair(TokenObserver(listOf(), uncheckedCast(observable)
-                , { _, _ -> Holder.TokenOnly() }), observable)
+        return Pair(TokenObserver(listOf(), uncheckedCast(observable), { _, _ -> Holder.TokenOnly() }), observable)
     }
 }

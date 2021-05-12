@@ -11,41 +11,62 @@ object EvolvableTokenTests : ContractTestCommon() {
     class TestEvolvableTokenTypeFactory {
 
         companion object {
-            fun withOneMaintainer(linearId: UniqueIdentifier = UniqueIdentifier(), maintainer: TestIdentity = ALICE): TestEvolvableTokenType {
+            fun withOneMaintainer(
+                linearId: UniqueIdentifier = UniqueIdentifier(),
+                maintainer: TestIdentity = ALICE
+            ): TestEvolvableTokenType {
                 return TestEvolvableTokenType(
-                        maintainers = listOf(maintainer.identity.party),
-                        linearId = linearId
+                    maintainers = listOf(maintainer.identity.party),
+                    linearId = linearId
                 )
             }
 
-            fun withTwoMaintainers(linearId: UniqueIdentifier = UniqueIdentifier(), maintainer1: TestIdentity = ALICE, maintainer2: TestIdentity = BOB): TestEvolvableTokenType {
+            fun withTwoMaintainers(
+                linearId: UniqueIdentifier = UniqueIdentifier(),
+                maintainer1: TestIdentity = ALICE,
+                maintainer2: TestIdentity = BOB
+            ): TestEvolvableTokenType {
                 return TestEvolvableTokenType(
-                        maintainers = listOf(maintainer1.identity.party, maintainer2.identity.party),
-                        linearId = linearId
+                    maintainers = listOf(maintainer1.identity.party, maintainer2.identity.party),
+                    linearId = linearId
                 )
             }
 
-            fun withOneMaintainerAndOneObserver(linearId: UniqueIdentifier = UniqueIdentifier(), maintainer: TestIdentity = ALICE, observer: TestIdentity = CHARLIE): TestEvolvableTokenType {
+            fun withOneMaintainerAndOneObserver(
+                linearId: UniqueIdentifier = UniqueIdentifier(),
+                maintainer: TestIdentity = ALICE,
+                observer: TestIdentity = CHARLIE
+            ): TestEvolvableTokenType {
                 return TestEvolvableTokenType(
-                        maintainers = listOf(maintainer.identity.party),
-                        observers = listOf(observer.identity.party),
-                        linearId = linearId
+                    maintainers = listOf(maintainer.identity.party),
+                    observers = listOf(observer.identity.party),
+                    linearId = linearId
                 )
             }
 
-            fun withTwoMaintainersAndTwoObservers(linearId: UniqueIdentifier = UniqueIdentifier(), maintainer1: TestIdentity = ALICE, maintainer2: TestIdentity = BOB, observer1: TestIdentity = CHARLIE, observer2: TestIdentity = DAENERYS): TestEvolvableTokenType {
+            fun withTwoMaintainersAndTwoObservers(
+                linearId: UniqueIdentifier = UniqueIdentifier(),
+                maintainer1: TestIdentity = ALICE,
+                maintainer2: TestIdentity = BOB,
+                observer1: TestIdentity = CHARLIE,
+                observer2: TestIdentity = DAENERYS
+            ): TestEvolvableTokenType {
                 return TestEvolvableTokenType(
-                        maintainers = listOf(maintainer1.identity.party, maintainer2.identity.party),
-                        observers = listOf(observer1.identity.party, observer2.identity.party),
-                        linearId = linearId
+                    maintainers = listOf(maintainer1.identity.party, maintainer2.identity.party),
+                    observers = listOf(observer1.identity.party, observer2.identity.party),
+                    linearId = linearId
                 )
             }
 
-            fun withDifferingMaintainersAndParticipants(linearId: UniqueIdentifier = UniqueIdentifier(), maintainer: TestIdentity = ALICE, participant: TestIdentity = CHARLIE): TestEvolvableTokenType {
+            fun withDifferingMaintainersAndParticipants(
+                linearId: UniqueIdentifier = UniqueIdentifier(),
+                maintainer: TestIdentity = ALICE,
+                participant: TestIdentity = CHARLIE
+            ): TestEvolvableTokenType {
                 return TestEvolvableTokenType(
-                        maintainers = listOf(maintainer.identity.party),
-                        participants = listOf(participant.identity.party),
-                        linearId = linearId
+                    maintainers = listOf(maintainer.identity.party),
+                    participants = listOf(participant.identity.party),
+                    linearId = linearId
                 )
             }
         }
@@ -157,7 +178,6 @@ object EvolvableTokenTests : ContractTestCommon() {
                 }
             }
 
-
             // With 2 maintainers and 2 observers
             transaction {
                 output(TestEvolvableTokenContract.ID, TestEvolvableTokenTypeFactory.withTwoMaintainersAndTwoObservers())
@@ -212,7 +232,6 @@ object EvolvableTokenTests : ContractTestCommon() {
                     failsWith(expectedError)
                 }
             }
-
 
             // With 2 maintainers and 2 observers
             transaction {
@@ -481,7 +500,8 @@ object EvolvableTokenTests : ContractTestCommon() {
 
         @Test
         fun `must be signed by all maintainers`() {
-            val expectedError = "Only evolvable token maintainers (from inputs and outputs) may sign the update evolvable token transaction."
+            val expectedError =
+                "Only evolvable token maintainers (from inputs and outputs) may sign the update evolvable token transaction."
 
             // With 1 maintainer, no ownership transfer
             transaction {
@@ -540,7 +560,8 @@ object EvolvableTokenTests : ContractTestCommon() {
 
         @Test
         fun `may only be signed by maintainers`() {
-            val expectedError = "Only evolvable token maintainers (from inputs and outputs) may sign the update evolvable token transaction."
+            val expectedError =
+                "Only evolvable token maintainers (from inputs and outputs) may sign the update evolvable token transaction."
 
             // With 1 maintainer
             transaction {
@@ -708,5 +729,4 @@ object EvolvableTokenTests : ContractTestCommon() {
             }
         }
     }
-
 }

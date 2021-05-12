@@ -17,6 +17,7 @@ import net.corda.v5.base.annotations.Suspendable
 class ConfidentialMoveTokensFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
     @CordaInject
     lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call() {
         val role = otherSession.receive<TransactionRole>().unwrap { it }

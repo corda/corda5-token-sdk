@@ -1,4 +1,5 @@
 @file:JvmName("DistributionUtilities")
+
 package com.r3.corda.lib.tokens.workflows.internal.flows.distribution
 
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken

@@ -61,15 +61,14 @@ open class FungibleTokenContract : AbstractTokenContract<FungibleToken>() {
                 "The issuer must be the signing party when an amount of tokens are issued."
             }
         }
-
     }
 
     override fun verifyMove(
-            moveCommands: List<CommandWithParties<TokenCommand>>,
-            inputs: List<IndexedState<FungibleToken>>,
-            outputs: List<IndexedState<FungibleToken>>,
-            attachments: List<Attachment>,
-            references: List<StateAndRef<ContractState>>
+        moveCommands: List<CommandWithParties<TokenCommand>>,
+        inputs: List<IndexedState<FungibleToken>>,
+        outputs: List<IndexedState<FungibleToken>>,
+        attachments: List<Attachment>,
+        references: List<StateAndRef<ContractState>>
     ) {
         // Commands are grouped by Token Type, so we just need a token reference.
         val issuedToken: IssuedTokenType = moveCommands.first().value.token
@@ -98,11 +97,11 @@ open class FungibleTokenContract : AbstractTokenContract<FungibleToken>() {
     }
 
     override fun verifyRedeem(
-            redeemCommand: CommandWithParties<TokenCommand>,
-            inputs: List<IndexedState<FungibleToken>>,
-            outputs: List<IndexedState<FungibleToken>>,
-            attachments: List<Attachment>,
-            references: List<StateAndRef<ContractState>>
+        redeemCommand: CommandWithParties<TokenCommand>,
+        inputs: List<IndexedState<FungibleToken>>,
+        outputs: List<IndexedState<FungibleToken>>,
+        attachments: List<Attachment>,
+        references: List<StateAndRef<ContractState>>
     ) {
         val issuedToken: IssuedTokenType = redeemCommand.value.token
         // There can be at most one output treated as a change paid back to the owner. Issuer is used to group states,
@@ -124,7 +123,7 @@ open class FungibleTokenContract : AbstractTokenContract<FungibleToken>() {
                 "When redeeming tokens an amount > ZERO must be redeemed."
             }
             val outSum: Amount<IssuedTokenType> = outputs.firstOrNull()?.state?.data?.amount
-                    ?: Amount.zero(issuedToken)
+                ?: Amount.zero(issuedToken)
             // We can't pay back more than redeeming.
             // Additionally, it doesn't make sense to run redeem and pay exact change.
             require(inputSum > outSum) { "Change shouldn't exceed amount redeemed." }

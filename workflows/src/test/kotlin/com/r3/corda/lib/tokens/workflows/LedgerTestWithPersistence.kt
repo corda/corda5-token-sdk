@@ -40,33 +40,32 @@ abstract class LedgerTestWithPersistence {
     val testSerialization = SerializationEnvironmentRule()
 
     private val aliceDbAndServices = MockServices.makeTestDatabaseAndMockServices(
-            cordappPackages = listOf("com.r3.corda.lib.tokens"),
-            initialIdentity = ALICE,
-            identityService = mockIdentityService,
-            networkParameters = testNetworkParameters(minimumPlatformVersion = 4)
+        cordappPackages = listOf("com.r3.corda.lib.tokens"),
+        initialIdentity = ALICE,
+        identityService = mockIdentityService,
+        networkParameters = testNetworkParameters(minimumPlatformVersion = 4)
     )
 
     protected val aliceDB = aliceDbAndServices.first
     protected val aliceServices = aliceDbAndServices.second
 
     private val bobDbAndServices = MockServices.makeTestDatabaseAndMockServices(
-            cordappPackages = listOf("com.r3.corda.lib.tokens"),
-            initialIdentity = BOB,
-            identityService = mockIdentityService,
-            networkParameters = testNetworkParameters(minimumPlatformVersion = 4)
+        cordappPackages = listOf("com.r3.corda.lib.tokens"),
+        initialIdentity = BOB,
+        identityService = mockIdentityService,
+        networkParameters = testNetworkParameters(minimumPlatformVersion = 4)
     )
 
     protected val bobDB = aliceDbAndServices.first
     protected val bobServices = aliceDbAndServices.second
 
     private val issuerDbAndServices = MockServices.makeTestDatabaseAndMockServices(
-            cordappPackages = listOf("com.r3.corda.lib.tokens"),
-            initialIdentity = ISSUER,
-            identityService = mockIdentityService,
-            networkParameters = testNetworkParameters(minimumPlatformVersion = 4)
+        cordappPackages = listOf("com.r3.corda.lib.tokens"),
+        initialIdentity = ISSUER,
+        identityService = mockIdentityService,
+        networkParameters = testNetworkParameters(minimumPlatformVersion = 4)
     )
 
     protected val issuerDB = aliceDbAndServices.first
     protected val issuerServices = aliceDbAndServices.second
-
 }

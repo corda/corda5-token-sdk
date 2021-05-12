@@ -82,5 +82,4 @@ object RequestAdditionToDistributionList {
             otherSession.send(FlowResult.Success)
         }
     }
-
 }

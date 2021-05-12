@@ -70,16 +70,17 @@ class UpdateEvolvableTokenFlow @JvmOverloads constructor(
         // The tokenHolders listed as maintainers in the old state should be the signers.
         // TODO Should this be both old and new maintainer lists?
         val utx = addUpdateEvolvableToken(
-                transactionBuilderFactory.create().setNotary(notary = oldStateAndRef.state.notary),
-                oldStateAndRef,
-                newState
+            transactionBuilderFactory.create().setNotary(notary = oldStateAndRef.state.notary),
+            oldStateAndRef,
+            newState
         )
 
         // Sign the transaction proposal (creating a partially signed transaction, or ptx)
         val ptx: SignedTransaction = transactionService.signInitial(utx)
 
         // Gather signatures from other maintainers
-        val otherMaintainerSessions = participantSessions.filter { it.counterparty in evolvableTokens.otherMaintainers(flowIdentity.ourIdentity) }
+        val otherMaintainerSessions =
+            participantSessions.filter { it.counterparty in evolvableTokens.otherMaintainers(flowIdentity.ourIdentity) }
         otherMaintainerSessions.forEach { it.send(Notification(signatureRequired = true)) }
         val stx = flowEngine.subFlow(
             CollectSignaturesFlow(
@@ -92,7 +93,12 @@ class UpdateEvolvableTokenFlow @JvmOverloads constructor(
         val wellKnownObserverSessions = participantSessions.filter { it.counterparty in wellKnownObservers }
         val allObserverSessions = (wellKnownObserverSessions + observerSessions).toSet()
         observerSessions.forEach { it.send(Notification(signatureRequired = false)) }
-        return flowEngine.subFlow(ObserverAwareFinalityFlow(signedTransaction = stx, allSessions = otherMaintainerSessions + allObserverSessions))
+        return flowEngine.subFlow(
+            ObserverAwareFinalityFlow(
+                signedTransaction = stx,
+                allSessions = otherMaintainerSessions + allObserverSessions
+            )
+        )
     }
 
     // TODO Refactor it more.
@@ -105,6 +111,11 @@ class UpdateEvolvableTokenFlow @JvmOverloads constructor(
 
     private val wellKnownObservers
         get(): List<Party> {
-            return otherObservers(subscribersForState(newState, persistenceService)).map { identityService.wellKnownPartyFromAnonymous(it)!! }
+            return otherObservers(
+                subscribersForState(
+                    newState,
+                    persistenceService
+                )
+            ).map { identityService.wellKnownPartyFromAnonymous(it)!! }
         }
 }

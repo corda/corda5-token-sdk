@@ -1,17 +1,14 @@
 package com.r3.corda.lib.tokens.selection.database.config
 
 import com.r3.corda.lib.tokens.selection.api.ConfigSelection
-import com.r3.corda.lib.tokens.selection.api.Selector
 import com.r3.corda.lib.tokens.selection.api.StateSelectionConfig
 import com.r3.corda.lib.tokens.selection.database.selector.DatabaseTokenSelection
-import com.r3.corda.lib.tokens.selection.memory.config.InMemorySelectionConfig
 import com.r3.corda.lib.tokens.selection.memory.config.getIntOrNull
 import net.corda.v5.application.cordapp.CordappConfig
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.node.services.IdentityService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.services.VaultService
-import org.slf4j.LoggerFactory
 
 const val MAX_RETRIES_DEFAULT = 8
 const val RETRY_SLEEP_DEFAULT = 100
@@ -19,10 +16,10 @@ const val RETRY_CAP_DEFAULT = 2000
 const val PAGE_SIZE_DEFAULT = 200
 
 data class DatabaseSelectionConfig @JvmOverloads constructor(
-        val maxRetries: Int = MAX_RETRIES_DEFAULT,
-        val retrySleep: Int = RETRY_SLEEP_DEFAULT,
-        val retryCap: Int = RETRY_CAP_DEFAULT,
-        val pageSize: Int = PAGE_SIZE_DEFAULT
+    val maxRetries: Int = MAX_RETRIES_DEFAULT,
+    val retrySleep: Int = RETRY_SLEEP_DEFAULT,
+    val retryCap: Int = RETRY_CAP_DEFAULT,
+    val pageSize: Int = PAGE_SIZE_DEFAULT
 ) : StateSelectionConfig {
     companion object {
         @JvmStatic

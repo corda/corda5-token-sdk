@@ -1,4 +1,5 @@
 @file:JvmName("FlowUtilities")
+
 package com.r3.corda.lib.tokens.workflows.utilities
 
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
@@ -37,7 +38,6 @@ fun Flow<*>.addPartyToDistributionList(persistenceService: PersistenceService, p
     } else {
         contextLogger().info("Already stored a distribution record for $party and $linearId.")
     }
-
 }
 
 val LedgerTransaction.participants: List<AbstractParty>
@@ -72,13 +72,21 @@ fun requireSessionsForParticipants(participants: Collection<Party>, sessions: Li
 }
 
 @Suspendable
-fun Flow<*>.sessionsForParticipants(identityService: IdentityService, flowMessaging: FlowMessaging, states: List<ContractState>): List<FlowSession> {
+fun Flow<*>.sessionsForParticipants(
+    identityService: IdentityService,
+    flowMessaging: FlowMessaging,
+    states: List<ContractState>
+): List<FlowSession> {
     val stateParties = states.flatMap(ContractState::participants)
     return sessionsForParties(identityService, flowMessaging, stateParties)
 }
 
 @Suspendable
-fun Flow<*>.sessionsForParties(identityService: IdentityService, flowMessaging: FlowMessaging, parties: List<AbstractParty>): List<FlowSession> {
+fun Flow<*>.sessionsForParties(
+    identityService: IdentityService,
+    flowMessaging: FlowMessaging,
+    parties: List<AbstractParty>
+): List<FlowSession> {
     val wellKnownParties = parties.toWellKnownParties(identityService)
     return wellKnownParties.map(flowMessaging::initiateFlow)
 }
@@ -87,8 +95,10 @@ fun Flow<*>.sessionsForParties(identityService: IdentityService, flowMessaging: 
 @Suspendable
 fun IdentityService.requireKnownConfidentialIdentity(party: AbstractParty): Party {
     return wellKnownPartyFromAnonymous(party)
-            ?: throw IllegalArgumentException("Called flow with anonymous party that node doesn't know about. " +
-                    "Make sure that RequestConfidentialIdentity flow is called before.")
+        ?: throw IllegalArgumentException(
+            "Called flow with anonymous party that node doesn't know about. " +
+                    "Make sure that RequestConfidentialIdentity flow is called before."
+        )
 }
 
 // Utilities for ensuring that the correct JAR which implements TokenType is added to the transaction.

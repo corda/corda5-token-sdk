@@ -72,14 +72,15 @@ class ObserverAwareFinalityFlow private constructor(
     @Suspendable
     override fun call(): SignedTransaction {
         // Check there is a session for each participant, apart from the node itself.
-        val ledgerTransaction: LedgerTransaction = transactionBuilder?.let {  transactionMappingService.toLedgerTransaction(it.toWireTransaction()) }
+        val ledgerTransaction: LedgerTransaction =
+            transactionBuilder?.let { transactionMappingService.toLedgerTransaction(it.toWireTransaction()) }
                 ?: transactionMappingService.toLedgerTransaction(signedTransaction!!, false)
         val participants: List<AbstractParty> = ledgerTransaction.participants
         val issuers: Set<Party> = ledgerTransaction.commands
-                .map(CommandWithParties<*>::value)
-                .filterIsInstance<RedeemTokenCommand>()
-                .map { it.token.issuer }
-                .toSet()
+            .map(CommandWithParties<*>::value)
+            .filterIsInstance<RedeemTokenCommand>()
+            .map { it.token.issuer }
+            .toSet()
         val wellKnownParticipantsAndIssuers: Set<Party> = participants.toWellKnownParties(identityService).toSet() + issuers
         val wellKnownParticipantsApartFromUs: Set<Party> = wellKnownParticipantsAndIssuers - flowIdentity.ourIdentity
         // We need participantSessions for all participants apart from us.

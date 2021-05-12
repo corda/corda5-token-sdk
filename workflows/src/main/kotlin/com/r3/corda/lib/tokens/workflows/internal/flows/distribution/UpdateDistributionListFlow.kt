@@ -19,7 +19,6 @@ import net.corda.v5.ledger.contracts.TransactionState
 import net.corda.v5.ledger.services.StateRefLoaderService
 import net.corda.v5.ledger.services.VaultService
 import net.corda.v5.ledger.transactions.SignedTransaction
-import org.apache.activemq.artemis.core.protocol.core.impl.wireformat.SessionConsumerFlowCreditMessage
 
 // TODO: Handle updates of the distribution list for observers.
 @InitiatingFlow
@@ -56,19 +55,19 @@ class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : Flo
     override fun call() {
         val tx = signedTransaction.tx
         val tokensWithTokenPointers: List<AbstractToken> = tx.outputs
-                .map(TransactionState<*>::data)
-                .filterIsInstance<AbstractToken>()
-                .filter { it.tokenType is TokenPointer<*> } // IntelliJ bug?? Check is not always true!
+            .map(TransactionState<*>::data)
+            .filterIsInstance<AbstractToken>()
+            .filter { it.tokenType is TokenPointer<*> } // IntelliJ bug?? Check is not always true!
         // There are no evolvable tokens so we don't need to update any distribution lists. Otherwise, carry on.
         if (tokensWithTokenPointers.isEmpty()) return
         val issueCmds: List<IssueTokenCommand> = tx.commands
-                .map(Command<*>::value)
-                .filterIsInstance<IssueTokenCommand>()
-                .filter { it.token.tokenType is TokenPointer<*> }
+            .map(Command<*>::value)
+            .filterIsInstance<IssueTokenCommand>()
+            .filter { it.token.tokenType is TokenPointer<*> }
         val moveCmds: List<MoveTokenCommand> = tx.commands
-                .map(Command<*>::value)
-                .filterIsInstance<MoveTokenCommand>()
-                .filter { it.token.tokenType is TokenPointer<*> }
+            .map(Command<*>::value)
+            .filterIsInstance<MoveTokenCommand>()
+            .filter { it.token.tokenType is TokenPointer<*> }
         if (issueCmds.isNotEmpty()) {
             // If it's an issue transaction then the party calling this flow will be the issuer and they just need to
             // update their local distribution list with the parties that have been just issued tokens.
@@ -85,7 +84,14 @@ class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : Flo
             val moveTypes = moveCmds.map { it.token.tokenType }
             progressTracker.currentStep = UPDATE_DIST_LIST
             val moveStates = tokensWithTokenPointers.filter { it.tokenType in moveTypes }
-            updateDistributionList(identityService, vaultService, stateRefLoaderService, flowMessaging, flowIdentity.ourIdentity, moveStates)
+            updateDistributionList(
+                identityService,
+                vaultService,
+                stateRefLoaderService,
+                flowMessaging,
+                flowIdentity.ourIdentity,
+                moveStates
+            )
         }
     }
 }

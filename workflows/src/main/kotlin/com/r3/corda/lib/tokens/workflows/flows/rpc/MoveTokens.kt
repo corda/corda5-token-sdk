@@ -53,10 +53,10 @@ constructor(
 
     @JvmOverloads
     constructor(
-            partyAndAmount: PartyAndAmount<TokenType>,
-            observers: List<Party> = emptyList(),
-            queryCriteria: QueryCriteria? = null,
-            changeHolder: AbstractParty? = null
+        partyAndAmount: PartyAndAmount<TokenType>,
+        observers: List<Party> = emptyList(),
+        queryCriteria: QueryCriteria? = null,
+        changeHolder: AbstractParty? = null
     ) : this(listOf(partyAndAmount), observers, queryCriteria, changeHolder)
 
     constructor(amount: Amount<TokenType>, holder: AbstractParty) : this(PartyAndAmount(holder, amount), emptyList())
@@ -75,13 +75,15 @@ constructor(
         val participants = partiesAndAmounts.map(PartyAndAmount<*>::party)
         val observerSessions = sessionsForParties(identityService, flowMessaging, observers)
         val participantSessions = sessionsForParties(identityService, flowMessaging, participants)
-        return flowEngine.subFlow(MoveFungibleTokensFlow(
+        return flowEngine.subFlow(
+            MoveFungibleTokensFlow(
                 partiesAndAmounts = partiesAndAmounts,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
                 queryCriteria = queryCriteria,
                 changeHolder = changeHolder
-        ))
+            )
+        )
     }
 }
 
@@ -114,9 +116,9 @@ class MoveFungibleTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
 class MoveNonFungibleTokens
 @JvmOverloads
 constructor(
-        val partyAndToken: PartyAndToken,
-        val observers: List<Party> = emptyList(),
-        val queryCriteria: QueryCriteria? = null
+    val partyAndToken: PartyAndToken,
+    val observers: List<Party> = emptyList(),
+    val queryCriteria: QueryCriteria? = null
 ) : Flow<SignedTransaction> {
 
     @CordaInject
@@ -132,12 +134,14 @@ constructor(
     override fun call(): SignedTransaction {
         val observerSessions = sessionsForParties(identityService, flowMessaging, observers)
         val participantSessions = sessionsForParties(identityService, flowMessaging, listOf(partyAndToken.party))
-        return flowEngine.subFlow(MoveNonFungibleTokensFlow(
+        return flowEngine.subFlow(
+            MoveNonFungibleTokensFlow(
                 partyAndToken = partyAndToken,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
                 queryCriteria = queryCriteria
-        ))
+            )
+        )
     }
 }
 
@@ -172,17 +176,17 @@ class MoveNonFungibleTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
 @StartableByRPC
 @InitiatingFlow
 class ConfidentialMoveFungibleTokens(
-        val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
-        val observers: List<Party>,
-        val queryCriteria: QueryCriteria? = null,
-        val changeHolder: AbstractParty? = null
+    val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+    val observers: List<Party>,
+    val queryCriteria: QueryCriteria? = null,
+    val changeHolder: AbstractParty? = null
 ) : Flow<SignedTransaction> {
 
     constructor(
-            partyAndAmount: PartyAndAmount<TokenType>,
-            observers: List<Party>,
-            queryCriteria: QueryCriteria? = null,
-            changeHolder: AbstractParty? = null
+        partyAndAmount: PartyAndAmount<TokenType>,
+        observers: List<Party>,
+        queryCriteria: QueryCriteria? = null,
+        changeHolder: AbstractParty? = null
     ) : this(listOf(partyAndAmount), observers, queryCriteria, changeHolder)
 
     @CordaInject
@@ -210,18 +214,22 @@ class ConfidentialMoveFungibleTokens(
             try {
                 identityService.registerKey(key, flowIdentity.ourIdentity)
             } catch (e: Exception) {
-                throw FlowException("Could not register a new key for party: ${flowIdentity.ourIdentity} as the provided public key is already registered " +
-                        "or registered to a different party.")
+                throw FlowException(
+                    "Could not register a new key for party: ${flowIdentity.ourIdentity} as the provided public key is already registered " +
+                            "or registered to a different party."
+                )
             }
             AnonymousParty(key)
         }
-        return flowEngine.subFlow(ConfidentialMoveFungibleTokensFlow(
+        return flowEngine.subFlow(
+            ConfidentialMoveFungibleTokensFlow(
                 partiesAndAmounts = partiesAndAmounts,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
                 queryCriteria = queryCriteria,
                 changeHolder = confidentialHolder
-        ))
+            )
+        )
     }
 }
 
@@ -253,9 +261,9 @@ class ConfidentialMoveFungibleTokensHandler(val otherSession: FlowSession) : Flo
 @StartableByRPC
 @InitiatingFlow
 class ConfidentialMoveNonFungibleTokens(
-        val partyAndToken: PartyAndToken,
-        val observers: List<Party>,
-        val queryCriteria: QueryCriteria? = null
+    val partyAndToken: PartyAndToken,
+    val observers: List<Party>,
+    val queryCriteria: QueryCriteria? = null
 ) : Flow<SignedTransaction> {
 
     @CordaInject
@@ -271,12 +279,14 @@ class ConfidentialMoveNonFungibleTokens(
     override fun call(): SignedTransaction {
         val observerSessions = sessionsForParties(identityService, flowMessaging, observers)
         val participantSessions = sessionsForParties(identityService, flowMessaging, listOf(partyAndToken.party))
-        return flowEngine.subFlow(ConfidentialMoveNonFungibleTokensFlow(
+        return flowEngine.subFlow(
+            ConfidentialMoveNonFungibleTokensFlow(
                 partyAndToken = partyAndToken,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
                 queryCriteria = queryCriteria
-        ))
+            )
+        )
     }
 }
 

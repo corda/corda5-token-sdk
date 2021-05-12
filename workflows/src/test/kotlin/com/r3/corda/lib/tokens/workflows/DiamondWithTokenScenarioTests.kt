@@ -36,7 +36,14 @@ class DiamondWithTokenScenarioTests : JITMockNetworkTests() {
 
         // STEP 01: GIC publishes the diamond certificate
         // GIC publishes and shares with Denise
-        val diamond = DiamondGradingReport("1.0", DiamondGradingReport.ColorScale.A, DiamondGradingReport.ClarityScale.A, DiamondGradingReport.CutScale.A, gic.legalIdentity(), denise.legalIdentity())
+        val diamond = DiamondGradingReport(
+            "1.0",
+            DiamondGradingReport.ColorScale.A,
+            DiamondGradingReport.ClarityScale.A,
+            DiamondGradingReport.CutScale.A,
+            gic.legalIdentity(),
+            denise.legalIdentity()
+        )
         val publishDiamondTx = gic.createEvolvableToken(diamond, notary.legalIdentity()).getOrThrow()
         val publishedDiamond = publishDiamondTx.singleOutput<DiamondGradingReport>()
         assertEquals(diamond, publishedDiamond.state.data, "Original diamond did not match the published diamond.")
@@ -46,9 +53,9 @@ class DiamondWithTokenScenarioTests : JITMockNetworkTests() {
         // Denise issues the token to Alice
         val diamondPointer = publishedDiamond.state.data.toPointer<DiamondGradingReport>()
         val issueTokenTx = denise.issueNonFungibleTokens(
-                token = diamondPointer,
-                issueTo = alice,
-                anonymous = true
+            token = diamondPointer,
+            issueTo = alice,
+            anonymous = true
         ).getOrThrow()
         // GIC should *not* receive a copy of this issuance
         assertHasTransaction(issueTokenTx, alice)

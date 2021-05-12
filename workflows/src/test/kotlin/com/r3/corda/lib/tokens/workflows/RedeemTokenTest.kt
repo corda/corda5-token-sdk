@@ -2,16 +2,12 @@ package com.r3.corda.lib.tokens.workflows
 
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
-import com.r3.corda.lib.tokens.contracts.utilities.sumTokenStateAndRefs
 import com.r3.corda.lib.tokens.money.GBP
 import com.r3.corda.lib.tokens.money.USD
 import com.r3.corda.lib.tokens.selection.InsufficientBalanceException
 import com.r3.corda.lib.tokens.testing.states.Appartment
 import com.r3.corda.lib.tokens.workflows.utilities.heldTokenAmountCriteria
-import com.r3.corda.lib.tokens.workflows.utilities.heldTokensByToken
-import com.r3.corda.lib.tokens.workflows.utilities.tokenAmountsByToken
 import net.corda.core.identity.CordaX500Name
-import net.corda.core.node.services.queryBy
 import net.corda.core.utilities.getOrThrow
 import net.corda.testing.node.StartedMockNode
 import org.assertj.core.api.Assertions

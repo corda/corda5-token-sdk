@@ -10,14 +10,10 @@ import com.r3.corda.lib.tokens.contracts.utilities.of
 import com.r3.corda.lib.tokens.money.BTC
 import com.r3.corda.lib.tokens.money.GBP
 import com.r3.corda.lib.tokens.selection.InsufficientBalanceException
-import com.r3.corda.lib.tokens.testing.states.Appartment
 import com.r3.corda.lib.tokens.workflows.flows.rpc.*
 import com.r3.corda.lib.tokens.workflows.types.PartyAndAmount
 import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import com.r3.corda.lib.tokens.workflows.utilities.heldBy
-import com.r3.corda.lib.tokens.workflows.utilities.heldTokensByToken
-import com.r3.corda.lib.tokens.workflows.utilities.tokenAmountsByToken
-import com.r3.corda.lib.tokens.workflows.utilities.tokenBalance
 import net.corda.testing.common.internal.testNetworkParameters
 import net.corda.testing.node.MockNetwork
 import net.corda.testing.node.MockNetworkParameters
@@ -32,7 +28,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotEquals
 
-class RedeemTokenTestsFlow{
+class RedeemTokenTestsFlow {
     lateinit var network: MockNetwork
     lateinit var nodeA: StartedMockNode
     lateinit var nodeB: StartedMockNode
@@ -40,15 +36,15 @@ class RedeemTokenTestsFlow{
 
     @Before
     fun setup() {
-        network =  MockNetwork(
+        network = MockNetwork(
             MockNetworkParameters(
                 networkParameters = testNetworkParameters(minimumPlatformVersion = 4),
-                    cordappsForAllNodes = listOf(
-                            TestCordapp.findCordapp("com.r3.corda.lib.tokens.money"),
-                            TestCordapp.findCordapp("com.r3.corda.lib.tokens.contracts"),
-                            TestCordapp.findCordapp("com.r3.corda.lib.tokens.workflows"),
-                            TestCordapp.findCordapp("com.r3.corda.lib.tokens.testing"),
-                            TestCordapp.findCordapp("com.r3.corda.lib.ci")
+                cordappsForAllNodes = listOf(
+                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.money"),
+                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.contracts"),
+                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.workflows"),
+                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.testing"),
+                    TestCordapp.findCordapp("com.r3.corda.lib.ci")
                 )
             )
         )
@@ -62,7 +58,6 @@ class RedeemTokenTestsFlow{
     fun tearDown() {
         network.stopNodes()
     }
-
 
     @Test
     fun `should redeem fungible tokens`() {
@@ -91,8 +86,6 @@ class RedeemTokenTestsFlow{
         assertThat((nodeA.services.vaultService.tokenAmountsByToken(GBP).states).isEmpty())
         assertThat((nodeI.services.vaultService.tokenAmountsByToken(GBP).states).isEmpty())
     }
-
-
 
     @Test
     fun `should redeem non fungible tokens`() {
@@ -125,7 +118,7 @@ class RedeemTokenTestsFlow{
     }
 
     @Test
-        fun `should not redeem same token more than once`() {
+    fun `should not redeem same token more than once`() {
         val issuer: Party = nodeI.legalIdentity()
         val holder: Party = nodeA.legalIdentity()
 
@@ -228,7 +221,6 @@ class RedeemTokenTestsFlow{
         // Checking if the tokens are redeemed.
         assertThat(nodeA.services.vaultService.tokenAmountsByToken(BTC).states).isEmpty()
         assertThat(nodeI.services.vaultService.tokenAmountsByToken(BTC).states).isEmpty()
-
     }
 
     @Test
@@ -290,7 +282,6 @@ class RedeemTokenTestsFlow{
         assertFailsWith<InsufficientBalanceException> { exception.getOrThrow() }
     }
 
-
     @Test
     fun `should redeem fungible tokens issued confidentially`() {
         val issuer: Party = nodeI.legalIdentity()
@@ -342,7 +333,7 @@ class RedeemTokenTestsFlow{
         assertThat(nodeA.services.vaultService.tokenAmountsByToken(GBP).states).isNotEmpty()
 
         // Moving tokens to holder2.
-        nodeA.startFlow(ConfidentialMoveFungibleTokens(PartyAndAmount(holder2,10.GBP), listOf(issuer)))
+        nodeA.startFlow(ConfidentialMoveFungibleTokens(PartyAndAmount(holder2, 10.GBP), listOf(issuer)))
         network.runNetwork()
 
         // Checking if the tokens are moved to nodeB.
@@ -384,7 +375,7 @@ class RedeemTokenTestsFlow{
         network.runNetwork()
 
         // Checking if the tokens are redeemed.
-        assertEquals(nodeA.services.vaultService.tokenBalance(GBP),60.GBP)
+        assertEquals(nodeA.services.vaultService.tokenBalance(GBP), 60.GBP)
         assertThat(nodeI.services.vaultService.tokenAmountsByToken(GBP).states).isEmpty()
     }
 
@@ -441,7 +432,7 @@ class RedeemTokenTestsFlow{
         assertThat(nodeA.services.vaultService.heldTokensByToken(myTokenType).states).isNotEmpty()
 
         // Moving tokens to holder2.
-        nodeA.startFlow(ConfidentialMoveNonFungibleTokens(PartyAndToken(holder2,myTokenType), listOf(issuer)))
+        nodeA.startFlow(ConfidentialMoveNonFungibleTokens(PartyAndToken(holder2, myTokenType), listOf(issuer)))
         network.runNetwork()
 
         // Checking if the token is moved to nodeB.

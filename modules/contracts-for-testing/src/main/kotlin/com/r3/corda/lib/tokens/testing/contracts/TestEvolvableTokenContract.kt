@@ -22,5 +22,4 @@ class TestEvolvableTokenContract : EvolvableTokenContract(), Contract {
             // No additional checks
         }
     }
-
 }

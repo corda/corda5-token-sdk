@@ -1,7 +1,14 @@
 package com.r3.corda.lib.tokens.workflows.flows.rpc
 
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
-import com.r3.corda.lib.tokens.workflows.flows.evolvable.*
+import com.r3.corda.lib.tokens.workflows.flows.evolvable.CreateEvolvableTokensFlow
+import com.r3.corda.lib.tokens.workflows.flows.evolvable.CreateEvolvableTokensFlowHandler
+import com.r3.corda.lib.tokens.workflows.flows.evolvable.UpdateEvolvableTokenFlow
+import com.r3.corda.lib.tokens.workflows.flows.evolvable.UpdateEvolvableTokenFlowHandler
+import com.r3.corda.lib.tokens.workflows.flows.evolvable.maintainers
+import com.r3.corda.lib.tokens.workflows.flows.evolvable.otherMaintainers
+import com.r3.corda.lib.tokens.workflows.flows.evolvable.participants
+import com.r3.corda.lib.tokens.workflows.flows.evolvable.subscribersForState
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.InitiatedBy
@@ -48,14 +55,18 @@ constructor(
     lateinit var identityService: IdentityService
 
     @JvmOverloads
-    constructor(transactionState: TransactionState<EvolvableTokenType>, observers: List<Party> = emptyList()) : this(listOf(transactionState), observers)
+    constructor(
+        transactionState: TransactionState<EvolvableTokenType>,
+        observers: List<Party> = emptyList()
+    ) : this(listOf(transactionState), observers)
 
     @Suspendable
     override fun call(): SignedTransaction {
         // Initiate sessions to all observers.
         val observersSessions = (observers + statesObservers).toSet().map { flowMessaging.initiateFlow(it) }
         // Initiate sessions to all maintainers but our node.
-        val participantsSessions: List<FlowSession> = evolvableTokens.otherMaintainers(flowIdentity.ourIdentity).map { flowMessaging.initiateFlow(it) }
+        val participantsSessions: List<FlowSession> =
+            evolvableTokens.otherMaintainers(flowIdentity.ourIdentity).map { flowMessaging.initiateFlow(it) }
         return flowEngine.subFlow(CreateEvolvableTokensFlow(transactionStates, participantsSessions, observersSessions))
     }
 
@@ -76,6 +87,7 @@ constructor(
 class CreateEvolvableTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
     @CordaInject
     lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call() = flowEngine.subFlow(CreateEvolvableTokensFlowHandler(otherSession))
 }
@@ -91,9 +103,10 @@ class CreateEvolvableTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
 @StartableByRPC
 class UpdateEvolvableToken
 @JvmOverloads
-constructor(val oldStateAndRef: StateAndRef<EvolvableTokenType>,
-            val newState: EvolvableTokenType,
-            val observers: List<Party> = emptyList()
+constructor(
+    val oldStateAndRef: StateAndRef<EvolvableTokenType>,
+    val newState: EvolvableTokenType,
+    val observers: List<Party> = emptyList()
 ) : Flow<SignedTransaction> {
 
     @CordaInject
@@ -116,7 +129,8 @@ constructor(val oldStateAndRef: StateAndRef<EvolvableTokenType>,
         // Initiate sessions to all observers.
         val observersSessions = (observers + statesObservers).toSet().map { flowMessaging.initiateFlow(it) }
         // Initiate sessions to all maintainers but our node.
-        val participantsSessions: List<FlowSession> = evolvableTokens.otherMaintainers(flowIdentity.ourIdentity).map { flowMessaging.initiateFlow(it) }
+        val participantsSessions: List<FlowSession> =
+            evolvableTokens.otherMaintainers(flowIdentity.ourIdentity).map { flowMessaging.initiateFlow(it) }
         return flowEngine.subFlow(UpdateEvolvableTokenFlow(oldStateAndRef, newState, participantsSessions, observersSessions))
     }
 

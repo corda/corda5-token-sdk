@@ -29,10 +29,10 @@ constructor(
 ) : AbstractMoveTokensFlow() {
     @JvmOverloads
     constructor(
-            input: StateAndRef<AbstractToken>,
-            output: AbstractToken,
-            participantSessions: List<FlowSession>,
-            observerSessions: List<FlowSession> = emptyList()
+        input: StateAndRef<AbstractToken>,
+        output: AbstractToken,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession> = emptyList()
     ) : this(listOf(input), listOf(output), participantSessions, observerSessions)
 
     @Suspendable

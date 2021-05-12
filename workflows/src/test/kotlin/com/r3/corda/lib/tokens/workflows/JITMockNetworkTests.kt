@@ -30,15 +30,18 @@ abstract class JITMockNetworkTests(val names: List<CordaX500Name> = emptyList())
 
     constructor(numberOfNodes: Int) : this(*(1..numberOfNodes).map { "Party${it.toChar() + 64}" }.toTypedArray())
 
-    protected val network = MockNetwork(parameters = MockNetworkParameters(
-            cordappsForAllNodes = listOf(TestCordapp.findCordapp("com.r3.corda.lib.tokens.money"),
-                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.contracts"),
-                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.workflows"),
-                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.testing"),
-                    TestCordapp.findCordapp("com.r3.corda.lib.ci")),
+    protected val network = MockNetwork(
+        parameters = MockNetworkParameters(
+            cordappsForAllNodes = listOf(
+                TestCordapp.findCordapp("com.r3.corda.lib.tokens.money"),
+                TestCordapp.findCordapp("com.r3.corda.lib.tokens.contracts"),
+                TestCordapp.findCordapp("com.r3.corda.lib.tokens.workflows"),
+                TestCordapp.findCordapp("com.r3.corda.lib.tokens.testing"),
+                TestCordapp.findCordapp("com.r3.corda.lib.ci")
+            ),
             threadPerNode = true,
             networkParameters = testNetworkParameters(minimumPlatformVersion = 4)
-    )
+        )
     )
 
     /** The nodes which makes up the network. */
@@ -69,11 +72,11 @@ abstract class JITMockNetworkTests(val names: List<CordaX500Name> = emptyList())
     @After
     fun stopNetwork() {
         // Required to get around mysterious KryoException
-         try {
-             network.stopNodes()
-         } catch (e: Exception) {
+        try {
+            network.stopNodes()
+        } catch (e: Exception) {
             println(e.localizedMessage)
-         }
+        }
     }
 
     fun restartNetwork() {
@@ -93,8 +96,8 @@ abstract class JITMockNetworkTests(val names: List<CordaX500Name> = emptyList())
     /**
      * Smart helper for [assertNotHasTransaction] that passes in the test suite's network.
      */
-    protected fun assertNotHasTransaction(tx: SignedTransaction, vararg nodes: StartedMockNode) = assertNotHasTransaction(tx, network, *nodes)
-
+    protected fun assertNotHasTransaction(tx: SignedTransaction, vararg nodes: StartedMockNode) =
+        assertNotHasTransaction(tx, network, *nodes)
 }
 
 fun convertToStartedMockNode(createPartyNode: TestStartedNode): StartedMockNode {

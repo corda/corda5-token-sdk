@@ -53,12 +53,12 @@ open class FungibleToken @JvmOverloads constructor(
 
     override fun generateMappedObject(schema: MappedSchema): PersistentState = when (schema) {
         is FungibleTokenSchemaV1 -> PersistentFungibleToken(
-                issuer = amount.token.issuer,
-                holder = holder,
-                amount = amount.quantity,
-                tokenClass = amount.token.tokenType.tokenClass,
-                tokenIdentifier = amount.token.tokenType.tokenIdentifier,
-                owningKeyHash = holder.owningKey.toStringShort()
+            issuer = amount.token.issuer,
+            holder = holder,
+            amount = amount.quantity,
+            tokenClass = amount.token.tokenType.tokenClass,
+            tokenIdentifier = amount.token.tokenType.tokenIdentifier,
+            owningKeyHash = holder.owningKey.toStringShort()
         )
         else -> throw IllegalArgumentException("Unrecognised schema $schema")
     }
@@ -82,5 +82,4 @@ open class FungibleToken @JvmOverloads constructor(
         result = 31 * result + (tokenTypeJarHash?.hashCode() ?: 0)
         return result
     }
-
 }

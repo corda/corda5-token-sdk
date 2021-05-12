@@ -105,5 +105,4 @@ abstract class EvolvableTokenContract : Contract {
         // Perform additional checks as implemented by subclasses.
         additionalUpdateChecks(tx)
     }
-
 }

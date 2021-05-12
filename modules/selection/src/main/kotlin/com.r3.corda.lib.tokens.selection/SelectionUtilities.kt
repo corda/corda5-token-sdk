@@ -1,4 +1,5 @@
 @file:JvmName("SelectionUtilities")
+
 package com.r3.corda.lib.tokens.selection
 
 import com.r3.corda.lib.tokens.contracts.internal.schemas.PersistentFungibleToken

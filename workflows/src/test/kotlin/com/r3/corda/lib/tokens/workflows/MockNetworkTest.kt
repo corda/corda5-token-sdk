@@ -22,16 +22,19 @@ abstract class MockNetworkTest(val names: List<CordaX500Name>) {
 
     constructor(numberOfNodes: Int) : this(*(1..numberOfNodes).map { "Party${it.toChar() + 64}" }.toTypedArray())
 
-    protected val network = MockNetwork(parameters = MockNetworkParameters(
-            cordappsForAllNodes = listOf(TestCordapp.findCordapp("com.r3.corda.lib.tokens.money"),
-                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.contracts"),
-                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.workflows"),
-                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.selection"),
-                    TestCordapp.findCordapp("com.r3.corda.lib.tokens.testing"),
-                    TestCordapp.findCordapp("com.r3.corda.lib.ci")),
+    protected val network = MockNetwork(
+        parameters = MockNetworkParameters(
+            cordappsForAllNodes = listOf(
+                TestCordapp.findCordapp("com.r3.corda.lib.tokens.money"),
+                TestCordapp.findCordapp("com.r3.corda.lib.tokens.contracts"),
+                TestCordapp.findCordapp("com.r3.corda.lib.tokens.workflows"),
+                TestCordapp.findCordapp("com.r3.corda.lib.tokens.selection"),
+                TestCordapp.findCordapp("com.r3.corda.lib.tokens.testing"),
+                TestCordapp.findCordapp("com.r3.corda.lib.ci")
+            ),
             threadPerNode = true,
             networkParameters = testNetworkParameters(minimumPlatformVersion = 4)
-    )
+        )
     )
 
     /** The nodes which makes up the network. */
@@ -56,7 +59,7 @@ abstract class MockNetworkTest(val names: List<CordaX500Name>) {
     @After
     fun tearDownNetwork() {
         // Required to get around mysterious KryoException
-        try{
+        try {
             network.stopNodes()
         } catch (e: Exception) {
             println(e.localizedMessage)

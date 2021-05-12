@@ -1,4 +1,5 @@
 @file:JvmName("RedeemFlowUtilities")
+
 package com.r3.corda.lib.tokens.workflows.flows.redeem
 
 import com.r3.corda.lib.tokens.contracts.commands.RedeemTokenCommand
@@ -68,16 +69,15 @@ fun addTokensToRedeem(
     return transactionBuilder
 }
 
-
 /**
  * Redeem non-fungible [heldToken] issued by the [issuer] and add it to the [transactionBuilder].
  */
 @Suspendable
 fun addNonFungibleTokensToRedeem(
-        transactionBuilder: TransactionBuilder,
-        vaultService: VaultService,
-        heldToken: TokenType,
-        issuer: Party
+    transactionBuilder: TransactionBuilder,
+    vaultService: VaultService,
+    heldToken: TokenType,
+    issuer: Party
 ): TransactionBuilder {
     val heldTokenStateAndRef = vaultService.heldTokensByTokenIssuer(heldToken, issuer).states
     check(heldTokenStateAndRef.size == 1) {
@@ -110,7 +110,8 @@ fun addFungibleTokensToRedeem(
     val selector = DatabaseTokenSelection(vaultService, identityService, flowEngine)
     val baseCriteria = tokenAmountWithIssuerCriteria(amount.token, issuer)
     val queryCriteria = additionalQueryCriteria?.let { baseCriteria.and(it) } ?: baseCriteria
-    val fungibleStates = selector.selectTokens(amount, TokenQueryBy(issuer = issuer, queryCriteria = queryCriteria), transactionBuilder.lockId)
+    val fungibleStates =
+        selector.selectTokens(amount, TokenQueryBy(issuer = issuer, queryCriteria = queryCriteria), transactionBuilder.lockId)
     checkSameNotary(fungibleStates)
     check(fungibleStates.isNotEmpty()) {
         "Received empty list of states to redeem."
@@ -118,9 +119,9 @@ fun addFungibleTokensToRedeem(
     val notary = fungibleStates.first().state.notary
     addNotaryWithCheck(transactionBuilder, notary)
     val (exitStates, change) = selector.generateExit(
-            exitStates = fungibleStates,
-            amount = amount,
-            changeHolder = changeHolder
+        exitStates = fungibleStates,
+        amount = amount,
+        changeHolder = changeHolder
     )
 
     addTokensToRedeem(transactionBuilder, exitStates, change)

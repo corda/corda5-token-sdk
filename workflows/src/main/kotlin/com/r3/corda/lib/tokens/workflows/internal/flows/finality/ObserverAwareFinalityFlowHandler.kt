@@ -14,6 +14,7 @@ import net.corda.v5.ledger.transactions.SignedTransaction
 class ObserverAwareFinalityFlowHandler(val otherSession: FlowSession) : Flow<SignedTransaction?> {
     @CordaInject
     lateinit var nodeInfo: NodeInfo
+
     @CordaInject
     lateinit var flowEngine: FlowEngine
 

@@ -27,8 +27,8 @@ import net.corda.v5.base.annotations.Suspendable
  * @property sessions a list of participants' sessions which may contain sessions for observers.
  */
 class ConfidentialTokensFlow(
-        val tokens: List<AbstractToken>,
-        val sessions: List<FlowSession>
+    val tokens: List<AbstractToken>,
+    val sessions: List<FlowSession>
 ) : Flow<List<AbstractToken>> {
 
     @CordaInject
@@ -44,14 +44,14 @@ class ConfidentialTokensFlow(
         val tokensWithWellKnownHolders = tokens.filter { it.holder is Party }
         val tokensWithAnonymousHolders = tokens - tokensWithWellKnownHolders
         val wellKnownTokenHolders = tokensWithWellKnownHolders
-                .map(AbstractToken::holder)
-                .toWellKnownParties(identityService)
+            .map(AbstractToken::holder)
+            .toWellKnownParties(identityService)
         val anonymousParties = flowEngine.subFlow(AnonymisePartiesFlow(wellKnownTokenHolders, sessions))
         // Replace Party with AnonymousParty.
         return tokensWithWellKnownHolders.map { token ->
             val holder = token.holder
             val anonymousParty = anonymousParties[holder]
-                    ?: throw IllegalStateException("Missing anonymous party for $holder.")
+                ?: throw IllegalStateException("Missing anonymous party for $holder.")
             token.withNewHolder(anonymousParty)
         } + tokensWithAnonymousHolders
     }

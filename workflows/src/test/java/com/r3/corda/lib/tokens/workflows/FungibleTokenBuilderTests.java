@@ -74,7 +74,7 @@ public class FungibleTokenBuilderTests {
                 .plus(bigDecimalAmountTokenType)
                 .plus(longAmountTokenType);
 
-        assert(total.getQuantity() == AmountUtilities.of(4, FiatCurrency.getInstance("USD")).getQuantity());
+        assert (total.getQuantity() == AmountUtilities.of(4, FiatCurrency.getInstance("USD")).getQuantity());
     }
 
     @Test
@@ -93,9 +93,9 @@ public class FungibleTokenBuilderTests {
             new FungibleTokenBuilder()
                     .withAmount(new Long(1))
                     .buildAmountTokenType();
-            assert(false);
-        } catch(TokenBuilderException ex) {
-            assert(ex.getLocalizedMessage().equals("A Token Type has not been provided to the builder."));
+            assert (false);
+        } catch (TokenBuilderException ex) {
+            assert (ex.getLocalizedMessage().equals("A Token Type has not been provided to the builder."));
         }
     }
 
@@ -106,9 +106,9 @@ public class FungibleTokenBuilderTests {
                     .withAmount(new Long(1))
                     .ofTokenType(FiatCurrency.getInstance("USD"))
                     .buildAmountIssuedTokenType();
-            assert(false);
-        } catch(TokenBuilderException ex) {
-            assert(ex.getLocalizedMessage().equals("A token issuer has not been provided to the builder."));
+            assert (false);
+        } catch (TokenBuilderException ex) {
+            assert (ex.getLocalizedMessage().equals("A token issuer has not been provided to the builder."));
         }
     }
 
@@ -123,9 +123,9 @@ public class FungibleTokenBuilderTests {
                     .ofTokenType(FiatCurrency.getInstance("USD"))
                     .issuedBy(aliceParty)
                     .buildFungibleToken();
-            assert(false);
-        } catch(TokenBuilderException ex) {
-            assert(ex.getLocalizedMessage().equals("A token holder has not been provided to the builder."));
+            assert (false);
+        } catch (TokenBuilderException ex) {
+            assert (ex.getLocalizedMessage().equals("A token holder has not been provided to the builder."));
         }
     }
 }

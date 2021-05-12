@@ -108,13 +108,12 @@ class DatabaseTokenSelectionTests : MockNetworkTest(numberOfNodes = 4) {
         }
     }
 
-
     @Test
     fun `generate move test`() {
         val transactionBuilder = TransactionBuilder()
         val moves = listOf(
-                PartyAndAmount(B.legalIdentity(), 140.GBP),
-                PartyAndAmount(I.legalIdentity(), 30.GBP)
+            PartyAndAmount(B.legalIdentity(), 140.GBP),
+            PartyAndAmount(I.legalIdentity(), 30.GBP)
         )
 
         A.transaction {
@@ -137,15 +136,33 @@ class DatabaseTokenSelectionTests : MockNetworkTest(numberOfNodes = 4) {
         val tokenSelection = DatabaseTokenSelection(A.services)
         val uuid = UUID.randomUUID()
 
-        val resultOne = A.transaction { tokenSelection.selectTokens(4.BTC, TokenQueryBy(queryCriteria = tokenAmountWithIssuerCriteria(BTC, I.legalIdentity())), lockId = uuid) }
+        val resultOne = A.transaction {
+            tokenSelection.selectTokens(
+                4.BTC,
+                TokenQueryBy(queryCriteria = tokenAmountWithIssuerCriteria(BTC, I.legalIdentity())),
+                lockId = uuid
+            )
+        }
         assertEquals(4.BTC issuedBy I.legalIdentity(), resultOne.sumTokenStateAndRefs())
 
         // Not enough tokens as only 4 BTC on issuer I.
         assertFailsWith<InsufficientBalanceException> {
-            A.transaction { tokenSelection.selectTokens(5.BTC, TokenQueryBy(queryCriteria = tokenAmountWithIssuerCriteria(BTC, I.legalIdentity())), lockId = uuid) }
+            A.transaction {
+                tokenSelection.selectTokens(
+                    5.BTC,
+                    TokenQueryBy(queryCriteria = tokenAmountWithIssuerCriteria(BTC, I.legalIdentity())),
+                    lockId = uuid
+                )
+            }
         }
 
-        val resultTwo = A.transaction { tokenSelection.selectTokens(6.BTC, TokenQueryBy(queryCriteria = tokenAmountWithIssuerCriteria(BTC, J.legalIdentity())), lockId = uuid) }
+        val resultTwo = A.transaction {
+            tokenSelection.selectTokens(
+                6.BTC,
+                TokenQueryBy(queryCriteria = tokenAmountWithIssuerCriteria(BTC, J.legalIdentity())),
+                lockId = uuid
+            )
+        }
         assertEquals(6.BTC issuedBy J.legalIdentity(), resultTwo.sumTokenStateAndRefs())
     }
 

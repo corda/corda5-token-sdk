@@ -31,6 +31,4 @@ class DiamondGradingReportContract : EvolvableTokenContract(), Contract {
             "Diamond's cut may not be changed" using (inDiamond.cut == outDiamond.cut)
         }
     }
-
-
 }

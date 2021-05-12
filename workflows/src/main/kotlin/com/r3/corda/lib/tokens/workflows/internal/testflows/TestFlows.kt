@@ -106,7 +106,8 @@ class DvPFlow(val house: House, val newOwner: Party) : Flow<SignedTransaction> {
         addMoveTokens(txBuilder, inputs, outputs)
         // Synchronise any confidential identities
         flowEngine.subFlow(SyncKeyMappingFlow(session, txBuilder.toWireTransaction()))
-        val ourSigningKeys = transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction()).ourSigningKeys(keyManagementService)
+        val ourSigningKeys =
+            transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction()).ourSigningKeys(keyManagementService)
         val initialStx = transactionService.signInitial(txBuilder, signingPubKeys = ourSigningKeys)
         val stx = flowEngine.subFlow(CollectSignaturesFlow(initialStx, listOf(session), ourSigningKeys))
         // Update distribution list.
@@ -150,7 +151,7 @@ class DvPFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
                 lockId = flowEngine.runId.uuid,
                 partiesAndAmounts = listOf(Pair(otherSession.counterparty, dvPNotification.amount)),
                 changeHolder = changeHolder
-        )
+            )
         flowEngine.subFlow(SendStateAndRefFlow(otherSession, inputs))
         otherSession.send(outputs)
         flowEngine.subFlow(SyncKeyMappingFlowHandler(otherSession))
@@ -166,6 +167,7 @@ class DvPFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
 class GetDistributionList(val housePtr: TokenPointer<House>) : Flow<List<DistributionRecord>> {
     @CordaInject
     lateinit var persistenceService: PersistenceService
+
     @Suspendable
     override fun call(): List<DistributionRecord> {
         return getDistributionList(persistenceService, housePtr.pointer.pointer)
@@ -189,8 +191,8 @@ class CheckTokenPointer(val housePtr: TokenPointer<House>) : Flow<House> {
 // TODO This is hack that will be removed after fix in Corda 5. startFlowDynamic doesn't handle type parameters properly.
 @StartableByRPC
 class RedeemNonFungibleHouse(
-        val housePtr: TokenPointer<House>,
-        val issuerParty: Party
+    val housePtr: TokenPointer<House>,
+    val issuerParty: Party
 ) : Flow<SignedTransaction> {
     @CordaInject
     lateinit var flowEngine: FlowEngine
@@ -203,8 +205,8 @@ class RedeemNonFungibleHouse(
 
 @StartableByRPC
 class RedeemFungibleGBP(
-        val amount: Amount<TokenType>,
-        val issuerParty: Party
+    val amount: Amount<TokenType>,
+    val issuerParty: Party
 ) : Flow<SignedTransaction> {
     @CordaInject
     lateinit var flowEngine: FlowEngine
@@ -234,7 +236,11 @@ class SelectAndLockFlow(val amount: Amount<TokenType>, val delay: Duration = 1.s
 
 // Helper flow for selection testing
 @StartableByRPC
-class JustLocalSelect(val amount: Amount<TokenType>, val timeBetweenSelects: Duration = Duration.of(10, ChronoUnit.SECONDS), val maxSelectAttempts: Int = 5) : Flow<List<StateAndRef<FungibleToken>>> {
+class JustLocalSelect(
+    val amount: Amount<TokenType>,
+    val timeBetweenSelects: Duration = Duration.of(10, ChronoUnit.SECONDS),
+    val maxSelectAttempts: Int = 5
+) : Flow<List<StateAndRef<FungibleToken>>> {
 
     companion object {
         val logger = contextLogger()

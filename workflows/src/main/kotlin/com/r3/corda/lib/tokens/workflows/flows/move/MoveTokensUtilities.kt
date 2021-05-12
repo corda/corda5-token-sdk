@@ -1,4 +1,5 @@
 @file:JvmName("MoveTokensUtilities")
+
 package com.r3.corda.lib.tokens.workflows.flows.move
 
 import com.r3.corda.lib.tokens.contracts.commands.MoveTokenCommand
@@ -49,7 +50,7 @@ fun addMoveTokens(
         setNotary(inputs.map { it.state.notary }.toSet().single())
         outputGroups.forEach { issuedTokenType: IssuedTokenType, outputStates: List<AbstractToken> ->
             val inputGroup = inputGroups[issuedTokenType]
-                    ?: throw IllegalArgumentException("No corresponding inputs for the outputs issued token type: $issuedTokenType")
+                ?: throw IllegalArgumentException("No corresponding inputs for the outputs issued token type: $issuedTokenType")
             val keys = inputGroup.map { it.state.data.holder.owningKey }
 
             var inputStartingIdx = inputStates.size
@@ -79,9 +80,9 @@ fun addMoveTokens(
  */
 @Suspendable
 fun addMoveTokens(
-        transactionBuilder: TransactionBuilder,
-        input: StateAndRef<AbstractToken>,
-        output: AbstractToken
+    transactionBuilder: TransactionBuilder,
+    input: StateAndRef<AbstractToken>,
+    output: AbstractToken
 ): TransactionBuilder {
     return addMoveTokens(transactionBuilder = transactionBuilder, inputs = listOf(input), outputs = listOf(output))
 }
@@ -109,7 +110,14 @@ fun addMoveFungibleTokens(
 //    val selector: Selector = ConfigSelection.getPreferredSelection(serviceHub)
     val selector = DatabaseTokenSelection(vaultService, identityService, flowEngine)
     val (inputs, outputs) =
-        selector.generateMove(identityService, nodeInfo, partiesAndAmounts.toPairs(), changeHolder, TokenQueryBy(queryCriteria = queryCriteria), transactionBuilder.lockId)
+        selector.generateMove(
+            identityService,
+            nodeInfo,
+            partiesAndAmounts.toPairs(),
+            changeHolder,
+            TokenQueryBy(queryCriteria = queryCriteria),
+            transactionBuilder.lockId
+        )
     return addMoveTokens(transactionBuilder = transactionBuilder, inputs = inputs, outputs = outputs)
 }
 
@@ -154,11 +162,11 @@ fun addMoveFungibleTokens(
 @Suspendable
 @JvmOverloads
 fun addMoveNonFungibleTokens(
-        transactionBuilder: TransactionBuilder,
-        vaultService: VaultService,
-        token: TokenType,
-        holder: AbstractParty,
-        queryCriteria: QueryCriteria? = null
+    transactionBuilder: TransactionBuilder,
+    vaultService: VaultService,
+    token: TokenType,
+    holder: AbstractParty,
+    queryCriteria: QueryCriteria? = null
 ): TransactionBuilder {
     return generateMoveNonFungible(transactionBuilder, PartyAndToken(holder, token), vaultService, queryCriteria)
 }
@@ -170,10 +178,10 @@ fun addMoveNonFungibleTokens(
 @Suspendable
 @JvmOverloads
 fun addMoveNonFungibleTokens(
-        transactionBuilder: TransactionBuilder,
-        vaultService: VaultService,
-        partyAndToken: PartyAndToken,
-        queryCriteria: QueryCriteria? = null
+    transactionBuilder: TransactionBuilder,
+    vaultService: VaultService,
+    partyAndToken: PartyAndToken,
+    queryCriteria: QueryCriteria? = null
 ): TransactionBuilder {
     return generateMoveNonFungible(transactionBuilder, partyAndToken, vaultService, queryCriteria)
 }

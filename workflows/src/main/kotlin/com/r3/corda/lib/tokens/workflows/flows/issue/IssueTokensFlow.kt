@@ -70,9 +70,9 @@ constructor(
     /** Issue a single [FungibleToken]. */
     @JvmOverloads
     constructor(
-            token: FungibleToken,
-            participantSessions: List<FlowSession>,
-            observerSessions: List<FlowSession> = emptyList()
+        token: FungibleToken,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession> = emptyList()
     ) : this(listOf(token), participantSessions, observerSessions)
 
     /** Issue a single [FungibleToken] to self with no observers. */
@@ -81,9 +81,9 @@ constructor(
     /** Issue a single [NonFungibleToken]. */
     @JvmOverloads
     constructor(
-            token: NonFungibleToken,
-            participantSessions: List<FlowSession>,
-            observerSessions: List<FlowSession> = emptyList()
+        token: NonFungibleToken,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession> = emptyList()
     ) : this(listOf(token), participantSessions, observerSessions)
 
     /** Issue a single [NonFungibleToken] to self with no observers. */
@@ -101,10 +101,10 @@ constructor(
         addTokenTypeJar(tokensToIssue, transactionBuilder)
         // Create new participantSessions if this is started as a top level flow.
         val signedTransaction = flowEngine.subFlow(
-                ObserverAwareFinalityFlow(
-                        transactionBuilder = transactionBuilder,
-                        allSessions = participantSessions + observerSessions
-                )
+            ObserverAwareFinalityFlow(
+                transactionBuilder = transactionBuilder,
+                allSessions = participantSessions + observerSessions
+            )
         )
         // Update the distribution list.
         flowEngine.subFlow(UpdateDistributionListFlow(signedTransaction))

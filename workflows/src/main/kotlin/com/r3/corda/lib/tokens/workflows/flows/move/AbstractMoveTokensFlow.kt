@@ -66,10 +66,10 @@ abstract class AbstractMoveTokensFlow : Flow<SignedTransaction>, CustomProgressT
         progressTracker.currentStep = RECORDING
         // Create new participantSessions if this is started as a top level flow.
         val signedTransaction = flowEngine.subFlow(
-                ObserverAwareFinalityFlow(
-                        transactionBuilder = transactionBuilder,
-                        allSessions = participantSessions + observerSessions
-                )
+            ObserverAwareFinalityFlow(
+                transactionBuilder = transactionBuilder,
+                allSessions = participantSessions + observerSessions
+            )
         )
         progressTracker.currentStep = UPDATING
         // Update the distribution list.

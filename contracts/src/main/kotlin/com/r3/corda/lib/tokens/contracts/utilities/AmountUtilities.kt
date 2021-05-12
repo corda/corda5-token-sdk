@@ -1,4 +1,5 @@
 @file:JvmName("AmountUtilities")
+
 package com.r3.corda.lib.tokens.contracts.utilities
 
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
@@ -141,9 +142,9 @@ fun <T : TokenType> Iterable<Amount<T>>.sumTokensOrZero(token: T): Amount<T> {
  */
 
 fun Amount<out TokenType>.withoutIssuer(): Amount<TokenType> {
-    return if (token is IssuedTokenType){
+    return if (token is IssuedTokenType) {
         Amount(quantity, displayTokenSize, (token as IssuedTokenType).tokenType)
-    }else{
+    } else {
         Amount(quantity, displayTokenSize, token)
     }
 }

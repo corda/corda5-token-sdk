@@ -6,7 +6,6 @@ import com.r3.corda.lib.tokens.contracts.commands.RedeemTokenCommand
 import com.r3.corda.lib.tokens.contracts.utilities.heldBy
 import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
 import com.r3.corda.lib.tokens.contracts.utilities.of
-import com.r3.corda.lib.tokens.contracts.utilities.withNewHolder
 import com.r3.corda.lib.tokens.testing.states.PTK
 import com.r3.corda.lib.tokens.testing.states.RUB
 import org.junit.Test

@@ -1,4 +1,5 @@
 @file:JvmName("NotaryUtilities")
+
 package com.r3.corda.lib.tokens.workflows.utilities
 
 import net.corda.v5.application.cordapp.CordappConfig
@@ -36,8 +37,10 @@ fun getPreferredNotary(
     } else {
         val notaryX500Name = CordaX500Name.parse(notaryString)
         val notaryParty = networkMapCache.getNotary(notaryX500Name)
-                ?: throw IllegalStateException("Notary with name \"$notaryX500Name\" cannot be found in the network " +
-                        "map cache. Either the notary does not exist, or there is an error in the config.")
+            ?: throw IllegalStateException(
+                "Notary with name \"$notaryX500Name\" cannot be found in the network " +
+                        "map cache. Either the notary does not exist, or there is an error in the config."
+            )
         notaryParty
     }
 }
@@ -46,14 +49,14 @@ fun getPreferredNotary(
 @Suspendable
 fun firstNotary() = { networkMapCache: NotaryAwareNetworkMapCache ->
     networkMapCache.notaryIdentities.firstOrNull()
-            ?: throw IllegalArgumentException("No available notaries.")
+        ?: throw IllegalArgumentException("No available notaries.")
 }
 
 /** Choose a random notary from the list. */
 @Suspendable
 fun randomNotary() = { networkMapCache: NotaryAwareNetworkMapCache ->
     networkMapCache.notaryIdentities.randomOrNull()
-            ?: throw IllegalArgumentException("No available notaries.")
+        ?: throw IllegalArgumentException("No available notaries.")
 }
 
 /** Choose a random non validating notary. */

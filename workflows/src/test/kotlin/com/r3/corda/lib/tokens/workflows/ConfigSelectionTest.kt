@@ -27,23 +27,25 @@ class ConfigSelectionTest {
     @Before
     fun setup() {
         services = MockServices.makeTestDatabaseAndPersistentServices(
-                cordappPackages = listOf("com.r3.corda.lib.tokens.workflows"),
-                initialIdentity = TestIdentity(CordaX500Name("Test", "London", "GB")),
-                networkParameters = testNetworkParameters(minimumPlatformVersion = 4),
-                moreIdentities = emptySet(),
-                moreKeys = emptySet()
+            cordappPackages = listOf("com.r3.corda.lib.tokens.workflows"),
+            initialIdentity = TestIdentity(CordaX500Name("Test", "London", "GB")),
+            networkParameters = testNetworkParameters(minimumPlatformVersion = 4),
+            moreIdentities = emptySet(),
+            moreKeys = emptySet()
         ).second
     }
 
     @Test
     fun `test full database selection`() {
-        val config = ConfigFactory.parseString("stateSelection {\n" +
-                "database {\n" +
-                "maxRetries: 13\n" +
-                "retrySleep: 300\n" +
-                "retryCap: 1345\n" +
-                "}\n" +
-                "}")
+        val config = ConfigFactory.parseString(
+            "stateSelection {\n" +
+                    "database {\n" +
+                    "maxRetries: 13\n" +
+                    "retrySleep: 300\n" +
+                    "retryCap: 1345\n" +
+                    "}\n" +
+                    "}"
+        )
         val cordappConfig = TypesafeCordappConfig(config)
         val selection = ConfigSelection.getPreferredSelection(services, cordappConfig)
         assertThat(selection).isInstanceOf(DatabaseTokenSelection::class.java)
@@ -55,12 +57,14 @@ class ConfigSelectionTest {
     @Test
     fun `test full in memory selection public key`() {
         createMockCordaService(services, ::VaultWatcherService)
-        val config = ConfigFactory.parseString("stateSelection {\n" +
-                "inMemory {\n" +
-                "cacheSize: 9000\n" +
-                "indexingStrategies: [${VaultWatcherService.IndexingType.PUBLIC_KEY}]\n" +
-                "}\n" +
-                "}")
+        val config = ConfigFactory.parseString(
+            "stateSelection {\n" +
+                    "inMemory {\n" +
+                    "cacheSize: 9000\n" +
+                    "indexingStrategies: [${VaultWatcherService.IndexingType.PUBLIC_KEY}]\n" +
+                    "}\n" +
+                    "}"
+        )
         val cordappConfig = TypesafeCordappConfig(config)
 
         val inMemoryConfig = InMemorySelectionConfig.parse(cordappConfig)
@@ -73,16 +77,23 @@ class ConfigSelectionTest {
 
     @Test
     fun `test full in memory selection with external id`() {
-        val config = ConfigFactory.parseString("stateSelection {\n" +
-                "inMemory {\n" +
-                "cacheSize: 9000\n" +
-                "indexingStrategies: [\"${VaultWatcherService.IndexingType.EXTERNAL_ID}\", \"${VaultWatcherService.IndexingType.PUBLIC_KEY}\"]\n" +
-                "}\n" +
-                "}")
+        val config = ConfigFactory.parseString(
+            "stateSelection {\n" +
+                    "inMemory {\n" +
+                    "cacheSize: 9000\n" +
+                    "indexingStrategies: [\"${VaultWatcherService.IndexingType.EXTERNAL_ID}\", \"${VaultWatcherService.IndexingType.PUBLIC_KEY}\"]\n" +
+                    "}\n" +
+                    "}"
+        )
         val cordappConfig = TypesafeCordappConfig(config)
         val inMemoryConfig = InMemorySelectionConfig.parse(cordappConfig)
         assertThat(inMemoryConfig.cacheSize).isEqualTo(9000)
-        assertThat(inMemoryConfig.indexingStrategies).isEqualTo(listOf(VaultWatcherService.IndexingType.EXTERNAL_ID, VaultWatcherService.IndexingType.PUBLIC_KEY))
+        assertThat(inMemoryConfig.indexingStrategies).isEqualTo(
+            listOf(
+                VaultWatcherService.IndexingType.EXTERNAL_ID,
+                VaultWatcherService.IndexingType.PUBLIC_KEY
+            )
+        )
     }
 
     @Test
@@ -102,12 +113,14 @@ class ConfigSelectionTest {
 
     @Test
     fun `test defaults database selection`() {
-        val configOne = ConfigFactory.parseString("stateSelection {\n" +
-                "database {\n" +
-                "maxRetries: 13\n" +
-                "retryCap: 1345\n" +
-                "}\n" +
-                "}")
+        val configOne = ConfigFactory.parseString(
+            "stateSelection {\n" +
+                    "database {\n" +
+                    "maxRetries: 13\n" +
+                    "retryCap: 1345\n" +
+                    "}\n" +
+                    "}"
+        )
         val cordappConfigOne = TypesafeCordappConfig(configOne)
         val selectionOne = ConfigSelection.getPreferredSelection(services, cordappConfigOne)
         assertThat(selectionOne).isInstanceOf(DatabaseTokenSelection::class.java)
@@ -115,9 +128,11 @@ class ConfigSelectionTest {
         assertThat(selectionOne).hasFieldOrPropertyWithValue("retrySleep", RETRY_SLEEP_DEFAULT)
         assertThat(selectionOne).hasFieldOrPropertyWithValue("retryCap", 1345)
 
-        val configAll = ConfigFactory.parseString("stateSelection {\n" +
-                "database {}\n" +
-                "}")
+        val configAll = ConfigFactory.parseString(
+            "stateSelection {\n" +
+                    "database {}\n" +
+                    "}"
+        )
         val cordappConfigAll = TypesafeCordappConfig(configAll)
         val selectionAll = ConfigSelection.getPreferredSelection(services, cordappConfigAll)
         assertThat(selectionAll).isInstanceOf(DatabaseTokenSelection::class.java)
@@ -129,10 +144,12 @@ class ConfigSelectionTest {
     @Test
     fun `test defaults in memory selection`() {
         createMockCordaService(services, ::VaultWatcherService)
-        val config = ConfigFactory.parseString("stateSelection {\n" +
-                "inMemory {\n" +
-                "}\n" +
-                "}")
+        val config = ConfigFactory.parseString(
+            "stateSelection {\n" +
+                    "inMemory {\n" +
+                    "}\n" +
+                    "}"
+        )
         val cordappConfig = TypesafeCordappConfig(config)
         val inMemoryConfig = InMemorySelectionConfig.parse(cordappConfig)
         assertThat(inMemoryConfig.cacheSize).isEqualTo(CACHE_SIZE_DEFAULT)
@@ -140,13 +157,15 @@ class ConfigSelectionTest {
 
     @Test
     fun `test fail database selection`() {
-        val config = ConfigFactory.parseString("stateSelection {\n" +
-                "database {\n" +
-                "maxRetries: 13\n" +
-                "retrySleep: kerfuffle\n" +
-                "retryCap: 1345\n" +
-                "}\n" +
-                "}")
+        val config = ConfigFactory.parseString(
+            "stateSelection {\n" +
+                    "database {\n" +
+                    "maxRetries: 13\n" +
+                    "retrySleep: kerfuffle\n" +
+                    "retryCap: 1345\n" +
+                    "}\n" +
+                    "}"
+        )
         val cordappConfig = TypesafeCordappConfig(config)
         assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
             ConfigSelection.getPreferredSelection(services, cordappConfig)
@@ -155,11 +174,13 @@ class ConfigSelectionTest {
 
     @Test
     fun `test fail in memory selection`() {
-        val config = ConfigFactory.parseString("stateSelection {\n" +
-                "inMemory {\n" +
-                "cacheSize: kerfuffle\n" +
-                "}\n" +
-                "}")
+        val config = ConfigFactory.parseString(
+            "stateSelection {\n" +
+                    "inMemory {\n" +
+                    "cacheSize: kerfuffle\n" +
+                    "}\n" +
+                    "}"
+        )
         val cordappConfig = TypesafeCordappConfig(config)
         assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
             ConfigSelection.getPreferredSelection(services, cordappConfig)
@@ -168,11 +189,13 @@ class ConfigSelectionTest {
 
     @Test
     fun `no in memory selection installed on node`() {
-        val config = ConfigFactory.parseString("stateSelection {\n" +
-                "inMemory {\n" +
-                "cacheSize: 9000\n" +
-                "}\n" +
-                "}")
+        val config = ConfigFactory.parseString(
+            "stateSelection {\n" +
+                    "inMemory {\n" +
+                    "cacheSize: 9000\n" +
+                    "}\n" +
+                    "}"
+        )
         val cordappConfig = TypesafeCordappConfig(config)
         assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
             ConfigSelection.getPreferredSelection(services, cordappConfig)

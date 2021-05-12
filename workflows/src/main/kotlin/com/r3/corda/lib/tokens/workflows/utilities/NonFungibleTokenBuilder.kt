@@ -27,7 +27,7 @@ class NonFungibleTokenBuilder {
      *
      * @param t The token type that will be used to build an [IssuedTokenType]
      */
-    fun <T: TokenType> ofTokenType(t: T): NonFungibleTokenBuilder = this.apply { this.tokenType = t }
+    fun <T : TokenType> ofTokenType(t: T): NonFungibleTokenBuilder = this.apply { this.tokenType = t }
 
     /**
      * Replicates the Kotlin DSL [issuedBy] infix function. Supplies a [Party] to the builder
@@ -51,9 +51,15 @@ class NonFungibleTokenBuilder {
      */
     @Throws(TokenBuilderException::class)
     fun buildIssuedTokenType(): IssuedTokenType = when {
-        !::tokenType.isInitialized -> { throw TokenBuilderException("A token type has not been provided to the builder.") }
-        !::issuer.isInitialized -> { throw TokenBuilderException("A token issuer has not been provided to the builder.") }
-        else -> { tokenType issuedBy issuer }
+        !::tokenType.isInitialized -> {
+            throw TokenBuilderException("A token type has not been provided to the builder.")
+        }
+        !::issuer.isInitialized -> {
+            throw TokenBuilderException("A token issuer has not been provided to the builder.")
+        }
+        else -> {
+            tokenType issuedBy issuer
+        }
     }
 
     /**
@@ -62,7 +68,11 @@ class NonFungibleTokenBuilder {
      */
     @Throws(TokenBuilderException::class)
     fun buildNonFungibleToken(): NonFungibleToken = when {
-        ::holder.isInitialized -> { buildIssuedTokenType() heldBy holder }
-        else -> { throw TokenBuilderException("A token holder has not been provided to the builder.") }
+        ::holder.isInitialized -> {
+            buildIssuedTokenType() heldBy holder
+        }
+        else -> {
+            throw TokenBuilderException("A token holder has not been provided to the builder.")
+        }
     }
 }

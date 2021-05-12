@@ -1,6 +1,5 @@
 package com.r3.corda.lib.tokens.workflows
 
-import com.natpryce.hamkrest.isIn
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
@@ -57,14 +56,15 @@ import java.util.concurrent.atomic.AtomicInteger
 class VaultWatcherServiceTest {
     private lateinit var services: MockServices
     private lateinit var database: CordaPersistence
+
     @Before
     fun setupServices() {
         val mockDbAndServices = MockServices.makeTestDatabaseAndPersistentServices(
-                cordappPackages = listOf("com.r3.corda.lib.tokens.workflows"),
-                initialIdentity = TestIdentity(CordaX500Name("Test", "London", "GB")),
-                networkParameters = testNetworkParameters(minimumPlatformVersion = 4),
-                moreIdentities = emptySet(),
-                moreKeys = emptySet()
+            cordappPackages = listOf("com.r3.corda.lib.tokens.workflows"),
+            initialIdentity = TestIdentity(CordaX500Name("Test", "London", "GB")),
+            networkParameters = testNetworkParameters(minimumPlatformVersion = 4),
+            moreIdentities = emptySet(),
+            moreKeys = emptySet()
         )
         services = mockDbAndServices.second
         database = mockDbAndServices.first
@@ -86,7 +86,7 @@ class VaultWatcherServiceTest {
     @Test
     fun `should select enough tokens to satisfy the requested amount`() {
         val (VaultObserver,
-                observable) = getDefaultVaultObserver()
+            observable) = getDefaultVaultObserver()
 
         val vaultWatcherService = VaultWatcherService(VaultObserver, InMemorySelectionConfig.defaultConfig())
         val owner = Crypto.generateKeyPair(Crypto.DEFAULT_SIGNATURE_SCHEME).public
@@ -101,7 +101,7 @@ class VaultWatcherServiceTest {
     @Test(expected = InsufficientBalanceException::class)
     fun `should not allow double selection of token in the cache`() {
         val (VaultObserver,
-                observable) = getDefaultVaultObserver()
+            observable) = getDefaultVaultObserver()
 
         val vaultWatcherService = VaultWatcherService(VaultObserver, InMemorySelectionConfig.defaultConfig())
 
@@ -109,7 +109,8 @@ class VaultWatcherServiceTest {
         val amountToIssue: Long = 100
         val stateAndRef = createNewFiatCurrencyTokenRef(amountToIssue, owner, notary1, issuer1, GBP, observable, database)
 
-        val selectedTokens = vaultWatcherService.selectTokens(Holder.TokenOnly(), Amount(5, IssuedTokenType(issuer1, GBP)), selectionId = "abc")
+        val selectedTokens =
+            vaultWatcherService.selectTokens(Holder.TokenOnly(), Amount(5, IssuedTokenType(issuer1, GBP)), selectionId = "abc")
         Assert.assertThat(selectedTokens, `is`(equalTo(listOf<StateAndRef<FungibleToken>>(stateAndRef))))
         vaultWatcherService.selectTokens(Holder.KeyIdentity(owner), Amount(5, IssuedTokenType(issuer1, GBP)), selectionId = "abc")
     }
@@ -117,7 +118,7 @@ class VaultWatcherServiceTest {
     @Test
     fun `should allow filtering based on arbitary predicate`() {
         val (VaultObserver,
-                observable) = getDefaultVaultObserver()
+            observable) = getDefaultVaultObserver()
 
         val vaultWatcherService = VaultWatcherService(VaultObserver, InMemorySelectionConfig.defaultConfig())
 
@@ -145,7 +146,7 @@ class VaultWatcherServiceTest {
     @Test
     fun `should remove states which have been spent`() {
         val (VaultObserver,
-                observable) = getDefaultVaultObserver()
+            observable) = getDefaultVaultObserver()
 
         val vaultWatcherService = VaultWatcherService(VaultObserver, InMemorySelectionConfig.defaultConfig())
         val owner = Crypto.generateKeyPair(Crypto.DEFAULT_SIGNATURE_SCHEME).public
@@ -156,14 +157,19 @@ class VaultWatcherServiceTest {
 
         val selectedTokens = vaultWatcherService.selectTokens(Holder.KeyIdentity(owner), Amount(50, GBP), selectionId = "abc").toSet()
         val (spentInputs, _) = executeTx(
-                selectedTokens,
-                Amount(50, GBP),
-                Crypto.generateKeyPair(Crypto.DEFAULT_SIGNATURE_SCHEME).public,
-                observable = observable,
-                database = database)
+            selectedTokens,
+            Amount(50, GBP),
+            Crypto.generateKeyPair(Crypto.DEFAULT_SIGNATURE_SCHEME).public,
+            observable = observable,
+            database = database
+        )
 
-
-        val selectedTokensAfterSpend = vaultWatcherService.selectTokens(Holder.KeyIdentity(owner), Amount(10000000000, GBP), allowShortfall = true, selectionId = "abc")
+        val selectedTokensAfterSpend = vaultWatcherService.selectTokens(
+            Holder.KeyIdentity(owner),
+            Amount(10000000000, GBP),
+            allowShortfall = true,
+            selectionId = "abc"
+        )
 
         Assert.assertThat(spentInputs, everyItem(not(isIn(selectedTokensAfterSpend))))
     }
@@ -171,7 +177,7 @@ class VaultWatcherServiceTest {
     @Test
     fun `should remove states which have been spent via redeem`() {
         val (VaultObserver,
-                observable) = getDefaultVaultObserver()
+            observable) = getDefaultVaultObserver()
 
         val vaultWatcherService = VaultWatcherService(VaultObserver, InMemorySelectionConfig.defaultConfig())
         val owner = Crypto.generateKeyPair(Crypto.DEFAULT_SIGNATURE_SCHEME).public
@@ -183,7 +189,12 @@ class VaultWatcherServiceTest {
         val selectedTokens = vaultWatcherService.selectTokens(Holder.KeyIdentity(owner), Amount(50, GBP), selectionId = "abc").toSet()
         executeConsumption(selectedTokens, observable, database)
 
-        val selectedTokensAfterSpend = vaultWatcherService.selectTokens(Holder.KeyIdentity(owner), Amount(10000000000, GBP), allowShortfall = true, selectionId = "abc")
+        val selectedTokensAfterSpend = vaultWatcherService.selectTokens(
+            Holder.KeyIdentity(owner),
+            Amount(10000000000, GBP),
+            allowShortfall = true,
+            selectionId = "abc"
+        )
 
         Assert.assertThat(selectedTokens, everyItem(not(isIn(selectedTokensAfterSpend))))
     }
@@ -209,8 +220,10 @@ class VaultWatcherServiceTest {
             override fun invoke(tokenState: StateAndRef<FungibleToken>, indexingType: VaultWatcherService.IndexingType): Holder {
                 return when (indexingType) {
                     VaultWatcherService.IndexingType.EXTERNAL_ID -> {
-                        Holder.MappedIdentity(keyToAccount[tokenState.state.data.holder.owningKey]
-                                ?: error("should never happen"))
+                        Holder.MappedIdentity(
+                            keyToAccount[tokenState.state.data.holder.owningKey]
+                                ?: error("should never happen")
+                        )
                     }
                     VaultWatcherService.IndexingType.PUBLIC_KEY -> {
                         Holder.KeyIdentity(tokenState.state.data.holder.owningKey)
@@ -221,7 +234,8 @@ class VaultWatcherServiceTest {
 
         val observable = PublishSubject.create<Vault.Update<FungibleToken>>()
 
-        val vaultWatcherService = VaultWatcherService(TokenObserver(emptyList(), observable, ownerProvider), InMemorySelectionConfig.defaultConfig())
+        val vaultWatcherService =
+            VaultWatcherService(TokenObserver(emptyList(), observable, ownerProvider), InMemorySelectionConfig.defaultConfig())
         val keyToTokenMap = HashMap<PublicKey, StateAndRef<FungibleToken>>()
 
         val accountToIssuedTokensMap = accountsAndKeys.map {
@@ -233,11 +247,15 @@ class VaultWatcherServiceTest {
             it.key to tokensIssuedToAccount
         }.toMap()
 
-
         //check we can select by account
         for (accountsAndKeyEntry in accountsAndKeys) {
             val account = accountsAndKeyEntry.key
-            val selectedTokens = vaultWatcherService.selectTokens(Holder.MappedIdentity(account), Amount(10000000000, GBP), allowShortfall = true, selectionId = "CHEESEY_BITES").sortedBy { it.toString() }
+            val selectedTokens = vaultWatcherService.selectTokens(
+                Holder.MappedIdentity(account),
+                Amount(10000000000, GBP),
+                allowShortfall = true,
+                selectionId = "CHEESEY_BITES"
+            ).sortedBy { it.toString() }
             val expectedTokens = accountToIssuedTokensMap[account]!!.sortedBy { it.toString() }
             Assert.assertThat(selectedTokens, `is`(equalTo(expectedTokens)))
             expectedTokens.forEach {
@@ -248,7 +266,12 @@ class VaultWatcherServiceTest {
         //check we can select by owning key
         for (keyToTokenEntry in keyToTokenMap) {
             val key = keyToTokenEntry.key
-            val selectedTokens = vaultWatcherService.selectTokens(Holder.KeyIdentity(key), Amount(10000000000, GBP), allowShortfall = true, selectionId = "CHEESEY_BITES").sortedBy { it.toString() }
+            val selectedTokens = vaultWatcherService.selectTokens(
+                Holder.KeyIdentity(key),
+                Amount(10000000000, GBP),
+                allowShortfall = true,
+                selectionId = "CHEESEY_BITES"
+            ).sortedBy { it.toString() }
             val expectedTokens = listOf(keyToTokenEntry.value)
             Assert.assertThat(selectedTokens, `is`(equalTo(expectedTokens)))
         }
@@ -259,7 +282,7 @@ class VaultWatcherServiceTest {
     fun `very basic memory checking state scales`() {
 
         val (VaultObserver,
-                observable) = getDefaultVaultObserver()
+            observable) = getDefaultVaultObserver()
 
         VaultWatcherService(VaultObserver, InMemorySelectionConfig.defaultConfig())
         val owner = Crypto.generateKeyPair(Crypto.DEFAULT_SIGNATURE_SCHEME).public
@@ -271,7 +294,6 @@ class VaultWatcherServiceTest {
             }
             println("${j * 1000} total states = ${Runtime.getRuntime().totalMemory() / (1024 * 1024)}MB")
         }
-
     }
 
     @Test
@@ -286,14 +308,18 @@ class VaultWatcherServiceTest {
             for (i in 1..5) {
                 createNewFiatCurrencyTokenRef((Math.random() * 10).toLong(), owner, notary1, issuer1, GBP, observable, database)
             }
-            println("$j owners ${NumberFormat.getInstance().format(j * 5)}, total states = ${Runtime.getRuntime().totalMemory() / (1024 * 1024)}MB")
+            println(
+                "$j owners ${NumberFormat.getInstance().format(j * 5)}, total states = ${
+                    Runtime.getRuntime().totalMemory() / (1024 * 1024)
+                }MB"
+            )
         }
     }
 
     @Test
     fun `should support concurrent requests and inserts for tokens`() {
         val (VaultObserver,
-                observable) = getDefaultVaultObserver()
+            observable) = getDefaultVaultObserver()
         val vaultWatcherService = VaultWatcherService(VaultObserver, InMemorySelectionConfig.defaultConfig())
 
         val executor = Executors.newFixedThreadPool(10)
@@ -325,7 +351,6 @@ class VaultWatcherServiceTest {
             }
         }
 
-
         val btcSpender = Runnable {
             var selects = 0
             while (selects < 10_000) {
@@ -336,14 +361,15 @@ class VaultWatcherServiceTest {
                 }
                 try {
                     val amountRequested = Amount((10 * Math.random()).toLong() + 1, BTC)
-                    val selectedTokens = vaultWatcherService.selectTokens(Holder.KeyIdentity(owner), amountRequested, selectionId = "abc").toSet()
+                    val selectedTokens =
+                        vaultWatcherService.selectTokens(Holder.KeyIdentity(owner), amountRequested, selectionId = "abc").toSet()
                     executeTx(
-                            selectedTokens,
-                            amountRequested,
-                            newOwner,
-                            observable = observable,
-                            spendTracker = spendTracker,
-                            database = database
+                        selectedTokens,
+                        amountRequested,
+                        newOwner,
+                        observable = observable,
+                        spendTracker = spendTracker,
+                        database = database
                     )
 
                     selects++
@@ -362,21 +388,21 @@ class VaultWatcherServiceTest {
                 }
                 try {
                     val amountRequested = Amount(10, GBP)
-                    val selectedTokens = vaultWatcherService.selectTokens(Holder.KeyIdentity(owner), amountRequested, selectionId = "abc").toSet()
+                    val selectedTokens =
+                        vaultWatcherService.selectTokens(Holder.KeyIdentity(owner), amountRequested, selectionId = "abc").toSet()
                     executeTx(
-                            selectedTokens,
-                            amountRequested,
-                            newOwner,
-                            observable = observable,
-                            spendTracker = spendTracker,
-                            database = database
+                        selectedTokens,
+                        amountRequested,
+                        newOwner,
+                        observable = observable,
+                        spendTracker = spendTracker,
+                        database = database
                     )
                     selects++
                 } catch (e: InsufficientBalanceException) {
                 }
             }
         }
-
 
         val btcInsertFuture = executor.submit(btcInserter)
         val gbpInsertFuture = executor.submit(gbpInserter)
@@ -404,14 +430,16 @@ class VaultWatcherServiceTest {
     @Test
     fun `should allow selection of tokens already issued from within a flow`() {
 
-        val mockNet = InternalMockNetwork(cordappPackages = listOf(
+        val mockNet = InternalMockNetwork(
+            cordappPackages = listOf(
                 "com.r3.corda.lib.tokens.money",
                 "com.r3.corda.lib.tokens.selection",
                 "com.r3.corda.lib.tokens.contracts",
                 "com.r3.corda.lib.tokens.workflows"
-        ))
+            )
+        )
 
-        try{
+        try {
             val aliceNode = mockNet.createNode(InternalMockNodeParameters(legalName = ALICE_NAME))
             val issuerNode = mockNet.createNode(InternalMockNodeParameters(legalName = CHARLIE_NAME))
             val alice = aliceNode.info.singleIdentity()
@@ -428,10 +456,9 @@ class VaultWatcherServiceTest {
             val selectedToken = tokensFuture.getOrThrow().single()
 
             Assert.assertThat(issuedStateRef, `is`(equalTo(selectedToken)))
-        }finally {
+        } finally {
             mockNet.stopNodes()
         }
-
     }
 
     companion object {
@@ -440,49 +467,57 @@ class VaultWatcherServiceTest {
         val notary1 = TestIdentity(CordaX500Name("Notary1", "London", "GB")).party
         val notary2 = TestIdentity(CordaX500Name("Notary2", "London", "GB")).party
 
-        private fun createNewTokenRef(amount: Amount<TokenType>,
-                                      owner: PublicKey,
-                                      notary: Party,
-                                      issuer: Party,
-                                      observable: PublishSubject<Vault.Update<FungibleToken>>? = null,
-                                      txHash: SecureHash = SecureHash.randomSHA256(),
-                                      index: Int = 0,
-                                      database: CordaPersistence): StateAndRef<FungibleToken> {
+        private fun createNewTokenRef(
+            amount: Amount<TokenType>,
+            owner: PublicKey,
+            notary: Party,
+            issuer: Party,
+            observable: PublishSubject<Vault.Update<FungibleToken>>? = null,
+            txHash: SecureHash = SecureHash.randomSHA256(),
+            index: Int = 0,
+            database: CordaPersistence
+        ): StateAndRef<FungibleToken> {
             val thing = FungibleToken(amount issuedBy issuer, AnonymousParty(owner))
             val state = TransactionState(data = thing, notary = notary)
             val stateRef = StateRef(txHash, index)
             return StateAndRef(state, stateRef)
-                    .also { database.transaction { observable?.onNext(Vault.Update(emptySet(), produced = setOf(it))) } }
+                .also { database.transaction { observable?.onNext(Vault.Update(emptySet(), produced = setOf(it))) } }
         }
 
-        fun createNewFiatCurrencyTokenRef(amountToIssue: Long,
-                                          owner: PublicKey,
-                                          notary: Party,
-                                          issuer: Party,
-                                          currency: TokenType = GBP,
-                                          observable: PublishSubject<Vault.Update<FungibleToken>>? = null,
-                                          database: CordaPersistence): StateAndRef<FungibleToken> {
+        fun createNewFiatCurrencyTokenRef(
+            amountToIssue: Long,
+            owner: PublicKey,
+            notary: Party,
+            issuer: Party,
+            currency: TokenType = GBP,
+            observable: PublishSubject<Vault.Update<FungibleToken>>? = null,
+            database: CordaPersistence
+        ): StateAndRef<FungibleToken> {
             val amount = Amount(amountToIssue, currency)
             return createNewTokenRef(amount, owner, notary, issuer, observable, database = database)
         }
 
-        private fun createNewDigitalCurrencyTokenRef(amountToIssue: Long,
-                                                     owner: PublicKey,
-                                                     notary: Party,
-                                                     issuer: Party,
-                                                     observable: PublishSubject<Vault.Update<FungibleToken>>? = null,
-                                                     database: CordaPersistence): StateAndRef<FungibleToken> {
+        private fun createNewDigitalCurrencyTokenRef(
+            amountToIssue: Long,
+            owner: PublicKey,
+            notary: Party,
+            issuer: Party,
+            observable: PublishSubject<Vault.Update<FungibleToken>>? = null,
+            database: CordaPersistence
+        ): StateAndRef<FungibleToken> {
             val amount = Amount(amountToIssue, BTC)
             return createNewTokenRef(amount, owner, notary, issuer, observable, database = database)
         }
 
-        fun executeTx(inputStates: Set<StateAndRef<FungibleToken>>,
-                      amountToSpend: Amount<TokenType>,
-                      newOwner: PublicKey,
-                      map: ConcurrentMap<StateRef, StateAndRef<FungibleToken>>? = null,
-                      observable: PublishSubject<Vault.Update<FungibleToken>>? = null,
-                      spendTracker: ConcurrentHashMap<StateRef, AtomicInteger>? = null,
-                      database: CordaPersistence): Pair<Set<StateAndRef<FungibleToken>>, Set<StateAndRef<FungibleToken>>> {
+        fun executeTx(
+            inputStates: Set<StateAndRef<FungibleToken>>,
+            amountToSpend: Amount<TokenType>,
+            newOwner: PublicKey,
+            map: ConcurrentMap<StateRef, StateAndRef<FungibleToken>>? = null,
+            observable: PublishSubject<Vault.Update<FungibleToken>>? = null,
+            spendTracker: ConcurrentHashMap<StateRef, AtomicInteger>? = null,
+            database: CordaPersistence
+        ): Pair<Set<StateAndRef<FungibleToken>>, Set<StateAndRef<FungibleToken>>> {
 
             var totalForInput = amountToSpend.copy(quantity = 0)
             inputStates.forEach {
@@ -498,21 +533,23 @@ class VaultWatcherServiceTest {
             val outputTx = SecureHash.randomSHA256()
 
             val changeState = createNewTokenRef(
-                    change,
-                    inputStates.first().state.data.holder.owningKey,
-                    inputStates.first().state.notary,
-                    issuer1,
-                    txHash = outputTx,
-                    index = 0,
-                    database = database)
+                change,
+                inputStates.first().state.data.holder.owningKey,
+                inputStates.first().state.notary,
+                issuer1,
+                txHash = outputTx,
+                index = 0,
+                database = database
+            )
             val movedState = createNewTokenRef(
-                    amountToSpend,
-                    newOwner,
-                    inputStates.first().state.notary,
-                    issuer1,
-                    txHash = outputTx,
-                    index = 1,
-                    database = database)
+                amountToSpend,
+                newOwner,
+                inputStates.first().state.notary,
+                issuer1,
+                txHash = outputTx,
+                index = 1,
+                database = database
+            )
 
             map?.let {
                 it.putIfAbsent(changeState.ref, uncheckedCast(changeState))
@@ -536,16 +573,23 @@ class VaultWatcherServiceTest {
             return inputStates to setOf(changeState, movedState)
         }
 
-        fun executeConsumption(inputStates: Set<StateAndRef<FungibleToken>>,
-                          observable: PublishSubject<Vault.Update<FungibleToken>>,
-                          database: CordaPersistence) =
-                database.transaction {
-                    observable.onNext(Vault.Update(consumed = inputStates, produced = setOf()))
-                }
+        fun executeConsumption(
+            inputStates: Set<StateAndRef<FungibleToken>>,
+            observable: PublishSubject<Vault.Update<FungibleToken>>,
+            database: CordaPersistence
+        ) =
+            database.transaction {
+                observable.onNext(Vault.Update(consumed = inputStates, produced = setOf()))
+            }
 
         fun getDefaultVaultObserver(): Pair<TokenObserver, PublishSubject<Vault.Update<FungibleToken>>> {
             val observable = PublishSubject.create<Vault.Update<FungibleToken>>()
-            return Pair(TokenObserver(listOf(), uncheckedCast(observable), { stateAndRef, _ -> Holder.KeyIdentity(stateAndRef.state.data.holder.owningKey) }), observable)
+            return Pair(
+                TokenObserver(
+                    listOf(),
+                    uncheckedCast(observable),
+                    { stateAndRef, _ -> Holder.KeyIdentity(stateAndRef.state.data.holder.owningKey) }), observable
+            )
         }
     }
 }

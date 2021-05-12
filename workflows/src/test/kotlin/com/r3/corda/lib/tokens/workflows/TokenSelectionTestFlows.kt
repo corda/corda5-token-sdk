@@ -17,12 +17,12 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
-
 val e = Executors.newSingleThreadExecutor()
 
-class SuspendingSelector(val owningKey: PublicKey,
-                         val amount: Amount<TokenType>) : FlowLogic<List<StateAndRef<FungibleToken>>>() {
-
+class SuspendingSelector(
+    val owningKey: PublicKey,
+    val amount: Amount<TokenType>
+) : FlowLogic<List<StateAndRef<FungibleToken>>>() {
 
     @Suspendable
     override fun call(): List<StateAndRef<FungibleToken>> {
@@ -56,5 +56,4 @@ class SuspendingSelector(val owningKey: PublicKey,
 
         return selectedTokens
     }
-
 }

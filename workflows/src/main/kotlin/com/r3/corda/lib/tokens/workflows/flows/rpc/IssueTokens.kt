@@ -35,8 +35,8 @@ import net.corda.v5.ledger.transactions.SignedTransaction
 class IssueTokens
 @JvmOverloads
 constructor(
-        val tokensToIssue: List<AbstractToken>,
-        val observers: List<Party> = emptyList()
+    val tokensToIssue: List<AbstractToken>,
+    val observers: List<Party> = emptyList()
 ) : Flow<SignedTransaction> {
 
     @CordaInject
@@ -83,8 +83,8 @@ class IssueTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
 class ConfidentialIssueTokens
 @JvmOverloads
 constructor(
-        val tokensToIssue: List<AbstractToken>,
-        val observers: List<Party> = emptyList()
+    val tokensToIssue: List<AbstractToken>,
+    val observers: List<Party> = emptyList()
 ) : Flow<SignedTransaction> {
 
     @CordaInject

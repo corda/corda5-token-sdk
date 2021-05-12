@@ -18,10 +18,10 @@ class TestEvolvableTokenContract : EvolvableTokenContract(), Contract {
 
 @BelongsToContract(TestEvolvableTokenContract::class)
 data class TestEvolvableTokenType(
-        override val maintainers: List<Party>,
-        val observers: List<Party> = emptyList(),
-        override val participants: List<Party> = maintainers + observers,
-        override val linearId: UniqueIdentifier = UniqueIdentifier()
+    override val maintainers: List<Party>,
+    val observers: List<Party> = emptyList(),
+    override val participants: List<Party> = maintainers + observers,
+    override val linearId: UniqueIdentifier = UniqueIdentifier()
 ) : EvolvableTokenType() {
 
     override val fractionDigits: Int get() = 0

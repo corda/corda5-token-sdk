@@ -82,5 +82,4 @@ class UsabilityTests : LedgerTestWithPersistence() {
         assertEquals(2, tokens.count { it.tokenType.isCustomTokenType() })
         assertEquals(1, tokens.count { it.tokenType.isRegularTokenType() })
     }
-
 }
