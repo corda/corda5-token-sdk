@@ -32,13 +32,13 @@ import net.corda.v5.application.flows.InitiatedBy
 import net.corda.v5.application.flows.InitiatingFlow
 import net.corda.v5.application.flows.StartableByRPC
 import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.flows.flowservices.FlowMessaging
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.node.NodeInfo
 import net.corda.v5.application.node.services.IdentityService
 import net.corda.v5.application.node.services.KeyManagementService
-import net.corda.v5.application.node.services.NetworkMapCache
 import net.corda.v5.application.node.services.PersistenceService
 import net.corda.v5.application.utilities.unwrap
 import net.corda.v5.base.annotations.CordaSerializable
@@ -132,6 +132,9 @@ class DvPFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
     @CordaInject
     lateinit var nodeInfo: NodeInfo
 
+    @CordaInject
+    lateinit var flowIdentity: FlowIdentity
+
     @Suspendable
     override fun call() {
         // Receive notification with house price.
@@ -139,7 +142,7 @@ class DvPFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
         // Chose state and refs to send back.
         // TODO This is API pain, we assumed that we could just modify TransactionBuilder, but... it cannot be sent over the wire, because non-serializable
         // We need custom serializer and some custom flows to do checks.
-        val changeHolder = keyManagementService.freshKeyAndCert(ourIdentityAndCert, false).party.anonymise()
+        val changeHolder = flowIdentity.ourIdentity.anonymise()
         val (inputs, outputs) =
             DatabaseTokenSelection(vaultService, identityService, flowEngine).generateMove(
                 identityService,
