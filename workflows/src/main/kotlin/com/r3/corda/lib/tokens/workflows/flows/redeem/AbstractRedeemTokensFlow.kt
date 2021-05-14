@@ -7,12 +7,11 @@ import com.r3.corda.lib.tokens.workflows.utilities.ourSigningKeys
 import net.corda.systemflows.CollectSignaturesFlow
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
-import net.corda.v5.application.flows.flowservices.CustomProgressTracker
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.application.node.services.KeyManagementService
-import net.corda.v5.application.utilities.ProgressTracker
 import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.util.contextLogger
 import net.corda.v5.ledger.services.TransactionMappingService
 import net.corda.v5.ledger.services.TransactionService
 import net.corda.v5.ledger.services.VaultService
@@ -28,21 +27,21 @@ import net.corda.v5.ledger.transactions.TransactionBuilderFactory
  * identities from the states to redeem with the issuer (bear in mind that issuer usually isn't involved in move of tokens),
  * collects signatures and finalises transaction with observers if present.
  */
-abstract class AbstractRedeemTokensFlow : Flow<SignedTransaction>, CustomProgressTracker {
+abstract class AbstractRedeemTokensFlow : Flow<SignedTransaction> {
 
     abstract val issuerSession: FlowSession
     abstract val observerSessions: List<FlowSession>
 
-    companion object {
-        object SELECTING_STATES : ProgressTracker.Step("Selecting states to redeem.")
-        object SYNC_IDS : ProgressTracker.Step("Synchronising confidential identities.")
-        object COLLECT_SIGS : ProgressTracker.Step("Collecting signatures")
-        object FINALISING_TX : ProgressTracker.Step("Finalising transaction")
+    private companion object {
+        const val SELECTING_STATES = "Selecting states to redeem."
+        const val SYNC_IDS = "Synchronising confidential identities."
+        const val COLLECT_SIGS = "Collecting signatures"
+        const val FINALISING_TX = "Finalising transaction"
 
-        fun tracker() = ProgressTracker(SELECTING_STATES, SYNC_IDS, COLLECT_SIGS, FINALISING_TX)
+        val logger = contextLogger()
+
+        fun debug(msg: String) = logger.debug("${this::class.java.name}: $msg")
     }
-
-    override val progressTracker: ProgressTracker = tracker()
 
     @CordaInject
     lateinit var transactionBuilderFactory: TransactionBuilderFactory
@@ -73,19 +72,19 @@ abstract class AbstractRedeemTokensFlow : Flow<SignedTransaction>, CustomProgres
         issuerSession.send(TransactionRole.PARTICIPANT)
         observerSessions.forEach { it.send(TransactionRole.OBSERVER) }
         val txBuilder = transactionBuilderFactory.create()
-        progressTracker.currentStep = SELECTING_STATES
+        debug(SELECTING_STATES)
         generateExit(txBuilder)
         // First synchronise identities between issuer and our states.
         // TODO: Only do this if necessary.
-        progressTracker.currentStep = SYNC_IDS
+        debug(SYNC_IDS)
         flowEngine.subFlow(SyncKeyMappingFlow(issuerSession, txBuilder.toWireTransaction()))
         val ourSigningKeys = transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction())
             .ourSigningKeys(keyManagementService)
         val partialStx = transactionService.signInitial(txBuilder, ourSigningKeys)
         // Call collect signatures flow, issuer should perform all the checks for redeeming states.
-        progressTracker.currentStep = COLLECT_SIGS
+        debug(COLLECT_SIGS)
         val stx = flowEngine.subFlow(CollectSignaturesFlow(partialStx, listOf(issuerSession), ourSigningKeys))
-        progressTracker.currentStep = FINALISING_TX
+        debug(FINALISING_TX)
         return flowEngine.subFlow(ObserverAwareFinalityFlow(stx, observerSessions + issuerSession))
     }
 }

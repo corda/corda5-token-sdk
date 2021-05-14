@@ -1,6 +1,5 @@
 apply plugin: 'kotlin-jpa'
-apply plugin: 'net.corda.plugins.quasar-utils'
-apply plugin: 'net.corda.plugins.cordapp'
+apply plugin: 'net.corda.plugins.cordapp-cpk'
 
 
 evaluationDependsOn(":modules:selection")
@@ -8,16 +7,16 @@ evaluationDependsOn(":modules:selection")
 def selectionProject = project(":modules:selection")
 
 cordapp {
-    targetPlatformVersion 5
-    minimumPlatformVersion 5
+    targetPlatformVersion corda_platform_version.toInteger()
+    minimumPlatformVersion corda_platform_version.toInteger()
     workflow {
         name "Token SDK Workflows"
         vendor "R3"
         licence "Apache 2"
-        versionId 2
+        versionId 3
     }
     signing {
-        enabled false
+        enabled = false
     }
 }
 
@@ -51,36 +50,19 @@ compileKotlin {
 }
 
 dependencies {
-    //implementation 'android.arch.persistence.room:runtime:1.1.1'
     implementation "org.liquibase:liquibase-core:$liquibaseVersion"
     implementation "org.hibernate:hibernate-core:$hibernateVersion"
 
-    // Kotlin.
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    //annotationProcessor 'android.arch.persistence.room:compiler:1.1.1'
-
     // Corda dependencies.
-    cordaCompile("$corda_release_group:corda-application:$corda_release_version") {
-        changing = true
-    }
-
-    cordaCompile("$corda_release_group:corda-node-api:$corda_release_version") {
-        changing = true
-    }
-
-    cordaCompile("$corda_release_group:corda-ledger:$corda_release_version") {
-        changing = true
-    }
-
-    cordaCompile("$corda_release_group:corda-flows:$corda_release_version") {
-        changing = true
-    }
+    cordaProvided("$corda_release_group:corda-application:$corda_release_version") { changing = true }
+    cordaProvided("$corda_release_group:corda-node-api:$corda_release_version") { changing = true }
+    cordaProvided("$corda_release_group:corda-ledger:$corda_release_version") { changing = true}
+    cordaProvided("$corda_release_group:corda-flows:$corda_release_version") { changing = true}
 
     // Logging.
     testCompile "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
 
     // Testing.
-    testCompile "$corda_release_group:corda-node-driver:$legacy_corda_release_version"
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile "junit:junit:$junit_version"
 
@@ -90,14 +72,13 @@ dependencies {
     compile(files(selectionProject.jar.archivePath))
 
     //CI for confidential tokens
-    cordapp "$confidential_id_release_group:workflows:$confidential_id_release_version"
+    cordapp "$confidential_id_release_group:ci-workflows:$confidential_id_release_version"
 
     //just for testing - this means you MUST specify the contracts-for-testing cordapp as a cordapp in all tests using test flows
-    compileOnly project(":modules:contracts-for-testing")
+    compile project(":modules:contracts-for-testing")
     testCompile project(":modules:contracts-for-testing")
 
-    compileOnly("org.postgresql:postgresql:42.2.8")
-
+    compile("org.postgresql:postgresql:42.2.18")
 }
 
 task integrationTest(type: Test, dependsOn: []) {

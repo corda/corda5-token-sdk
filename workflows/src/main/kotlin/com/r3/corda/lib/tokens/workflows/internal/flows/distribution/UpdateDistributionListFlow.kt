@@ -6,14 +6,13 @@ import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.InitiatingFlow
-import net.corda.v5.application.flows.flowservices.CustomProgressTracker
 import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.flows.flowservices.FlowMessaging
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.application.node.services.IdentityService
 import net.corda.v5.application.node.services.PersistenceService
-import net.corda.v5.application.utilities.ProgressTracker
 import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.util.contextLogger
 import net.corda.v5.ledger.contracts.Command
 import net.corda.v5.ledger.contracts.TransactionState
 import net.corda.v5.ledger.services.StateRefLoaderService
@@ -22,16 +21,16 @@ import net.corda.v5.ledger.transactions.SignedTransaction
 
 // TODO: Handle updates of the distribution list for observers.
 @InitiatingFlow
-class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : Flow<Unit>, CustomProgressTracker {
+class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : Flow<Unit> {
 
-    companion object {
-        object ADD_DIST_LIST : ProgressTracker.Step("Adding to distribution list.")
-        object UPDATE_DIST_LIST : ProgressTracker.Step("Updating distribution list.")
+    private companion object {
+        const val ADD_DIST_LIST = "Adding to distribution list."
+        const val UPDATE_DIST_LIST = "Updating distribution list."
 
-        fun tracker() = ProgressTracker(ADD_DIST_LIST, UPDATE_DIST_LIST)
+        val logger = contextLogger()
+
+        fun debug(msg: String) = logger.debug("${this::class.java.name}: $msg")
     }
-
-    override val progressTracker: ProgressTracker = tracker()
 
     @CordaInject
     lateinit var identityService: IdentityService
@@ -72,7 +71,7 @@ class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : Flo
             // If it's an issue transaction then the party calling this flow will be the issuer and they just need to
             // update their local distribution list with the parties that have been just issued tokens.
             val issueTypes: List<TokenPointer<*>> = issueCmds.map { it.token.tokenType }.mapNotNull { it as? TokenPointer<*> }
-            progressTracker.currentStep = ADD_DIST_LIST
+            debug(ADD_DIST_LIST)
             val issueStates: List<AbstractToken> = tokensWithTokenPointers.filter {
                 it.tokenType in issueTypes
             }
@@ -82,7 +81,7 @@ class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : Flo
             // If it's a move then we need to call back to the issuer to update the distribution lists with the new
             // token holders.
             val moveTypes = moveCmds.map { it.token.tokenType }
-            progressTracker.currentStep = UPDATE_DIST_LIST
+            debug(UPDATE_DIST_LIST)
             val moveStates = tokensWithTokenPointers.filter { it.tokenType in moveTypes }
             updateDistributionList(
                 identityService,

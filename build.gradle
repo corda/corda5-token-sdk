@@ -8,22 +8,18 @@ buildscript {
         cordaArtifactoryUsername = System.getenv('CORDA_ARTIFACTORY_USERNAME') ?: System.getProperty('corda.artifactory.username')
         cordaArtifactoryPassword = System.getenv('CORDA_ARTIFACTORY_PASSWORD') ?: System.getProperty('corda.artifactory.password')
         corda_release_group = 'net.corda'
-        corda_release_version = '1.0.1620649485675-rc'
-        legacy_corda_release_version = '4.3'
+        corda_release_version = '1.0.1620894007947-rc'
+        corda_platform_version = '999' // FAKE - to be locked in later
         tokens_release_group = "com.r3.corda.lib.tokens"
         tokens_release_version = "2.0-SNAPSHOT"
-        corda_gradle_plugins_version = '5.0.8'
+        corda_gradle_plugins_version = '6.0.0-BETA03'
         kotlin_version = '1.4.21'
         junit_version = '4.12'
         dokka_version = '0.9.17'
         slf4j_version = '1.7.25'
         log4j_version = '2.9.1'
-        jackson_version = '2.9.0'
         confidential_id_release_group = "com.r3.corda.lib.ci"
         confidential_id_release_version = "2.0-SNAPSHOT"
-        aetherVersion = '1.0.0.v20140518'
-        mavenVersion = '3.1.0'
-        maven_resolver_version = "1.1.1"
         liquibaseVersion = '3.6.3'
         hibernateVersion = '5.4.3.Final'
         jfrogArtifactoryPluginVersion = '4.18.0'
@@ -34,15 +30,14 @@ buildscript {
         jcenter()
         mavenCentral()
         maven { url "$artifactoryContextUrl/corda-releases" }
+        maven { url "$artifactoryContextUrl/corda-dev" }
         maven { url "https://repo.gradle.org/gradle/libs-releases-local/" }
     }
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "org.jetbrains.kotlin:kotlin-noarg:$kotlin_version"
-        classpath "net.corda.plugins:cordformation:$corda_gradle_plugins_version"
-        classpath "net.corda.plugins:quasar-utils:$corda_gradle_plugins_version"
-        classpath "net.corda.plugins:cordapp:$corda_gradle_plugins_version"
+        classpath "net.corda.plugins:cordapp-cpk:$corda_gradle_plugins_version"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:$dokka_version"
     }
 }
@@ -74,11 +69,10 @@ subprojects {
         mavenLocal()
         jcenter()
         mavenCentral()
-        maven { url 'https://jitpack.io' }
-        maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-dev" }
-        maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-releases" }
-        maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-lib" }
-        maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/corda-lib-dev" }
+        maven { url "$artifactoryContextUrl/corda-dev" }
+        maven { url "$artifactoryContextUrl/corda-releases" }
+        maven { url "$artifactoryContextUrl/corda-lib" }
+        maven { url "$artifactoryContextUrl/corda-lib-dev" }
         maven { url "https://repo.gradle.org/gradle/libs-releases-local/" }
         //needed for C5 binaries
         maven {
@@ -164,26 +158,24 @@ configure(publishProjects) { subproject ->
 }
 
 
-//artifactory {
-//    publish {
-//        contextUrl = 'https://ci-artifactory.corda.r3cev.com/artifactory'
-//        repository {
-//            repoKey = 'corda-lib-dev'
-//            username = System.getenv('CORDA_ARTIFACTORY_USERNAME') ?: System.getProperty('corda.artifactory.username')
-//            password = System.getenv('CORDA_ARTIFACTORY_PASSWORD') ?: System.getProperty('corda.artifactory.password')
-//        }
-//
-//        defaults {
-//            if (publishProjects.contains(project)) {
-//                publications(project.name)
-//            }
-//        }
-//    }
-//}
+artifactory {
+    publish {
+        contextUrl = artifactoryContextUrl
+        repository {
+            repoKey = 'corda-lib-dev'
+            username = cordaArtifactoryUsername
+            password = cordaArtifactoryPassword
+        }
+
+        defaults {
+            if (publishProjects.contains(project)) {
+                publications(project.name)
+            }
+        }
+    }
+}
 
 wrapper {
     gradleVersion = "6.8.3"
     distributionType = Wrapper.DistributionType.ALL
 }
-
-//add for test re-run
