@@ -4,25 +4,8 @@ import static org.gradle.api.JavaVersion.VERSION_11
 
 buildscript {
     ext {
-        artifactoryContextUrl = 'https://software.r3.com/artifactory'
         cordaArtifactoryUsername = System.getenv('CORDA_ARTIFACTORY_USERNAME') ?: System.getProperty('corda.artifactory.username')
         cordaArtifactoryPassword = System.getenv('CORDA_ARTIFACTORY_PASSWORD') ?: System.getProperty('corda.artifactory.password')
-        corda_release_group = 'net.corda'
-        corda_release_version = '1.0.1620894007947-rc'
-        corda_platform_version = '999' // FAKE - to be locked in later
-        tokens_release_group = "com.r3.corda.lib.tokens"
-        tokens_release_version = "2.0-SNAPSHOT"
-        corda_gradle_plugins_version = '6.0.0-BETA03'
-        kotlin_version = '1.4.21'
-        junit_version = '4.12'
-        dokka_version = '0.9.17'
-        slf4j_version = '1.7.25'
-        log4j_version = '2.9.1'
-        confidential_id_release_group = "com.r3.corda.lib.ci"
-        confidential_id_release_version = "2.0-SNAPSHOT"
-        liquibaseVersion = '3.6.3'
-        hibernateVersion = '5.4.3.Final'
-        jfrogArtifactoryPluginVersion = '4.18.0'
     }
 
     repositories {

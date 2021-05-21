@@ -67,10 +67,10 @@ fun addUpdateEvolvableToken(
         .addOutputState(state = newState, contract = oldStateAndRef.state.contract)
 }
 
-internal fun Iterable<EvolvableTokenType>.maintainers(): Set<Party> = fold(emptySet(), { acc, txState -> acc.plus(txState.maintainers) })
+internal fun Iterable<EvolvableTokenType>.maintainers(): Set<Party> = fold(emptySet()) { acc, txState -> acc.plus(txState.maintainers) }
 
 internal fun Iterable<EvolvableTokenType>.participants(): Set<AbstractParty> =
-    fold(emptySet(), { acc, txState -> acc.plus(txState.participants) })
+    fold(emptySet()) { acc, txState -> acc.plus(txState.participants) }
 
 internal fun Iterable<EvolvableTokenType>.otherMaintainers(ourIdentity: Party) = maintainers().minus(ourIdentity)
 

@@ -55,6 +55,7 @@ dependencies {
 
     // Corda dependencies.
     cordaProvided("$corda_release_group:corda-application:$corda_release_version") { changing = true }
+    cordaProvided("$corda_release_group:corda-base:$corda_release_version") { changing = true }
     cordaProvided("$corda_release_group:corda-node-api:$corda_release_version") { changing = true }
     cordaProvided("$corda_release_group:corda-ledger:$corda_release_version") { changing = true}
     cordaProvided("$corda_release_group:corda-flows:$corda_release_version") { changing = true}
@@ -64,7 +65,6 @@ dependencies {
 
     // Testing.
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
-    testCompile "junit:junit:$junit_version"
 
     // CorDapp dependencies.
     cordapp project(":contracts")
