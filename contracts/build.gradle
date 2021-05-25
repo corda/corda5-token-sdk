@@ -30,6 +30,11 @@ dependencies {
     // Testing.
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile project(":modules:contracts-for-testing")
+
+    testImplementation "org.assertj:assertj-core:$assertj_version"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
+    testImplementation "io.mockk:mockk:$mockkVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
 }
 
 cordapp {
@@ -48,4 +53,9 @@ cordapp {
 
 jar {
     baseName "tokens-contracts"
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    reports { junitXml.setEnabled(true) }
 }
