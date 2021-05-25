@@ -56,9 +56,6 @@ abstract class AbstractRedeemTokensFlow : Flow<SignedTransaction> {
     lateinit var keyManagementService: KeyManagementService
 
     @CordaInject
-    lateinit var transactionService: TransactionService
-
-    @CordaInject
     lateinit var vaultService: VaultService
 
     /**
@@ -80,7 +77,7 @@ abstract class AbstractRedeemTokensFlow : Flow<SignedTransaction> {
         flowEngine.subFlow(SyncKeyMappingFlow(issuerSession, txBuilder.toWireTransaction()))
         val ourSigningKeys = transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction())
             .ourSigningKeys(keyManagementService)
-        val partialStx = transactionService.signInitial(txBuilder, ourSigningKeys)
+        val partialStx = txBuilder.sign(ourSigningKeys)
         // Call collect signatures flow, issuer should perform all the checks for redeeming states.
         debug(COLLECT_SIGS)
         val stx = flowEngine.subFlow(CollectSignaturesFlow(partialStx, listOf(issuerSession), ourSigningKeys))

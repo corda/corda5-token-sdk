@@ -9,11 +9,11 @@ import liquibase.exception.ValidationErrors
 import liquibase.resource.ResourceAccessor
 import liquibase.statement.SqlStatement
 import liquibase.statement.core.UpdateStatement
+import net.corda.internal.serialization.AMQP_STORAGE_CONTEXT
+import net.corda.internal.serialization.AbstractAMQPSerializationScheme
 import net.corda.internal.serialization.CordaSerializationMagic
 import net.corda.internal.serialization.SerializationFactoryImpl
 import net.corda.v5.application.serialization.deserialize
-import net.corda.v5.application.serialization.internal.AMQP_STORAGE_CONTEXT
-import net.corda.v5.application.serialization.internal.AbstractAMQPSerializationScheme
 import net.corda.v5.base.internal.readFully
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.crypto.SecureHash

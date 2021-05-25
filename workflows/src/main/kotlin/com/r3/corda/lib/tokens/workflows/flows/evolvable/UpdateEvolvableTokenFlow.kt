@@ -49,9 +49,6 @@ class UpdateEvolvableTokenFlow @JvmOverloads constructor(
     lateinit var transactionBuilderFactory: TransactionBuilderFactory
 
     @CordaInject
-    lateinit var transactionService: TransactionService
-
-    @CordaInject
     lateinit var flowEngine: FlowEngine
 
     @CordaInject
@@ -76,7 +73,7 @@ class UpdateEvolvableTokenFlow @JvmOverloads constructor(
         )
 
         // Sign the transaction proposal (creating a partially signed transaction, or ptx)
-        val ptx: SignedTransaction = transactionService.signInitial(utx)
+        val ptx: SignedTransaction = utx.sign()
 
         // Gather signatures from other maintainers
         val otherMaintainerSessions =

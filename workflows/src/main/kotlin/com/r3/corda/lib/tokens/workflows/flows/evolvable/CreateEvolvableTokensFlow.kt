@@ -49,9 +49,6 @@ constructor(
     lateinit var transactionBuilderFactory: TransactionBuilderFactory
 
     @CordaInject
-    lateinit var transactionService: TransactionService
-
-    @CordaInject
     lateinit var flowIdentity: FlowIdentity
 
     @CordaInject
@@ -73,7 +70,7 @@ constructor(
         }
 
         // Sign the transaction proposal
-        val ptx: SignedTransaction = transactionService.signInitial(transactionBuilder)
+        val ptx: SignedTransaction = transactionBuilder.sign()
 
         // Gather signatures from other maintainers
         // Check that we have sessions with all maitainers but not with ourselves

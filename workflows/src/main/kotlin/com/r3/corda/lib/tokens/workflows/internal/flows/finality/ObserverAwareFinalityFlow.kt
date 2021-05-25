@@ -58,9 +58,6 @@ class ObserverAwareFinalityFlow private constructor(
     lateinit var keyManagementService: KeyManagementService
 
     @CordaInject
-    lateinit var transactionService: TransactionService
-
-    @CordaInject
     lateinit var flowEngine: FlowEngine
 
     constructor(transactionBuilder: TransactionBuilder, allSessions: List<FlowSession>)
@@ -95,7 +92,7 @@ class ObserverAwareFinalityFlow private constructor(
         // Sign and finalise the transaction, obtaining the signing keys required from the LedgerTransaction.
         val ourSigningKeys = ledgerTransaction.ourSigningKeys(keyManagementService)
         val stx = transactionBuilder?.let {
-            transactionService.signInitial(it, signingPubKeys = ourSigningKeys)
+            it.sign(signingPubKeys = ourSigningKeys)
         } ?: signedTransaction
         ?: throw IllegalArgumentException("Didn't provide transactionBuilder nor signedTransaction to the flow.")
         return flowEngine.subFlow(FinalityFlow(transaction = stx, sessions = finalSessions))

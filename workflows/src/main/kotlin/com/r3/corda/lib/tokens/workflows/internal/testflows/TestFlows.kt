@@ -78,9 +78,6 @@ class DvPFlow(val house: House, val newOwner: Party) : Flow<SignedTransaction> {
     lateinit var flowEngine: FlowEngine
 
     @CordaInject
-    lateinit var transactionService: TransactionService
-
-    @CordaInject
     lateinit var transactionMappingService: TransactionMappingService
 
     @CordaInject
@@ -108,7 +105,7 @@ class DvPFlow(val house: House, val newOwner: Party) : Flow<SignedTransaction> {
         flowEngine.subFlow(SyncKeyMappingFlow(session, txBuilder.toWireTransaction()))
         val ourSigningKeys =
             transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction()).ourSigningKeys(keyManagementService)
-        val initialStx = transactionService.signInitial(txBuilder, signingPubKeys = ourSigningKeys)
+        val initialStx = txBuilder.sign(signingPubKeys = ourSigningKeys)
         val stx = flowEngine.subFlow(CollectSignaturesFlow(initialStx, listOf(session), ourSigningKeys))
         // Update distribution list.
         flowEngine.subFlow(UpdateDistributionListFlow(stx))
