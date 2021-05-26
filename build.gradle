@@ -26,7 +26,9 @@ buildscript {
 }
 
 plugins {
+    id 'jacoco'
     id "com.jfrog.artifactory" version "$jfrogArtifactoryPluginVersion"
+    id 'io.gitlab.arturbosch.detekt' version "$detektVersion"
 }
 
 allprojects {
@@ -71,6 +73,8 @@ subprojects {
     }
 
     apply plugin: 'kotlin'
+    apply plugin: 'jacoco'
+    apply plugin: 'io.gitlab.arturbosch.detekt'
 
     tasks.withType(KotlinCompile) {
         kotlinOptions {
