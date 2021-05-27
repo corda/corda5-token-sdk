@@ -18,7 +18,8 @@ import com.r3.corda.lib.tokens.workflows.internal.flows.distribution.UpdateDistr
 import com.r3.corda.lib.tokens.workflows.internal.flows.distribution.getDistributionList
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFinalityFlow
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFinalityFlowHandler
-import com.r3.corda.lib.tokens.workflows.internal.schemas.DistributionRecord
+import com.r3.corda.lib.tokens.workflows.internal.schemas.DistributionRecordSchemaV1
+import com.r3.corda.lib.tokens.workflows.internal.schemas.DistributionRecordSchemaV1.DistributionRecord
 import com.r3.corda.lib.tokens.workflows.utilities.getPreferredNotary
 import com.r3.corda.lib.tokens.workflows.utilities.ourSigningKeys
 import net.corda.systemflows.CollectSignaturesFlow
@@ -39,7 +40,7 @@ import net.corda.v5.application.identity.Party
 import net.corda.v5.application.node.NodeInfo
 import net.corda.v5.application.node.services.IdentityService
 import net.corda.v5.application.node.services.KeyManagementService
-import net.corda.v5.application.node.services.PersistenceService
+import net.corda.v5.application.node.services.persistence.PersistenceService
 import net.corda.v5.application.utilities.unwrap
 import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.base.annotations.Suspendable
@@ -48,9 +49,8 @@ import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.StateAndRef
 import net.corda.v5.ledger.services.NotaryAwareNetworkMapCache
-import net.corda.v5.ledger.services.StateRefLoaderService
+import net.corda.v5.ledger.services.StateLoaderService
 import net.corda.v5.ledger.services.TransactionMappingService
-import net.corda.v5.ledger.services.TransactionService
 import net.corda.v5.ledger.services.VaultService
 import net.corda.v5.ledger.transactions.SignedTransaction
 import net.corda.v5.ledger.transactions.TransactionBuilderFactory
@@ -177,11 +177,11 @@ class CheckTokenPointer(val housePtr: TokenPointer<House>) : Flow<House> {
     lateinit var vaultService: VaultService
 
     @CordaInject
-    lateinit var stateRefLoaderService: StateRefLoaderService
+    lateinit var stateLoaderService: StateLoaderService
 
     @Suspendable
     override fun call(): House {
-        return housePtr.pointer.resolve(vaultService, stateRefLoaderService).state.data
+        return stateLoaderService.resolve(housePtr.pointer).state.data
     }
 }
 

@@ -9,7 +9,7 @@ import com.r3.corda.lib.tokens.contracts.utilities.withNotary
 import com.r3.corda.lib.tokens.workflows.internal.flows.distribution.getDistributionList
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
-import net.corda.v5.application.node.services.PersistenceService
+import net.corda.v5.application.node.services.persistence.PersistenceService
 import net.corda.v5.ledger.contracts.ContractClassName
 import net.corda.v5.ledger.contracts.StateAndRef
 import net.corda.v5.ledger.contracts.TransactionState

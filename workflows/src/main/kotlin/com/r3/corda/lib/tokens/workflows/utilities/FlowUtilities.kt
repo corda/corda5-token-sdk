@@ -4,7 +4,8 @@ package com.r3.corda.lib.tokens.workflows.utilities
 
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.workflows.internal.flows.distribution.hasDistributionRecord
-import com.r3.corda.lib.tokens.workflows.internal.schemas.DistributionRecord
+import com.r3.corda.lib.tokens.workflows.internal.schemas.DistributionRecordSchemaV1
+import com.r3.corda.lib.tokens.workflows.internal.schemas.DistributionRecordSchemaV1.DistributionRecord
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowMessaging
@@ -12,8 +13,7 @@ import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.node.services.IdentityService
 import net.corda.v5.application.node.services.KeyManagementService
-import net.corda.v5.application.node.services.PersistenceService
-import net.corda.v5.application.node.services.runWithEntityManager
+import net.corda.v5.application.node.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.ledger.UniqueIdentifier
@@ -34,7 +34,7 @@ fun Flow<*>.addPartyToDistributionList(persistenceService: PersistenceService, p
     val hasRecord = hasDistributionRecord(persistenceService, linearId, party)
     if (!hasRecord) {
         val distributionRecord = DistributionRecord(linearId.id, party)
-        persistenceService.runWithEntityManager { persist(distributionRecord) }
+        persistenceService.persist(distributionRecord)
     } else {
         contextLogger().info("Already stored a distribution record for $party and $linearId.")
     }

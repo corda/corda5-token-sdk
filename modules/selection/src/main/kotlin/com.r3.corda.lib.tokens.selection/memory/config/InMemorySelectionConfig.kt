@@ -36,10 +36,10 @@ data class InMemorySelectionConfig @JvmOverloads constructor(
                 (config.get("stateSelection.inMemory.indexingStrategies") as List<*>).map { VaultWatcherService.IndexingType.valueOf(it.toString()) }
             } catch (e: CordappConfigException) {
                 logger.warn("No indexing method specified. Indexes will be created at run-time for each invocation of selectTokens")
-                emptyList<VaultWatcherService.IndexingType>()
+                emptyList()
             } catch (e: ClassCastException) {
                 logger.warn("No indexing method specified. Indexes will be created at run-time for each invocation of selectTokens")
-                emptyList<VaultWatcherService.IndexingType>()
+                emptyList()
             }
             logger.info("Found in memory token selection configuration with values indexing strategy: $indexingType, cacheSize: $cacheSize")
             return InMemorySelectionConfig(vaultWatcherService, enabled, indexingType, cacheSize)

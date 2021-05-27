@@ -19,7 +19,7 @@ abstract class EvolvableTokenContract : Contract {
 
     override fun verify(tx: LedgerTransaction) {
         // Only allow a single command.
-        require(tx.commandsOfType<EvolvableTokenTypeCommand>().size == 1) {
+        require(tx.commandsOfType(EvolvableTokenTypeCommand::class.java).size == 1) {
             "Evolvable token transactions support exactly one command only."
         }
         // Dispatch based on command.

@@ -10,12 +10,12 @@ import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.flows.flowservices.FlowMessaging
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.application.node.services.IdentityService
-import net.corda.v5.application.node.services.PersistenceService
+import net.corda.v5.application.node.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.ledger.contracts.Command
 import net.corda.v5.ledger.contracts.TransactionState
-import net.corda.v5.ledger.services.StateRefLoaderService
+import net.corda.v5.ledger.services.StateLoaderService
 import net.corda.v5.ledger.services.VaultService
 import net.corda.v5.ledger.transactions.SignedTransaction
 
@@ -48,7 +48,7 @@ class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : Flo
     lateinit var vaultService: VaultService
 
     @CordaInject
-    lateinit var stateRefLoaderService: StateRefLoaderService
+    lateinit var stateLoaderService: StateLoaderService
 
     @Suspendable
     override fun call() {
@@ -85,8 +85,7 @@ class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : Flo
             val moveStates = tokensWithTokenPointers.filter { it.tokenType in moveTypes }
             updateDistributionList(
                 identityService,
-                vaultService,
-                stateRefLoaderService,
+                stateLoaderService,
                 flowMessaging,
                 flowIdentity.ourIdentity,
                 moveStates

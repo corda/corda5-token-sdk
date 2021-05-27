@@ -25,6 +25,9 @@
             <column name="token_identifier" type="NVARCHAR(255)">
                 <constraints nullable="false"/>
             </column>
+            <column name="holding_key" type="NVARCHAR(64)">
+                <constraints nullable="true"/>
+            </column>
         </createTable>
     </changeSet>
     <changeSet author="R3.Corda" id="fungible_token_pkey_id">
@@ -40,6 +43,11 @@
         <createIndex indexName="held_token_amount_idx" tableName="fungible_token">
             <column name="token_class"/>
             <column name="token_identifier"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="R3.Corda" id="create_holding_key_idx">
+        <createIndex indexName="holding_key_idx" tableName="fungible_token">
+            <column name="holding_key"/>
         </createIndex>
     </changeSet>
 </databaseChangeLog>
