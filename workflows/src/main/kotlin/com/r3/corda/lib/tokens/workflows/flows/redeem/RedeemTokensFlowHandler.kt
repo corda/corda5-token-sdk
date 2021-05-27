@@ -47,7 +47,9 @@ class RedeemTokensFlowHandler(val otherSession: FlowSession) : Flow<SignedTransa
 
                     // TODO if it is with itself, then we won't perform that check...
                     override fun checkTransaction(stx: SignedTransaction) {
-                        val stateAndRefsToRedeem = transactionMappingService.toLedgerTransaction(stx, false).inRefsOfType(AbstractToken::class.java)
+                        val stateAndRefsToRedeem =
+                            transactionMappingService.toLedgerTransaction(stx, false)
+                                .inRefsOfType(AbstractToken::class.java)
                         checkSameIssuer(stateAndRefsToRedeem, flowIdentity.ourIdentity)
                         checkSameNotary(stateAndRefsToRedeem)
                         checkOwner(identityService, stateAndRefsToRedeem, otherSession.counterparty)

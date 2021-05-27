@@ -28,7 +28,8 @@ class UpdateEvolvableTokenFlowHandler(val otherSession: FlowSession) : Flow<Unit
             val signTransactionFlow = object : SignTransactionFlow(otherSession) {
                 override fun checkTransaction(stx: SignedTransaction) = requireThat {
                     val ledgerTransaction = transactionMappingService.toLedgerTransaction(stx, checkSufficientSignatures = false)
-                    val evolvableTokenTypeStateRef = ledgerTransaction.inRefsOfType(EvolvableTokenType::class.java).single()
+                    val evolvableTokenTypeStateRef =
+                        ledgerTransaction.inRefsOfType(EvolvableTokenType::class.java).single()
                     val oldMaintainers = evolvableTokenTypeStateRef.state.data.maintainers
                     require(otherSession.counterparty in oldMaintainers) {
                         "This flow can only be started by existing maintainers of the EvolvableTokenType. However it " +

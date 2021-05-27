@@ -2,7 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>EmptyFunctionBlock:OwnerMigration.kt$OwnerMigration${ }</ID>
     <ID>EmptyFunctionBlock:TestFlows.kt$DvPFlowHandler.&lt;no name provided&gt;${}</ID>
     <ID>ForbiddenComment:AbstractRedeemTokensFlow.kt$AbstractRedeemTokensFlow$// TODO: Only do this if necessary.</ID>
     <ID>ForbiddenComment:DistributionUtilities.kt$* Utility function to persist a new entity pertaining to a distribution record. * TODO: Add some error handling. * TODO: Don't duplicate pairs of linearId and party.</ID>
@@ -44,10 +43,10 @@
     <ID>FunctionNaming:Utilities.kt$fun XRP(amount: Double): Amount&lt;TokenType&gt;</ID>
     <ID>FunctionNaming:Utilities.kt$fun XRP(amount: Int): Amount&lt;TokenType&gt;</ID>
     <ID>FunctionNaming:Utilities.kt$fun XRP(amount: Long): Amount&lt;TokenType&gt;</ID>
-    <ID>LongParameterList:DistributionUtilities.kt$( identityService: IdentityService, vaultService: VaultService, stateRefLoaderService: StateRefLoaderService, flowMessaging: FlowMessaging, ourIdentity: Party, tokens: List&lt;AbstractToken&gt; )</ID>
     <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, vaultService: VaultService, identityService: IdentityService, flowEngine: FlowEngine, nodeInfo: NodeInfo, amount: Amount&lt;TokenType&gt;, holder: AbstractParty, changeHolder: AbstractParty, queryCriteria: QueryCriteria? = null )</ID>
     <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, vaultService: VaultService, identityService: IdentityService, flowEngine: FlowEngine, nodeInfo: NodeInfo, partiesAndAmounts: List&lt;PartyAndAmount&lt;TokenType&gt;&gt;, changeHolder: AbstractParty, queryCriteria: QueryCriteria? = null )</ID>
     <ID>LongParameterList:RedeemFlowUtilities.kt$( transactionBuilder: TransactionBuilder, vaultService: VaultService, identityService: IdentityService, flowEngine: FlowEngine, amount: Amount&lt;TokenType&gt;, issuer: Party, changeHolder: AbstractParty, additionalQueryCriteria: QueryCriteria? = null )</ID>
+    <ID>MagicNumber:DistributionUtilities.kt$50</ID>
     <ID>MagicNumber:QueryUtilities.kt$3</ID>
     <ID>MagicNumber:TestFlows.kt$JustLocalSelect$10</ID>
     <ID>MatchingDeclarationName:ConfidentialIdentityUtilities.kt$ActionRequest</ID>
@@ -59,6 +58,7 @@
     <ID>MaxLineLength:ConfidentialMoveFungibleTokensFlow.kt$ConfidentialMoveFungibleTokensFlow$// TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role</ID>
     <ID>MaxLineLength:ConfidentialMoveNonFungibleTokensFlow.kt$ConfidentialMoveNonFungibleTokensFlow$// TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role</ID>
     <ID>MaxLineLength:ConfidentialMoveNonFungibleTokensFlow.kt$ConfidentialMoveNonFungibleTokensFlow$val confidentialOutput = flowEngine.subFlow(ConfidentialTokensFlow(listOf(output), participantSessions)).single()</ID>
+    <ID>MaxLineLength:DistributionRecord.kt$DistributionRecordSchemaV1.DistributionRecord$query</ID>
     <ID>MaxLineLength:DistributionUtilities.kt$fun</ID>
     <ID>MaxLineLength:EvolvableTokenUtilities.kt$*</ID>
     <ID>MaxLineLength:EvolvableTokenUtilities.kt$internal fun Iterable&lt;EvolvableTokenType&gt;.maintainers(): Set&lt;Party&gt;</ID>
@@ -78,15 +78,11 @@
     <ID>MaxLineLength:NotaryUtilities.kt$/** Adds a notary to a new [TransactionBuilder]. If the notary is already set then it get overwritten by preferred notary */</ID>
     <ID>MaxLineLength:NotaryUtilities.kt$fun</ID>
     <ID>MaxLineLength:ObserverAwareFinalityFlow.kt$ObserverAwareFinalityFlow$val wellKnownParticipantsAndIssuers: Set&lt;Party&gt; = participants.toWellKnownParties(identityService).toSet() + issuers</ID>
-    <ID>MaxLineLength:OwnerMigration.kt$(database.connection as JdbcConnection).underlyingConnection.unwrap(org.postgresql.PGConnection::class.java).largeObjectAPI</ID>
-    <ID>MaxLineLength:OwnerMigration.kt$OwnerMigration$throw IllegalStateException("Cannot migrate tokens without owner as Liquibase failed to provide a suitable connection")</ID>
-    <ID>MaxLineLength:OwnerMigration.kt$OwnerMigration.AMQPInspectorSerializationScheme$override</ID>
     <ID>MaxLineLength:RedeemFlowUtilities.kt$*</ID>
     <ID>MaxLineLength:RedeemFlowUtilities.kt$selector.selectTokens(amount, TokenQueryBy(issuer = issuer, queryCriteria = queryCriteria), transactionBuilder.lockId)</ID>
     <ID>MaxLineLength:RedeemTokensFlow.kt$RedeemTokensFlow$*</ID>
     <ID>MaxLineLength:RedeemTokensFlowHandler.kt$RedeemTokensFlowHandler$// Synchronise all confidential identities, issuer isn't involved in move transactions, so states holders may</ID>
     <ID>MaxLineLength:RedeemTokensFlowHandler.kt$RedeemTokensFlowHandler$// There is edge case where issuer redeems with themselves, then we need to be careful not to call handler for</ID>
-    <ID>MaxLineLength:RedeemTokensFlowHandler.kt$RedeemTokensFlowHandler.&lt;no name provided&gt;$val stateAndRefsToRedeem = transactionMappingService.toLedgerTransaction(stx, false).inRefsOfType&lt;AbstractToken&gt;()</ID>
     <ID>MaxLineLength:RequestAdditionToDistributionList.kt$RequestAdditionToDistributionList$*</ID>
     <ID>MaxLineLength:RequestAdditionToDistributionList.kt$RequestAdditionToDistributionList.Responder$logger.info("Receiving request from ${otherSession.counterparty} to be added to the distribution list for $linearId.")</ID>
     <ID>MaxLineLength:TestFlows.kt$DvPFlow$transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction()).ourSigningKeys(keyManagementService)</ID>
@@ -132,7 +128,6 @@
     <ID>TooManyFunctions:FlowUtilities.kt$com.r3.corda.lib.tokens.workflows.utilities.FlowUtilities.kt</ID>
     <ID>TooManyFunctions:QueryUtilities.kt$com.r3.corda.lib.tokens.workflows.utilities.QueryUtilities.kt</ID>
     <ID>TooManyFunctions:Utilities.kt$com.r3.corda.lib.tokens.money.Utilities.kt</ID>
-    <ID>UnusedPrivateMember:OwnerMigration.kt$OwnerMigration.Companion$private val logger = contextLogger()</ID>
     <ID>UtilityClassWithPublicConstructor:DigitalCurrency.kt$DigitalCurrency</ID>
     <ID>UtilityClassWithPublicConstructor:FiatCurrency.kt$FiatCurrency</ID>
     <ID>VarCouldBeVal:RedeemTokensFlowHandler.kt$RedeemTokensFlowHandler.&lt;no name provided&gt;$@CordaInject lateinit var flowIdentity: FlowIdentity</ID>
