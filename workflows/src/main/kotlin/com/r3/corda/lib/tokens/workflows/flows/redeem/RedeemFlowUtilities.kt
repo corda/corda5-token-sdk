@@ -19,11 +19,10 @@ import com.r3.corda.lib.tokens.workflows.utilities.tokenAmountWithIssuerCriteria
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
-import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.application.services.IdentityService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.StateAndRef
-import net.corda.v5.ledger.services.VaultService
 import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.TransactionBuilder
 

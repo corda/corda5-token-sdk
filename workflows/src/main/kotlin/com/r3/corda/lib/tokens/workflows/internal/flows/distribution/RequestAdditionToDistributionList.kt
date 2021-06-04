@@ -8,7 +8,7 @@ import net.corda.v5.application.flows.InitiatedBy
 import net.corda.v5.application.flows.InitiatingFlow
 import net.corda.v5.application.flows.flowservices.FlowMessaging
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
-import net.corda.v5.application.node.services.persistence.PersistenceService
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.application.utilities.unwrap
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.util.contextLogger

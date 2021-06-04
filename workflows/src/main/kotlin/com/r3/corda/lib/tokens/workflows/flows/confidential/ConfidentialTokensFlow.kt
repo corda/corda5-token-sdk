@@ -8,7 +8,7 @@ import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.application.identity.Party
-import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.application.services.IdentityService
 import net.corda.v5.base.annotations.Suspendable
 
 /**

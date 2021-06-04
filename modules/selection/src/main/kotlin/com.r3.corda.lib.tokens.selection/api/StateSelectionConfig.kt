@@ -5,15 +5,15 @@ import com.r3.corda.lib.tokens.selection.memory.config.InMemorySelectionConfig
 import com.r3.corda.lib.tokens.selection.memory.services.VaultWatcherService
 import net.corda.v5.application.cordapp.CordappConfig
 import net.corda.v5.application.flows.flowservices.FlowEngine
-import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.ledger.services.VaultService
 import org.slf4j.LoggerFactory
 
 interface StateSelectionConfig {
     @Suspendable
     fun toSelector(
-        vaultService: VaultService,
+        persistenceService: PersistenceService,
         identityService: IdentityService,
         flowEngine: FlowEngine,
     ): Selector
@@ -45,7 +45,7 @@ object ConfigSelection {
 
     @Suspendable
     fun getPreferredSelection(
-        vaultService: VaultService,
+        persistenceService: PersistenceService,
         identityService: IdentityService,
         flowEngine: FlowEngine,
         vaultWatcherService: VaultWatcherService,
@@ -60,6 +60,6 @@ object ConfigSelection {
                 config.exists("stateSelection.inMemory") -> InMemorySelectionConfig.parse(config, vaultWatcherService)
                 else -> throw IllegalArgumentException("Provide correct state-selection type string in the config, see kdocs for ConfigSelection.")
             }
-        }.toSelector(vaultService, identityService, flowEngine)
+        }.toSelector(persistenceService, identityService, flowEngine)
     }
 }

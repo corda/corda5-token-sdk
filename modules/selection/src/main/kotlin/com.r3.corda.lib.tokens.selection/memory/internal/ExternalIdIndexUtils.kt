@@ -1,7 +1,7 @@
 package com.r3.corda.lib.tokens.selection.memory.internal
 
-import net.corda.v5.application.node.services.IdentityService
-import net.corda.v5.application.node.services.KeyManagementService
+import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.KeyManagementService
 import java.security.PublicKey
 import java.util.*
 

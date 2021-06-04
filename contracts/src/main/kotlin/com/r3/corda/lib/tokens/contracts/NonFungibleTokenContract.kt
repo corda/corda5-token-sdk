@@ -4,7 +4,7 @@ import com.r3.corda.lib.tokens.contracts.commands.TokenCommand
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import net.corda.v5.base.internal.uncheckedCast
 import net.corda.v5.ledger.contracts.Attachment
-import net.corda.v5.ledger.contracts.CommandWithParties
+import net.corda.v5.ledger.contracts.Command
 import net.corda.v5.ledger.contracts.ContractState
 import net.corda.v5.ledger.contracts.StateAndRef
 import java.security.PublicKey
@@ -21,7 +21,7 @@ class NonFungibleTokenContract : AbstractTokenContract<NonFungibleToken>() {
     }
 
     override fun verifyIssue(
-        issueCommand: CommandWithParties<TokenCommand>,
+        issueCommand: Command<TokenCommand>,
         inputs: List<IndexedState<NonFungibleToken>>,
         outputs: List<IndexedState<NonFungibleToken>>,
         attachments: List<Attachment>,
@@ -43,7 +43,7 @@ class NonFungibleTokenContract : AbstractTokenContract<NonFungibleToken>() {
     // Even if we have two tokens containing the same info, they will have different linear IDs so end up in different
     // groups.
     override fun verifyMove(
-        moveCommands: List<CommandWithParties<TokenCommand>>,
+        moveCommands: List<Command<TokenCommand>>,
         inputs: List<IndexedState<NonFungibleToken>>,
         outputs: List<IndexedState<NonFungibleToken>>,
         attachments: List<Attachment>,
@@ -61,14 +61,14 @@ class NonFungibleTokenContract : AbstractTokenContract<NonFungibleToken>() {
         // There should only be one move command with one signature.
         require(moveCommands.size == 1) { "There should be only one move command per group when moving non fungible tokens." }
         require(input.state.data.linearId == output.state.data.linearId) { "The linear ID must not change." }
-        val moveCommand: CommandWithParties<TokenCommand> = moveCommands.single()
+        val moveCommand: Command<TokenCommand> = moveCommands.single()
         require(moveCommand.signers.toSet() == setOf(input.state.data.holder.owningKey)) {
             "The current holder must be the only signing party when a non-fungible (discrete) token is moved."
         }
     }
 
     override fun verifyRedeem(
-        redeemCommand: CommandWithParties<TokenCommand>,
+        redeemCommand: Command<TokenCommand>,
         inputs: List<IndexedState<NonFungibleToken>>,
         outputs: List<IndexedState<NonFungibleToken>>,
         attachments: List<Attachment>,

@@ -5,7 +5,6 @@ import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.ledger.services.VaultService
 import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.TransactionBuilder
 

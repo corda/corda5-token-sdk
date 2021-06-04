@@ -8,7 +8,7 @@ import com.r3.corda.lib.tokens.contracts.utilities.sumTokenStatesOrZero
 import net.corda.v5.base.internal.uncheckedCast
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.Attachment
-import net.corda.v5.ledger.contracts.CommandWithParties
+import net.corda.v5.ledger.contracts.Command
 import net.corda.v5.ledger.contracts.ContractState
 import net.corda.v5.ledger.contracts.StateAndRef
 import java.security.PublicKey
@@ -34,7 +34,7 @@ open class FungibleTokenContract : AbstractTokenContract<FungibleToken>() {
     }
 
     override fun verifyIssue(
-        issueCommand: CommandWithParties<TokenCommand>,
+        issueCommand: Command<TokenCommand>,
         inputs: List<IndexedState<FungibleToken>>,
         outputs: List<IndexedState<FungibleToken>>,
         attachments: List<Attachment>,
@@ -64,7 +64,7 @@ open class FungibleTokenContract : AbstractTokenContract<FungibleToken>() {
     }
 
     override fun verifyMove(
-        moveCommands: List<CommandWithParties<TokenCommand>>,
+        moveCommands: List<Command<TokenCommand>>,
         inputs: List<IndexedState<FungibleToken>>,
         outputs: List<IndexedState<FungibleToken>>,
         attachments: List<Attachment>,
@@ -90,14 +90,14 @@ open class FungibleTokenContract : AbstractTokenContract<FungibleToken>() {
         // There can be different owners in each move group. There may be one command for each of the signers publickey
         // or all the public keys might be listed within one command.
         val inputOwningKeys: Set<PublicKey> = inputs.map { it.state.data.holder.owningKey }.toSet()
-        val signers: Set<PublicKey> = moveCommands.flatMap(CommandWithParties<TokenCommand>::signers).toSet()
+        val signers: Set<PublicKey> = moveCommands.flatMap(Command<TokenCommand>::signers).toSet()
         require(signers.containsAll(inputOwningKeys)) {
             "Required signers does not contain all the current owners of the tokens being moved"
         }
     }
 
     override fun verifyRedeem(
-        redeemCommand: CommandWithParties<TokenCommand>,
+        redeemCommand: Command<TokenCommand>,
         inputs: List<IndexedState<FungibleToken>>,
         outputs: List<IndexedState<FungibleToken>>,
         attachments: List<Attachment>,

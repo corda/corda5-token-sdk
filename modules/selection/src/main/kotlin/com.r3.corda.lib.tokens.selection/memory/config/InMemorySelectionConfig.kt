@@ -6,9 +6,9 @@ import com.r3.corda.lib.tokens.selection.memory.services.VaultWatcherService
 import net.corda.v5.application.cordapp.CordappConfig
 import net.corda.v5.application.cordapp.CordappConfigException
 import net.corda.v5.application.flows.flowservices.FlowEngine
-import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.ledger.services.VaultService
 import org.slf4j.LoggerFactory
 
 const val CACHE_SIZE_DEFAULT = 1024 // TODO Return good default, for now it's not wired, it will be done in separate PR.
@@ -52,7 +52,7 @@ data class InMemorySelectionConfig @JvmOverloads constructor(
 
     @Suspendable
     override fun toSelector(
-        vaultService: VaultService,
+        persistenceService: PersistenceService,
         identityService: IdentityService,
         flowEngine: FlowEngine,
     ): LocalTokenSelector {

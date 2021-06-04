@@ -12,16 +12,17 @@ import com.r3.corda.lib.tokens.selection.memory.internal.lookupExternalIdFromKey
 import com.r3.corda.lib.tokens.selection.sortByStateRefAscending
 import net.corda.v5.application.cordapp.CordappProvider
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInjectPreStart
-import net.corda.v5.application.node.services.CordaService
-import net.corda.v5.application.node.services.IdentityService
-import net.corda.v5.application.node.services.KeyManagementService
-import net.corda.v5.application.node.services.lifecycle.ServiceLifecycleEvent
-import net.corda.v5.application.node.services.lifecycle.ServiceStart
+import net.corda.v5.application.services.CordaService
+import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.KeyManagementService
+import net.corda.v5.application.services.lifecycle.ServiceLifecycleEvent
+import net.corda.v5.application.services.lifecycle.ServiceStart
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.internal.uncheckedCast
 import net.corda.v5.base.util.contextLogger
+import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.StateAndRef
-import net.corda.v5.ledger.services.VaultService
 import net.corda.v5.ledger.services.vault.DEFAULT_PAGE_NUM
 import net.corda.v5.ledger.services.vault.PageSpecification
 import net.corda.v5.ledger.services.vault.QueryCriteria
@@ -77,7 +78,7 @@ class VaultWatcherService : CordaService {
     lateinit var cordappProvider: CordappProvider
 
     @CordaInjectPreStart
-    lateinit var vaultService: VaultService
+    lateinit var persistenceService: PersistenceService
 
     @CordaInjectPreStart
     lateinit var identityService: IdentityService
@@ -139,15 +140,33 @@ class VaultWatcherService : CordaService {
             override fun invoke(callback: (VaultStateEvent<FungibleToken>) -> Unit) {
                 LOG.info("Starting async token loading from vault")
                 UPDATER.submit {
+//                    try {
+//                        var shouldLoop = true
+//                        while (shouldLoop) {
+//                            val newlyLoadedStates = vaultService.queryBy(
+//                                contractStateType = FungibleToken::class.java,
+//                                paging = PageSpecification(pageNumber = currentPage, pageSize = pageSize),
+//                                criteria = QueryCriteria.VaultQueryCriteria(),
+//                                sorting = sortByStateRefAscending()
+//                            ).states.toSet()
+//                            LOG.info("publishing ${newlyLoadedStates.size} to async state loading callback")
+//                            newlyLoadedStates.forEach {
+//                                callback(
+//                                    object : VaultStateEvent<FungibleToken> {
+//                                        override val eventType = VaultEventType.PRODUCE
+//                                        override val stateAndRef = it
+//                                        override val timestamp = Instant.now()
+//                                    }
+//                                )
+//                            }
+//                            shouldLoop = newlyLoadedStates.isNotEmpty()
+//                            LOG.debug("shouldLoop=${shouldLoop}")
+//                            currentPage++
+//                        }
                     try {
-                        var shouldLoop = true
-                        while (shouldLoop) {
-                            val newlyLoadedStates = vaultService.queryBy(
-                                contractStateType = FungibleToken::class.java,
-                                paging = PageSpecification(pageNumber = currentPage, pageSize = pageSize),
-                                criteria = QueryCriteria.VaultQueryCriteria(),
-                                sorting = sortByStateRefAscending()
-                            ).states.toSet()
+                        val cursor = persistenceService.query<StateAndRef<FungibleToken>>()
+                        do {
+                            val newlyLoadedStates = cursor.poll(pageSize, 10.seconds)
                             LOG.info("publishing ${newlyLoadedStates.size} to async state loading callback")
                             newlyLoadedStates.forEach {
                                 callback(
@@ -158,10 +177,7 @@ class VaultWatcherService : CordaService {
                                     }
                                 )
                             }
-                            shouldLoop = newlyLoadedStates.isNotEmpty()
-                            LOG.debug("shouldLoop=${shouldLoop}")
-                            currentPage++
-                        }
+                        } while (!newlyLoadedStates.isLastResult)
                         LOG.info("finished token loading")
                     } catch (t: Throwable) {
                         LOG.error("Token Loading Failed due to: ", t)

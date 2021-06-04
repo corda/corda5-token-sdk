@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ForbiddenComment:HouseContract.kt$HouseContract$// TODO: When contract scanning bug is fixed then this does not need to implement Contract.</ID>
+  </CurrentIssues>
+</SmellBaseline>

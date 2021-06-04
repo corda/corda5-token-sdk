@@ -13,20 +13,20 @@ import com.r3.corda.lib.tokens.selection.memory.internal.Holder
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.AnonymousParty
-import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.base.util.millis
 import net.corda.v5.base.util.toNonEmptySet
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.StateAndRef
-import net.corda.v5.ledger.services.Vault
-import net.corda.v5.ledger.services.VaultService
-import net.corda.v5.ledger.services.queryBy
 import net.corda.v5.ledger.services.vault.DEFAULT_PAGE_NUM
 import net.corda.v5.ledger.services.vault.PageSpecification
 import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.services.vault.RelevancyStatus
 import net.corda.v5.ledger.services.vault.Sort
+import net.corda.v5.ledger.services.vault.StateStatus
 import java.util.*
 
 /**
@@ -43,7 +43,7 @@ import java.util.*
  * @param services for performing vault queries.
  */
 class DatabaseTokenSelection @JvmOverloads constructor(
-    private val vaultService: VaultService,
+    private val persistenceService: PersistenceService,
     private val identityService: IdentityService,
     private val flowEngine: FlowEngine,
     private val maxRetries: Int = MAX_RETRIES_DEFAULT,
@@ -81,14 +81,14 @@ class DatabaseTokenSelection @JvmOverloads constructor(
             QueryCriteria.VaultQueryCriteria(
                 contractStateTypes = setOf(FungibleToken::class.java),
                 softLockingCondition = QueryCriteria.SoftLockingCondition(softLockingType, listOf(lockId)),
-                relevancyStatus = Vault.RelevancyStatus.RELEVANT,
-                status = Vault.StateStatus.UNCONSUMED
+                relevancyStatus = RelevancyStatus.RELEVANT,
+                status = StateStatus.UNCONSUMED
             )
         } else {
             QueryCriteria.VaultQueryCriteria(
                 contractStateTypes = setOf(FungibleToken::class.java),
-                relevancyStatus = Vault.RelevancyStatus.RELEVANT,
-                status = Vault.StateStatus.UNCONSUMED
+                relevancyStatus = RelevancyStatus.RELEVANT,
+                status = StateStatus.UNCONSUMED
             )
         }
 
@@ -97,6 +97,7 @@ class DatabaseTokenSelection @JvmOverloads constructor(
 
         do {
             val pageSpec = PageSpecification(pageNumber = pageNumber, pageSize = pageSize)
+            persistenceService.query<FungibleToken>()
             val results: Vault.Page<FungibleToken> = vaultService.queryBy(baseCriteria.and(additionalCriteria), pageSpec, sorter)
 
             for (state in results.states) {

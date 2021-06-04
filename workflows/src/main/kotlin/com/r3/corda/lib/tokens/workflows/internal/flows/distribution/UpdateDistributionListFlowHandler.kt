@@ -5,8 +5,8 @@ import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.InitiatedBy
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
-import net.corda.v5.application.node.services.IdentityService
-import net.corda.v5.application.node.services.persistence.PersistenceService
+import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.application.utilities.unwrap
 import net.corda.v5.base.annotations.Suspendable
 

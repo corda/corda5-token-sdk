@@ -11,7 +11,7 @@ import com.r3.corda.lib.tokens.contracts.types.TokenType
 import net.corda.v5.base.internal.uncheckedCast
 import net.corda.v5.crypto.SecureHash
 import net.corda.v5.ledger.contracts.Attachment
-import net.corda.v5.ledger.contracts.CommandWithParties
+import net.corda.v5.ledger.contracts.Command
 import net.corda.v5.ledger.contracts.Contract
 import net.corda.v5.ledger.contracts.ContractClassName
 import net.corda.v5.ledger.contracts.ContractState
@@ -39,7 +39,7 @@ abstract class AbstractTokenContract<AT : AbstractToken> : Contract {
      * are not provided.
      */
     open fun dispatchOnCommand(
-        commands: List<CommandWithParties<TokenCommand>>,
+        commands: List<Command<TokenCommand>>,
         inputs: List<IndexedState<AT>>,
         outputs: List<IndexedState<AT>>,
         attachments: List<Attachment>,
@@ -68,7 +68,7 @@ abstract class AbstractTokenContract<AT : AbstractToken> : Contract {
      * will be involved in any one issuance, therefore there will only be one [IssueTokenCommand] per group.
      */
     abstract fun verifyIssue(
-        issueCommand: CommandWithParties<TokenCommand>,
+        issueCommand: Command<TokenCommand>,
         inputs: List<IndexedState<AT>>,
         outputs: List<IndexedState<AT>>,
         attachments: List<Attachment>,
@@ -81,7 +81,7 @@ abstract class AbstractTokenContract<AT : AbstractToken> : Contract {
      * own command with the required public keys for the tokens they are moving.
      */
     abstract fun verifyMove(
-        moveCommands: List<CommandWithParties<TokenCommand>>,
+        moveCommands: List<Command<TokenCommand>>,
         inputs: List<IndexedState<AT>>,
         outputs: List<IndexedState<AT>>,
         attachments: List<Attachment>,
@@ -94,7 +94,7 @@ abstract class AbstractTokenContract<AT : AbstractToken> : Contract {
      * group of [IssuedTokenType]s.
      */
     abstract fun verifyRedeem(
-        redeemCommand: CommandWithParties<TokenCommand>,
+        redeemCommand: Command<TokenCommand>,
         inputs: List<IndexedState<AT>>,
         outputs: List<IndexedState<AT>>,
         attachments: List<Attachment>,
@@ -116,7 +116,7 @@ abstract class AbstractTokenContract<AT : AbstractToken> : Contract {
         // than one command. However, for issuances and redemptions we would expect to see only one command.
 
         val groupsAndCommands = groups.map { group ->
-            val matchedCommands: List<CommandWithParties<TokenCommand>> = tokenCommands.filter { groupMatchesCommand(it, group) }
+            val matchedCommands: List<Command<TokenCommand>> = tokenCommands.filter { groupMatchesCommand(it, group) }
             matchedCommands to group
         }
 
@@ -135,7 +135,7 @@ abstract class AbstractTokenContract<AT : AbstractToken> : Contract {
 //		val extraCommands = (tokenCommands - allMatchedCommands).toSet()
     }
 
-    private fun groupMatchesCommand(it: CommandWithParties<TokenCommand>, group: IndexedInOutGroup<AbstractToken, TokenInfo>): Boolean {
+    private fun groupMatchesCommand(it: Command<TokenCommand>, group: IndexedInOutGroup<AbstractToken, TokenInfo>): Boolean {
         return it.value.token == group.groupingKey.issuedTokenType
                 && it.value.inputIndicies() == group.inputIndicies
                 && it.value.outputIndicies() == group.outputIndicies

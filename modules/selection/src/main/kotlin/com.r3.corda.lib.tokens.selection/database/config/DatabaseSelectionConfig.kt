@@ -6,9 +6,9 @@ import com.r3.corda.lib.tokens.selection.database.selector.DatabaseTokenSelectio
 import com.r3.corda.lib.tokens.selection.memory.config.getIntOrNull
 import net.corda.v5.application.cordapp.CordappConfig
 import net.corda.v5.application.flows.flowservices.FlowEngine
-import net.corda.v5.application.node.services.IdentityService
+import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.ledger.services.VaultService
 
 const val MAX_RETRIES_DEFAULT = 8
 const val RETRY_SLEEP_DEFAULT = 100
@@ -35,10 +35,10 @@ data class DatabaseSelectionConfig @JvmOverloads constructor(
 
     @Suspendable
     override fun toSelector(
-        vaultService: VaultService,
+        persistenceService: PersistenceService,
         identityService: IdentityService,
         flowEngine: FlowEngine,
     ): DatabaseTokenSelection {
-        return DatabaseTokenSelection(vaultService, identityService, flowEngine, maxRetries, retrySleep, retryCap, pageSize)
+        return DatabaseTokenSelection(persistenceService, identityService, flowEngine, maxRetries, retrySleep, retryCap, pageSize)
     }
 }

@@ -10,7 +10,6 @@ import com.r3.corda.lib.tokens.workflows.utilities.addTokenTypeJar
 import com.r3.corda.lib.tokens.workflows.utilities.heldTokenCriteria
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.StateAndRef
-import net.corda.v5.ledger.services.VaultService
 import net.corda.v5.ledger.services.queryBy
 import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.TransactionBuilder

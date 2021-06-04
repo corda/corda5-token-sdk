@@ -16,7 +16,6 @@ import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.LinearState
 import net.corda.v5.ledger.contracts.StateAndRef
 import net.corda.v5.ledger.services.Vault
-import net.corda.v5.ledger.services.VaultService
 import net.corda.v5.ledger.services.queryBy
 import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.services.vault.Sort
