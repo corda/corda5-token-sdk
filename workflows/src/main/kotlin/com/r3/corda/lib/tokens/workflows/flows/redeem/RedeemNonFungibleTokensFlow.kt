@@ -21,7 +21,7 @@ class RedeemNonFungibleTokensFlow(
     override fun generateExit(transactionBuilder: TransactionBuilder) {
         addNonFungibleTokensToRedeem(
             transactionBuilder = transactionBuilder,
-            vaultService = vaultService,
+            persistenceService = persistenceService,
             heldToken = heldToken,
             issuer = issuerSession.counterparty
         )

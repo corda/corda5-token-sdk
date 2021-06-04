@@ -8,21 +8,21 @@ import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import com.r3.corda.lib.tokens.workflows.utilities.addNotaryWithCheck
 import com.r3.corda.lib.tokens.workflows.utilities.addTokenTypeJar
 import com.r3.corda.lib.tokens.workflows.utilities.heldTokenCriteria
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.StateAndRef
-import net.corda.v5.ledger.services.queryBy
 import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.TransactionBuilder
 
 @Suspendable
 fun generateMoveNonFungible(
     partyAndToken: PartyAndToken,
-    vaultService: VaultService,
+    persistenceService: PersistenceService,
     queryCriteria: QueryCriteria?
 ): Pair<StateAndRef<NonFungibleToken>, NonFungibleToken> {
     val query = queryCriteria ?: heldTokenCriteria(partyAndToken.token)
     val criteria = heldTokenCriteria(partyAndToken.token).and(query)
-    val nonFungibleTokens = vaultService.queryBy<NonFungibleToken>(criteria).states
+    val nonFungibleTokens = persistenceService.queryBy<NonFungibleToken>(criteria).states
     // There can be multiple non-fungible tokens of the same TokenType. E.g. There can be multiple House tokens, each
     // with a different address. Whilst they have the same TokenType, they are still non-fungible. Therefore care must
     // be taken to ensure that only one token is returned for each query. As non-fungible tokens are also LinearStates,
@@ -38,10 +38,10 @@ fun generateMoveNonFungible(
 fun generateMoveNonFungible(
     transactionBuilder: TransactionBuilder,
     partyAndToken: PartyAndToken,
-    vaultService: VaultService,
+    persistenceService: PersistenceService,
     queryCriteria: QueryCriteria?
 ): TransactionBuilder {
-    val (input, output) = generateMoveNonFungible(partyAndToken, vaultService, queryCriteria)
+    val (input, output) = generateMoveNonFungible(partyAndToken, persistenceService, queryCriteria)
     val notary = input.state.notary
     addTokenTypeJar(listOf(input.state.data, output), transactionBuilder)
     addNotaryWithCheck(transactionBuilder, notary)

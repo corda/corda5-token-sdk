@@ -41,7 +41,7 @@ constructor(
     override fun generateExit(transactionBuilder: TransactionBuilder) {
         addFungibleTokensToRedeem(
             transactionBuilder = transactionBuilder,
-            vaultService = vaultService,
+            persistenceService = persistenceService,
             identityService = identityService,
             flowEngine = flowEngine,
             amount = amount,

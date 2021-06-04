@@ -1,5 +1,6 @@
 package com.r3.corda.lib.tokens.workflows.flows.rpc
 
+import com.r3.corda.lib.tokens.contracts.AnonymousPartyImpl
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.workflows.flows.move.*
 import com.r3.corda.lib.tokens.workflows.types.PartyAndAmount
@@ -219,7 +220,7 @@ class ConfidentialMoveFungibleTokens(
                             "or registered to a different party."
                 )
             }
-            AnonymousParty(key)
+            AnonymousPartyImpl(key)
         }
         return flowEngine.subFlow(
             ConfidentialMoveFungibleTokensFlow(

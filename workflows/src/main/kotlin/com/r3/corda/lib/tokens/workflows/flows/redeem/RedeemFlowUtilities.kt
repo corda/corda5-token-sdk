@@ -20,6 +20,7 @@ import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.StateAndRef
@@ -74,11 +75,11 @@ fun addTokensToRedeem(
 @Suspendable
 fun addNonFungibleTokensToRedeem(
     transactionBuilder: TransactionBuilder,
-    vaultService: VaultService,
+    persistenceService: PersistenceService,
     heldToken: TokenType,
     issuer: Party
 ): TransactionBuilder {
-    val heldTokenStateAndRef = vaultService.heldTokensByTokenIssuer(heldToken, issuer).states
+    val heldTokenStateAndRef = persistenceService.heldTokensByTokenIssuer(heldToken, issuer).states
     check(heldTokenStateAndRef.size == 1) {
         "Exactly one held token of a particular type $heldToken should be in the vault at any one time."
     }
@@ -96,7 +97,7 @@ fun addNonFungibleTokensToRedeem(
 @JvmOverloads
 fun addFungibleTokensToRedeem(
     transactionBuilder: TransactionBuilder,
-    vaultService: VaultService,
+    persistenceService: PersistenceService,
     identityService: IdentityService,
     flowEngine: FlowEngine,
     amount: Amount<TokenType>,
@@ -106,7 +107,7 @@ fun addFungibleTokensToRedeem(
 ): TransactionBuilder {
     // TODO For now default to database query, but switch this line on after we can change API in 2.0
 //    val selector: Selector = ConfigSelection.getPreferredSelection(serviceHub)
-    val selector = DatabaseTokenSelection(vaultService, identityService, flowEngine)
+    val selector = DatabaseTokenSelection(persistenceService, identityService, flowEngine)
     val baseCriteria = tokenAmountWithIssuerCriteria(amount.token, issuer)
     val queryCriteria = additionalQueryCriteria?.let { baseCriteria.and(it) } ?: baseCriteria
     val fungibleStates =

@@ -16,7 +16,7 @@ import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.KeyManagementService
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.ledger.contracts.CommandWithParties
+import net.corda.v5.ledger.contracts.Command
 import net.corda.v5.ledger.services.TransactionMappingService
 import net.corda.v5.ledger.transactions.LedgerTransaction
 import net.corda.v5.ledger.transactions.SignedTransaction
@@ -73,7 +73,7 @@ class ObserverAwareFinalityFlow private constructor(
                 ?: transactionMappingService.toLedgerTransaction(signedTransaction!!, false)
         val participants: List<AbstractParty> = ledgerTransaction.participants
         val issuers: Set<Party> = ledgerTransaction.commands
-            .map(CommandWithParties<*>::value)
+            .map(Command<*>::value)
             .filterIsInstance<RedeemTokenCommand>()
             .map { it.token.issuer }
             .toSet()

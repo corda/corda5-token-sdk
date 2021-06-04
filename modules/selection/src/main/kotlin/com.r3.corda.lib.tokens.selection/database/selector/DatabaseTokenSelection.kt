@@ -1,5 +1,6 @@
 package com.r3.corda.lib.tokens.selection.database.selector
 
+import com.r3.corda.lib.tokens.contracts.AnonymousPartyImpl
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
@@ -12,13 +13,11 @@ import com.r3.corda.lib.tokens.selection.database.config.RETRY_SLEEP_DEFAULT
 import com.r3.corda.lib.tokens.selection.memory.internal.Holder
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.identity.AbstractParty
-import net.corda.v5.application.identity.AnonymousParty
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.base.util.millis
-import net.corda.v5.base.util.toNonEmptySet
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.StateAndRef
 import net.corda.v5.ledger.services.vault.DEFAULT_PAGE_NUM
@@ -211,8 +210,8 @@ class DatabaseTokenSelection @JvmOverloads constructor(
                 // We want the AbstractParty that this key refers to, unfortunately, partyFromKey returns always well known party
                 // for that key, so afterwards we need to construct AnonymousParty.
                 val knownParty: AbstractParty = identityService.partyFromKey(holder.owningKey)
-                    ?: AnonymousParty(holder.owningKey)
-                val holderParty = if (knownParty.owningKey == holder.owningKey) knownParty else AnonymousParty(holder.owningKey)
+                    ?: AnonymousPartyImpl(holder.owningKey)
+                val holderParty = if (knownParty.owningKey == holder.owningKey) knownParty else AnonymousPartyImpl(holder.owningKey)
                 tokenAmountWithHolderCriteria(token, holderParty)
             }
             is Holder.MappedIdentity -> tokenAmountCriteria(token).and(QueryCriteria.VaultQueryCriteria(externalIds = listOf(holder.uuid)))

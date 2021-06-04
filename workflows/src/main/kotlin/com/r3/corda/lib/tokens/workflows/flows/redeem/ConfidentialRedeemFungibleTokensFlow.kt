@@ -1,12 +1,12 @@
 package com.r3.corda.lib.tokens.workflows.flows.redeem
 
 import com.r3.corda.lib.tokens.contracts.types.TokenType
+import com.r3.corda.lib.tokens.contracts.AnonymousPartyImpl
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.application.identity.AbstractParty
-import net.corda.v5.application.identity.AnonymousParty
 import net.corda.v5.application.services.KeyManagementService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount
@@ -47,7 +47,7 @@ constructor(
         // "changeHolder".
         val confidentialHolder = changeHolder ?: let {
             val key = keyManagementService.freshKey()
-            AnonymousParty(key)
+            AnonymousPartyImpl(key)
         }
         return flowEngine.subFlow(
             RedeemFungibleTokensFlow(

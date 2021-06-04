@@ -17,7 +17,7 @@ import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.ledger.UniqueIdentifier
-import net.corda.v5.ledger.contracts.CommandWithParties
+import net.corda.v5.ledger.contracts.Command
 import net.corda.v5.ledger.contracts.ContractState
 import net.corda.v5.ledger.contracts.StateAndRef
 import net.corda.v5.ledger.transactions.LedgerTransaction
@@ -49,7 +49,7 @@ val LedgerTransaction.participants: List<AbstractParty>
 
 @Suspendable
 fun LedgerTransaction.ourSigningKeys(keyManagementService: KeyManagementService): List<PublicKey> {
-    val signingKeys = commands.flatMap(CommandWithParties<*>::signers)
+    val signingKeys = commands.flatMap(Command<*>::signers)
     return keyManagementService.filterMyKeys(signingKeys).toList()
 }
 

@@ -15,7 +15,7 @@ import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.ledger.services.NotaryAwareNetworkMapCache
+import net.corda.v5.ledger.services.NotaryLookupService
 import net.corda.v5.ledger.transactions.SignedTransaction
 import net.corda.v5.ledger.transactions.TransactionBuilderFactory
 
@@ -62,7 +62,7 @@ constructor(
     lateinit var flowEngine: FlowEngine
 
     @CordaInject
-    lateinit var notaryAwareNetworkMapCache: NotaryAwareNetworkMapCache
+    lateinit var notaryLookupService: NotaryLookupService
 
     @CordaInject
     lateinit var cordappProvider: CordappProvider
@@ -95,7 +95,7 @@ constructor(
         val transactionBuilder =
             transactionBuilderFactory
                 .create()
-                .setNotary(getPreferredNotary(notaryAwareNetworkMapCache, cordappProvider.appConfig))
+                .setNotary(getPreferredNotary(notaryLookupService, cordappProvider.appConfig))
         // Add all the specified tokensToIssue to the transaction. The correct commands and signing keys are also added.
         addIssueTokens(transactionBuilder, tokensToIssue)
         addTokenTypeJar(tokensToIssue, transactionBuilder)

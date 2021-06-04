@@ -17,6 +17,7 @@ import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.node.NodeInfo
 import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.StateAndRef
@@ -97,7 +98,7 @@ fun addMoveTokens(
 @JvmOverloads
 fun addMoveFungibleTokens(
     transactionBuilder: TransactionBuilder,
-    vaultService: VaultService,
+    persistenceService: PersistenceService,
     identityService: IdentityService,
     flowEngine: FlowEngine,
     nodeInfo: NodeInfo,
@@ -107,7 +108,7 @@ fun addMoveFungibleTokens(
 ): TransactionBuilder {
     // TODO For now default to database query, but switch this line on after we can change API in 2.0
 //    val selector: Selector = ConfigSelection.getPreferredSelection(serviceHub)
-    val selector = DatabaseTokenSelection(vaultService, identityService, flowEngine)
+    val selector = DatabaseTokenSelection(persistenceService, identityService, flowEngine)
     val (inputs, outputs) =
         selector.generateMove(
             identityService,
@@ -131,7 +132,7 @@ fun addMoveFungibleTokens(
 @JvmOverloads
 fun addMoveFungibleTokens(
     transactionBuilder: TransactionBuilder,
-    vaultService: VaultService,
+    persistenceService: PersistenceService,
     identityService: IdentityService,
     flowEngine: FlowEngine,
     nodeInfo: NodeInfo,
@@ -142,7 +143,7 @@ fun addMoveFungibleTokens(
 ): TransactionBuilder {
     return addMoveFungibleTokens(
         transactionBuilder = transactionBuilder,
-        vaultService = vaultService,
+        persistenceService = persistenceService,
         identityService = identityService,
         flowEngine = flowEngine,
         nodeInfo = nodeInfo,
@@ -162,12 +163,12 @@ fun addMoveFungibleTokens(
 @JvmOverloads
 fun addMoveNonFungibleTokens(
     transactionBuilder: TransactionBuilder,
-    vaultService: VaultService,
+    persistenceService: PersistenceService,
     token: TokenType,
     holder: AbstractParty,
     queryCriteria: QueryCriteria? = null
 ): TransactionBuilder {
-    return generateMoveNonFungible(transactionBuilder, PartyAndToken(holder, token), vaultService, queryCriteria)
+    return generateMoveNonFungible(transactionBuilder, PartyAndToken(holder, token), persistenceService, queryCriteria)
 }
 
 /**
@@ -178,9 +179,9 @@ fun addMoveNonFungibleTokens(
 @JvmOverloads
 fun addMoveNonFungibleTokens(
     transactionBuilder: TransactionBuilder,
-    vaultService: VaultService,
+    persistenceService: PersistenceService,
     partyAndToken: PartyAndToken,
     queryCriteria: QueryCriteria? = null
 ): TransactionBuilder {
-    return generateMoveNonFungible(transactionBuilder, partyAndToken, vaultService, queryCriteria)
+    return generateMoveNonFungible(transactionBuilder, partyAndToken, persistenceService, queryCriteria)
 }

@@ -48,7 +48,7 @@ import net.corda.v5.base.util.contextLogger
 import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.StateAndRef
-import net.corda.v5.ledger.services.NotaryAwareNetworkMapCache
+import net.corda.v5.ledger.services.NotaryLookupService
 import net.corda.v5.ledger.services.StateLoaderService
 import net.corda.v5.ledger.services.TransactionMappingService
 import net.corda.v5.ledger.transactions.SignedTransaction
@@ -68,7 +68,7 @@ class DvPFlow(val house: House, val newOwner: Party) : Flow<SignedTransaction> {
     lateinit var transactionBuilderFactory: TransactionBuilderFactory
 
     @CordaInject
-    lateinit var vaultService: VaultService
+    lateinit var persistenceService: PersistenceService
 
     @CordaInject
     lateinit var flowMessaging: FlowMessaging
@@ -83,15 +83,15 @@ class DvPFlow(val house: House, val newOwner: Party) : Flow<SignedTransaction> {
     lateinit var keyManagementService: KeyManagementService
 
     @CordaInject
-    lateinit var networkMapCache: NotaryAwareNetworkMapCache
+    lateinit var notaryLookupService: NotaryLookupService
 
     @CordaInject
     lateinit var cordappProvider: CordappProvider
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val txBuilder = transactionBuilderFactory.create().setNotary(getPreferredNotary(networkMapCache, cordappProvider.appConfig))
-        addMoveNonFungibleTokens(txBuilder, vaultService, house.toPointer<House>(), newOwner)
+        val txBuilder = transactionBuilderFactory.create().setNotary(getPreferredNotary(notaryLookupService, cordappProvider.appConfig))
+        addMoveNonFungibleTokens(txBuilder, persistenceService, house.toPointer<House>(), newOwner)
         val session = flowMessaging.initiateFlow(newOwner)
         // Ask for input stateAndRefs - send notification with the amount to exchange.
         session.send(DvPNotification(house.valuation))
@@ -118,10 +118,7 @@ class DvPFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
     lateinit var flowEngine: FlowEngine
 
     @CordaInject
-    lateinit var keyManagementService: KeyManagementService
-
-    @CordaInject
-    lateinit var vaultService: VaultService
+    lateinit var persistenceService: PersistenceService
 
     @CordaInject
     lateinit var identityService: IdentityService
@@ -141,7 +138,7 @@ class DvPFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
         // We need custom serializer and some custom flows to do checks.
         val changeHolder = flowIdentity.ourIdentity.anonymise()
         val (inputs, outputs) =
-            DatabaseTokenSelection(vaultService, identityService, flowEngine).generateMove(
+            DatabaseTokenSelection(persistenceService, identityService, flowEngine).generateMove(
                 identityService,
                 nodeInfo,
                 lockId = flowEngine.runId.uuid,
@@ -172,9 +169,6 @@ class GetDistributionList(val housePtr: TokenPointer<House>) : Flow<List<Distrib
 
 @StartableByRPC
 class CheckTokenPointer(val housePtr: TokenPointer<House>) : Flow<House> {
-    @CordaInject
-    lateinit var vaultService: VaultService
-
     @CordaInject
     lateinit var stateLoaderService: StateLoaderService
 

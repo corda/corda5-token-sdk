@@ -9,6 +9,7 @@ import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.SignedTransaction
@@ -35,14 +36,14 @@ constructor(
 ) : Flow<SignedTransaction> {
 
     @CordaInject
-    lateinit var vaultService: VaultService
+    lateinit var persistenceService: PersistenceService
 
     @CordaInject
     lateinit var flowEngine: FlowEngine
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val (input, output) = generateMoveNonFungible(partyAndToken, vaultService, queryCriteria)
+        val (input, output) = generateMoveNonFungible(partyAndToken, persistenceService, queryCriteria)
         // TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role
         participantSessions.forEach { it.send(TransactionRole.PARTICIPANT) }
         observerSessions.forEach { it.send(TransactionRole.OBSERVER) }

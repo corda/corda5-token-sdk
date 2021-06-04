@@ -10,6 +10,7 @@ import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.application.services.KeyManagementService
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.ledger.services.TransactionMappingService
@@ -55,7 +56,7 @@ abstract class AbstractRedeemTokensFlow : Flow<SignedTransaction> {
     lateinit var keyManagementService: KeyManagementService
 
     @CordaInject
-    lateinit var vaultService: VaultService
+    lateinit var persistenceService: PersistenceService
 
     /**
      * Add redeem of tokens to the [transactionBuilder]. Modifies builder.

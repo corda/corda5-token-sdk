@@ -7,7 +7,7 @@ import net.corda.v5.application.cordapp.CordappConfigException
 import net.corda.v5.application.identity.CordaX500Name
 import net.corda.v5.application.identity.Party
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.ledger.services.NotaryAwareNetworkMapCache
+import net.corda.v5.ledger.services.NotaryLookupService
 import net.corda.v5.ledger.transactions.TransactionBuilder
 
 // TODO getPreferredNotary should be loaded on start
@@ -23,9 +23,9 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
 @Suspendable
 @JvmOverloads
 fun getPreferredNotary(
-    networkMapCache: NotaryAwareNetworkMapCache,
+    notaryLookupService: NotaryLookupService,
     cordappConfig: CordappConfig,
-    backupSelector: (NotaryAwareNetworkMapCache) -> Party = firstNotary()
+    backupSelector: (NotaryLookupService) -> Party = firstNotary()
 ): Party {
     val notaryString = try {
         cordappConfig.getString("notary")
@@ -33,10 +33,10 @@ fun getPreferredNotary(
         ""
     }
     return if (notaryString.isBlank()) {
-        backupSelector(networkMapCache)
+        backupSelector(notaryLookupService)
     } else {
         val notaryX500Name = CordaX500Name.parse(notaryString)
-        val notaryParty = networkMapCache.getNotary(notaryX500Name)
+        val notaryParty = notaryLookupService.getNotary(notaryX500Name)
             ?: throw IllegalStateException(
                 "Notary with name \"$notaryX500Name\" cannot be found in the network " +
                         "map cache. Either the notary does not exist, or there is an error in the config."
@@ -47,38 +47,38 @@ fun getPreferredNotary(
 
 /** Choose the first notary in the list. */
 @Suspendable
-fun firstNotary() = { networkMapCache: NotaryAwareNetworkMapCache ->
-    networkMapCache.notaryIdentities.firstOrNull()
+fun firstNotary() = { notaryLookupService: NotaryLookupService ->
+    notaryLookupService.notaryIdentities.firstOrNull()
         ?: throw IllegalArgumentException("No available notaries.")
 }
 
 /** Choose a random notary from the list. */
 @Suspendable
-fun randomNotary() = { networkMapCache: NotaryAwareNetworkMapCache ->
-    networkMapCache.notaryIdentities.randomOrNull()
+fun randomNotary() = { notaryLookupService: NotaryLookupService ->
+    notaryLookupService.notaryIdentities.randomOrNull()
         ?: throw IllegalArgumentException("No available notaries.")
 }
 
 /** Choose a random non validating notary. */
 @Suspendable
-fun randomNonValidatingNotary() = { networkMapCache: NotaryAwareNetworkMapCache ->
-    networkMapCache.notaryIdentities.filter { notary ->
-        networkMapCache.isValidatingNotary(notary).not()
+fun randomNonValidatingNotary() = { notaryLookupService: NotaryLookupService ->
+    notaryLookupService.notaryIdentities.filter { notary ->
+        notaryLookupService.isValidatingNotary(notary).not()
     }.randomOrNull()
 }
 
 /** Choose a random validating notary. */
 @Suspendable
-fun randomValidatingNotary() = { networkMapCache: NotaryAwareNetworkMapCache ->
-    networkMapCache.notaryIdentities.filter { notary ->
-        networkMapCache.isValidatingNotary(notary)
+fun randomValidatingNotary() = { notaryLookupService: NotaryLookupService ->
+    notaryLookupService.notaryIdentities.filter { notary ->
+        notaryLookupService.isValidatingNotary(notary)
     }.randomOrNull()
 }
 
 /** Adds a notary to a new [TransactionBuilder]. If the notary is already set then it get overwritten by preferred notary  */
 @Suspendable
-fun addNotary(networkMapCache: NotaryAwareNetworkMapCache, cordappConfig: CordappConfig, txb: TransactionBuilder): TransactionBuilder {
-    return txb.apply { setNotary(getPreferredNotary(networkMapCache, cordappConfig)) }
+fun addNotary(notaryLookupService: NotaryLookupService, cordappConfig: CordappConfig, txb: TransactionBuilder): TransactionBuilder {
+    return txb.apply { setNotary(getPreferredNotary(notaryLookupService, cordappConfig)) }
 }
 
 /**

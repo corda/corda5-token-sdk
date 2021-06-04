@@ -4,6 +4,7 @@ import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.TransactionBuilder
@@ -30,10 +31,10 @@ constructor(
 ) : AbstractMoveTokensFlow() {
 
     @CordaInject
-    lateinit var vaultService: VaultService
+    lateinit var persistenceService: PersistenceService
 
     @Suspendable
     override fun addMove(transactionBuilder: TransactionBuilder) {
-        addMoveNonFungibleTokens(transactionBuilder, vaultService, partyAndToken, queryCriteria)
+        addMoveNonFungibleTokens(transactionBuilder, persistenceService, partyAndToken, queryCriteria)
     }
 }

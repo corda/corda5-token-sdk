@@ -14,6 +14,7 @@ import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.node.NodeInfo
 import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.SignedTransaction
@@ -45,7 +46,7 @@ constructor(
     lateinit var flowEngine: FlowEngine
 
     @CordaInject
-    lateinit var vaultService: VaultService
+    lateinit var persistenceService: PersistenceService
 
     @CordaInject
     lateinit var identityService: IdentityService
@@ -66,7 +67,7 @@ constructor(
     @Suspendable
     override fun call(): SignedTransaction {
         // TODO add in memory selection too
-        val tokenSelection = DatabaseTokenSelection(vaultService, identityService, flowEngine)
+        val tokenSelection = DatabaseTokenSelection(persistenceService, identityService, flowEngine)
         val (inputs, outputs) = tokenSelection.generateMove(
             identityService,
             nodeInfo,

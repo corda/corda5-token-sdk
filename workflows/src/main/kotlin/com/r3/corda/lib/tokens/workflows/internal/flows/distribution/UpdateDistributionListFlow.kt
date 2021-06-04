@@ -44,9 +44,6 @@ class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : Flo
     lateinit var persistenceService: PersistenceService
 
     @CordaInject
-    lateinit var vaultService: VaultService
-
-    @CordaInject
     lateinit var stateLoaderService: StateLoaderService
 
     @Suspendable

@@ -34,9 +34,9 @@ fun getDistributionList(persistenceService: PersistenceService, linearId: Unique
 	var poll: Cursor.PollResult<DistributionRecord>?
 	do {
 		poll = cursor.poll(50, 10.seconds)
-		val elements = poll.rawItems
+		val elements = poll.values
 		accumulator.addAll(elements)
-	} while (poll != null && !poll.lastResult)
+	} while (poll != null && !poll.isLastResult)
 	return accumulator
 }
 
@@ -46,7 +46,7 @@ fun getDistributionRecord(persistenceService: PersistenceService, linearId: Uniq
 		"DistributionRecord.findByLinearIdAndParty",
 		mapOf("linearId" to linearId.id, "party" to party)
 	).poll(1, 10.seconds)
-		.rawItems
+		.values
 		.singleOrNull()
 }
 

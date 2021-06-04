@@ -9,28 +9,29 @@ import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.crypto.toStringShort
 import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.LinearState
 import net.corda.v5.ledger.contracts.StateAndRef
-import net.corda.v5.ledger.services.Vault
-import net.corda.v5.ledger.services.queryBy
 import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.services.vault.RelevancyStatus
 import net.corda.v5.ledger.services.vault.Sort
 import net.corda.v5.ledger.services.vault.SortAttribute
+import net.corda.v5.ledger.services.vault.StateStatus
 import net.corda.v5.ledger.services.vault.builder
 
 // TODO Revisit this API and add documentation.
 /** Miscellaneous helpers. */
 
 // Grabs the latest version of a linear state for a specified linear ID.
-inline fun <reified T : LinearState> VaultService.getLinearStateById(linearId: UniqueIdentifier): StateAndRef<T>? {
+inline fun <reified T : LinearState> PersistenceService.getLinearStateById(linearId: UniqueIdentifier): StateAndRef<T>? {
     val query = QueryCriteria.LinearStateQueryCriteria(
         linearId = listOf(linearId),
-        status = Vault.StateStatus.UNCONSUMED,
-        relevancyStatus = Vault.RelevancyStatus.ALL
+        status = StateStatus.UNCONSUMED,
+        relevancyStatus = RelevancyStatus.ALL
     )
     return queryBy<T>(query).states.singleOrNull()
 }
