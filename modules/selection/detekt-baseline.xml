@@ -8,9 +8,7 @@
     <ID>ForbiddenComment:Selector.kt$Selector$// TODO: This assumes there is only ever ONE notary. In the future we need to deal with notary change.</ID>
     <ID>ForbiddenComment:TokenQueryBy.kt$TokenQueryBy$//TODO: After 2.0 we should get rid of queryCriteria, because it was a mistake to expose it in the</ID>
     <ID>LongMethod:VaultWatcherService.kt$VaultWatcherService$fun selectTokens( owner: Holder, requiredAmount: Amount&lt;TokenType&gt;, predicate: ((StateAndRef&lt;FungibleToken&gt;) -&gt; Boolean) = { true }, allowShortfall: Boolean = false, autoUnlockDelay: Duration = Duration.ofMinutes(5), selectionId: String ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
-    <ID>LongParameterList:DatabaseTokenSelection.kt$DatabaseTokenSelection$( private val vaultService: VaultService, private val identityService: IdentityService, private val flowEngine: FlowEngine, private val maxRetries: Int = MAX_RETRIES_DEFAULT, private val retrySleep: Int = RETRY_SLEEP_DEFAULT, private val retryCap: Int = RETRY_CAP_DEFAULT, private val pageSize: Int = PAGE_SIZE_DEFAULT )</ID>
-    <ID>LongParameterList:DatabaseTokenSelection.kt$DatabaseTokenSelection$( requiredAmount: Amount&lt;TokenType&gt;, lockId: UUID, additionalCriteria: QueryCriteria, sorter: Sort, stateAndRefs: MutableList&lt;StateAndRef&lt;FungibleToken&gt;&gt;, includeSoftLocked: Boolean, softLockingType: QueryCriteria.SoftLockingType = QueryCriteria.SoftLockingType.UNLOCKED_ONLY )</ID>
-    <ID>LongParameterList:DatabaseTokenSelection.kt$DatabaseTokenSelection$( requiredAmount: Amount&lt;TokenType&gt;, lockId: UUID, additionalCriteria: QueryCriteria, sorter: Sort, stateAndRefs: MutableList&lt;StateAndRef&lt;FungibleToken&gt;&gt;, softLockingType: QueryCriteria.SoftLockingType = QueryCriteria.SoftLockingType.UNLOCKED_ONLY )</ID>
+    <ID>LongParameterList:DatabaseTokenSelection.kt$DatabaseTokenSelection$( private val persistenceService: PersistenceService, private val identityService: IdentityService, private val flowEngine: FlowEngine, private val maxRetries: Int = MAX_RETRIES_DEFAULT, private val retrySleep: Int = RETRY_SLEEP_DEFAULT, private val retryCap: Int = RETRY_CAP_DEFAULT, private val pageSize: Int = PAGE_SIZE_DEFAULT )</ID>
     <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, myInfo: NodeInfo, holder: Holder, lockId: UUID = UUID.randomUUID(), partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, queryBy: TokenQueryBy = TokenQueryBy() )</ID>
     <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, nodeInfo: NodeInfo, externalId: UUID, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, queryBy: TokenQueryBy = TokenQueryBy(), lockId: UUID = UUID.randomUUID() )</ID>
     <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, nodeInfo: NodeInfo, holdingKey: PublicKey, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, queryBy: TokenQueryBy = TokenQueryBy(), lockId: UUID = UUID.randomUUID() )</ID>
@@ -20,22 +18,19 @@
     <ID>MagicNumber:VaultWatcherService.kt$VaultWatcherService$1000</ID>
     <ID>MagicNumber:VaultWatcherService.kt$VaultWatcherService$5</ID>
     <ID>MatchingDeclarationName:ExternalIdIndexUtils.kt$Holder</ID>
-    <ID>MaxLineLength:DatabaseSelectionConfig.kt$DatabaseSelectionConfig$return DatabaseTokenSelection(vaultService, identityService, flowEngine, maxRetries, retrySleep, retryCap, pageSize)</ID>
+    <ID>MaxLineLength:DatabaseSelectionConfig.kt$DatabaseSelectionConfig$return DatabaseTokenSelection(persistenceService, identityService, flowEngine, maxRetries, retrySleep, retryCap, pageSize)</ID>
     <ID>MaxLineLength:DatabaseSelectionConfig.kt$DatabaseSelectionConfig.Companion$ConfigSelection.logger.info("Found database token selection configuration with values maxRetries: $maxRetries, retrySleep: $retrySleep, retryCap: $retryCap, pageSize: $pageSize")</ID>
+    <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$*</ID>
     <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$// TODO After looking at VaultQueryCriteria implemenation of querying by external id we don't really support querying for keys not mapped to external id!</ID>
     <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$// This is due to the fact, that user can pass Amount&lt;IssuedTokenType&gt;, this usually shouldn't happen, but just in case</ID>
     <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$// We want the AbstractParty that this key refers to, unfortunately, partyFromKey returns always well known party</ID>
-    <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$is Holder.MappedIdentity -&gt; tokenAmountCriteria(token).and(QueryCriteria.VaultQueryCriteria(externalIds = listOf(holder.uuid)))</ID>
     <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$logger.trace("TokenType selection for $requiredAmount retrieved ${stateAndRefs.count()} states totalling $claimedAmount: $stateAndRefs")</ID>
     <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$logger.trace("TokenType selection requested $requiredAmount but retrieved $claimedAmount with state refs: ${stateAndRefs.map { it.ref }}")</ID>
     <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$private</ID>
     <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$throw InsufficientBalanceException("Insufficient spendable states identified for $requiredAmount.")</ID>
     <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$throw InsufficientNotLockedBalanceException("Insufficient not locked spendable states identified for $requiredAmount.")</ID>
-    <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$val claimedAmount = executeQuery(requiredAmount, lockId, additionalCriteria, sorter, stateAndRefs, false, softLockingType)</ID>
     <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$val durationMillis = (minOf(retrySleep.shl(retryCount), retryCap / 2) * (1.0 + Math.random())).toInt()</ID>
-    <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$val holderParty = if (knownParty.owningKey == holder.owningKey) knownParty else AnonymousParty(holder.owningKey)</ID>
-    <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$val results: Vault.Page&lt;FungibleToken&gt; = vaultService.queryBy(baseCriteria.and(additionalCriteria), pageSpec, sorter)</ID>
-    <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$}</ID>
+    <ID>MaxLineLength:DatabaseTokenSelection.kt$DatabaseTokenSelection$val holderParty = if (knownParty.owningKey == holder.owningKey) knownParty else identityService.anonymousPartyFromKey(holder.owningKey)</ID>
     <ID>MaxLineLength:ExternalIdIndexUtils.kt$*</ID>
     <ID>MaxLineLength:ExternalIdIndexUtils.kt$fun</ID>
     <ID>MaxLineLength:ExternalIdIndexUtils.kt$return</ID>
@@ -45,7 +40,7 @@
     <ID>MaxLineLength:InMemorySelectionConfig.kt$InMemorySelectionConfig.Companion$logger.warn("Did not detect a configuration for InMemory selection - enabling memory usage for token indexing. Please set stateSelection.inMemory.enabled to \"false\" to disable this")</ID>
     <ID>MaxLineLength:InMemorySelectionConfig.kt$InMemorySelectionConfig.Companion$logger.warn("No indexing method specified. Indexes will be created at run-time for each invocation of selectTokens")</ID>
     <ID>MaxLineLength:LocalTokenSelector.kt$LocalTokenSelector$*</ID>
-    <ID>MaxLineLength:SelectionUtilities.kt$// TODO clean up the module structure of token-sdk, because these function and types (eg PartyAndAmount) should be separate from workflows</ID>
+    <ID>MaxLineLength:SelectionUtilities.kt$fun</ID>
     <ID>MaxLineLength:Selector.kt$Selector$"States selected have different notaries. For now we don't support notary change, it should be performed beforehand."</ID>
     <ID>MaxLineLength:Selector.kt$Selector$*</ID>
     <ID>MaxLineLength:Selector.kt$Selector$remainingTokensFromEachIssuer[remainingTokensFromEachIssuer.lastIndex] = Pair(token, Amount(delta, token))</ID>
@@ -66,13 +61,14 @@
     <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService$private</ID>
     <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService$private fun addTokensToCache(stateAndRefs: Collection&lt;StateAndRef&lt;FungibleToken&gt;&gt;)</ID>
     <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService$throw InsufficientNotLockedBalanceException("Insufficient not-locked spendable states identified for $requiredAmount.")</ID>
+    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService.&lt;no name provided&gt;$val cursor = persistenceService.query&lt;StateAndRef&lt;FungibleToken&gt;&gt;("FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumed", emptyMap())</ID>
     <ID>NestedBlockDepth:DatabaseTokenSelection.kt$DatabaseTokenSelection$@Suspendable override fun selectTokens( holder: Holder, lockId: UUID, requiredAmount: Amount&lt;TokenType&gt;, queryBy: TokenQueryBy ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
     <ID>NestedBlockDepth:VaultWatcherService.kt$VaultWatcherService$fun selectTokens( owner: Holder, requiredAmount: Amount&lt;TokenType&gt;, predicate: ((StateAndRef&lt;FungibleToken&gt;) -&gt; Boolean) = { true }, allowShortfall: Boolean = false, autoUnlockDelay: Duration = Duration.ofMinutes(5), selectionId: String ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
     <ID>NewLineAtEndOfFile:SelectionUtilities.kt$com.r3.corda.lib.tokens.selection.SelectionUtilities.kt</ID>
     <ID>NewLineAtEndOfFile:Selector.kt$com.r3.corda.lib.tokens.selection.api.Selector.kt</ID>
     <ID>NewLineAtEndOfFile:StateSelectionConfig.kt$com.r3.corda.lib.tokens.selection.api.StateSelectionConfig.kt</ID>
     <ID>NewLineAtEndOfFile:TokenQueryBy.kt$com.r3.corda.lib.tokens.selection.TokenQueryBy.kt</ID>
-    <ID>ReturnCount:DatabaseTokenSelection.kt$DatabaseTokenSelection$ private fun executeQuery( requiredAmount: Amount&lt;TokenType&gt;, lockId: UUID, additionalCriteria: QueryCriteria, sorter: Sort, stateAndRefs: MutableList&lt;StateAndRef&lt;FungibleToken&gt;&gt;, includeSoftLocked: Boolean, softLockingType: QueryCriteria.SoftLockingType = QueryCriteria.SoftLockingType.UNLOCKED_ONLY ): Amount&lt;TokenType&gt;</ID>
+    <ID>ReturnCount:DatabaseTokenSelection.kt$DatabaseTokenSelection$ private fun executeQuery( requiredAmount: Amount&lt;TokenType&gt;, namedQuery: String, queryParams: Map&lt;String, Any&gt;, stateAndRefs: MutableList&lt;StateAndRef&lt;FungibleToken&gt;&gt;, ): Amount&lt;TokenType&gt;</ID>
     <ID>SwallowedException:InMemorySelectionConfig.kt$InMemorySelectionConfig$catch (e: IllegalArgumentException) { throw IllegalArgumentException("Couldn't find VaultWatcherService in CordaServices, please make sure that it was installed in node.") }</ID>
     <ID>SwallowedException:InMemorySelectionConfig.kt$InMemorySelectionConfig.Companion$catch (e: ClassCastException) { logger.warn("No indexing method specified. Indexes will be created at run-time for each invocation of selectTokens") emptyList() }</ID>
     <ID>SwallowedException:InMemorySelectionConfig.kt$InMemorySelectionConfig.Companion$catch (e: CordappConfigException) { logger.warn("No indexing method specified. Indexes will be created at run-time for each invocation of selectTokens") emptyList() }</ID>

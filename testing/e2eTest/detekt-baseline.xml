@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>MaxLineLength:SampleFlowTests.kt$SampleFlowTests$// private fun Nodes&lt;*&gt;.assertHouseProperties(linearId: String, address: String, value: Long, valueCurrency: String) {</ID>
+  </CurrentIssues>
+</SmellBaseline>

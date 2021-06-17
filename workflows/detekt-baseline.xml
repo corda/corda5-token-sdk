@@ -9,7 +9,6 @@
     <ID>ForbiddenComment:MoveTokensUtilities.kt$// TODO: Deal with notary change.</ID>
     <ID>ForbiddenComment:QueryUtilities.kt$// TODO: Add queries for getting the balance of all tokens, not just relevant ones.</ID>
     <ID>ForbiddenComment:QueryUtilities.kt$// TODO: Allow discrimination by issuer or a set of issuers.</ID>
-    <ID>ForbiddenComment:QueryUtilities.kt$// TODO: Merge this code with the code above.</ID>
     <ID>ForbiddenComment:RequestAdditionToDistributionList.kt$RequestAdditionToDistributionList.Initiator$// TODO: Try each maintainer.</ID>
     <ID>ForbiddenComment:UpdateDistributionListFlow.kt$UpdateDistributionListFlow$// TODO: Handle updates of the distribution list for observers.</ID>
     <ID>FunctionNaming:TokenUtilities.kt$private infix fun IssuedTokenType._heldBy(owner: AbstractParty): NonFungibleToken</ID>
@@ -43,11 +42,13 @@
     <ID>FunctionNaming:Utilities.kt$fun XRP(amount: Double): Amount&lt;TokenType&gt;</ID>
     <ID>FunctionNaming:Utilities.kt$fun XRP(amount: Int): Amount&lt;TokenType&gt;</ID>
     <ID>FunctionNaming:Utilities.kt$fun XRP(amount: Long): Amount&lt;TokenType&gt;</ID>
-    <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, vaultService: VaultService, identityService: IdentityService, flowEngine: FlowEngine, nodeInfo: NodeInfo, amount: Amount&lt;TokenType&gt;, holder: AbstractParty, changeHolder: AbstractParty, queryCriteria: QueryCriteria? = null )</ID>
-    <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, vaultService: VaultService, identityService: IdentityService, flowEngine: FlowEngine, nodeInfo: NodeInfo, partiesAndAmounts: List&lt;PartyAndAmount&lt;TokenType&gt;&gt;, changeHolder: AbstractParty, queryCriteria: QueryCriteria? = null )</ID>
-    <ID>LongParameterList:RedeemFlowUtilities.kt$( transactionBuilder: TransactionBuilder, vaultService: VaultService, identityService: IdentityService, flowEngine: FlowEngine, amount: Amount&lt;TokenType&gt;, issuer: Party, changeHolder: AbstractParty, additionalQueryCriteria: QueryCriteria? = null )</ID>
+    <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, flowEngine: FlowEngine, nodeInfo: NodeInfo, amount: Amount&lt;TokenType&gt;, holder: AbstractParty, changeHolder: AbstractParty, )</ID>
+    <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, flowEngine: FlowEngine, nodeInfo: NodeInfo, partiesAndAmounts: List&lt;PartyAndAmount&lt;TokenType&gt;&gt;, changeHolder: AbstractParty, )</ID>
+    <ID>LongParameterList:RedeemFlowUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, flowEngine: FlowEngine, amount: Amount&lt;TokenType&gt;, issuer: Party, changeHolder: AbstractParty, )</ID>
     <ID>MagicNumber:DistributionUtilities.kt$50</ID>
-    <ID>MagicNumber:QueryUtilities.kt$3</ID>
+    <ID>MagicNumber:NonFungibleTokenSelection.kt$50</ID>
+    <ID>MagicNumber:QueryUtilities.kt$10</ID>
+    <ID>MagicNumber:RedeemFlowUtilities.kt$10</ID>
     <ID>MagicNumber:TestFlows.kt$JustLocalSelect$10</ID>
     <ID>MatchingDeclarationName:ConfidentialIdentityUtilities.kt$ActionRequest</ID>
     <ID>MatchingDeclarationName:DistributionUtilities.kt$DistributionListUpdate</ID>
@@ -78,15 +79,16 @@
     <ID>MaxLineLength:NotaryUtilities.kt$/** Adds a notary to a new [TransactionBuilder]. If the notary is already set then it get overwritten by preferred notary */</ID>
     <ID>MaxLineLength:NotaryUtilities.kt$fun</ID>
     <ID>MaxLineLength:ObserverAwareFinalityFlow.kt$ObserverAwareFinalityFlow$val wellKnownParticipantsAndIssuers: Set&lt;Party&gt; = participants.toWellKnownParties(identityService).toSet() + issuers</ID>
-    <ID>MaxLineLength:RedeemFlowUtilities.kt$*</ID>
-    <ID>MaxLineLength:RedeemFlowUtilities.kt$selector.selectTokens(amount, TokenQueryBy(issuer = issuer, queryCriteria = queryCriteria), transactionBuilder.lockId)</ID>
+    <ID>MaxLineLength:QueryUtilities.kt$fun</ID>
+    <ID>MaxLineLength:QueryUtilities.kt$inline</ID>
+    <ID>MaxLineLength:RedeemFlowUtilities.kt$* Redeem amount of certain type of the token issued by [issuer]. Pay possible change to the [changeHolder] - it can be confidential identity.</ID>
     <ID>MaxLineLength:RedeemTokensFlow.kt$RedeemTokensFlow$*</ID>
     <ID>MaxLineLength:RedeemTokensFlowHandler.kt$RedeemTokensFlowHandler$// Synchronise all confidential identities, issuer isn't involved in move transactions, so states holders may</ID>
     <ID>MaxLineLength:RedeemTokensFlowHandler.kt$RedeemTokensFlowHandler$// There is edge case where issuer redeems with themselves, then we need to be careful not to call handler for</ID>
     <ID>MaxLineLength:RequestAdditionToDistributionList.kt$RequestAdditionToDistributionList$*</ID>
     <ID>MaxLineLength:RequestAdditionToDistributionList.kt$RequestAdditionToDistributionList.Responder$logger.info("Receiving request from ${otherSession.counterparty} to be added to the distribution list for $linearId.")</ID>
     <ID>MaxLineLength:TestFlows.kt$DvPFlow$transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction()).ourSigningKeys(keyManagementService)</ID>
-    <ID>MaxLineLength:TestFlows.kt$DvPFlow$val txBuilder = transactionBuilderFactory.create().setNotary(getPreferredNotary(networkMapCache, cordappProvider.appConfig))</ID>
+    <ID>MaxLineLength:TestFlows.kt$DvPFlow$val txBuilder = transactionBuilderFactory.create().setNotary(getPreferredNotary(notaryLookupService, cordappProvider.appConfig))</ID>
     <ID>MaxLineLength:TestFlows.kt$DvPFlowHandler$// TODO This is API pain, we assumed that we could just modify TransactionBuilder, but... it cannot be sent over the wire, because non-serializable</ID>
     <ID>MaxLineLength:TestFlows.kt$RedeemNonFungibleHouse$// TODO This is hack that will be removed after fix in Corda 5. startFlowDynamic doesn't handle type parameters properly.</ID>
     <ID>MaxLineLength:UpdateDistributionListFlow.kt$UpdateDistributionListFlow$val issueTypes: List&lt;TokenPointer&lt;*&gt;&gt; = issueCmds.map { it.token.tokenType }.mapNotNull { it as? TokenPointer&lt;*&gt; }</ID>

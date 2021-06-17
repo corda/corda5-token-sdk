@@ -17,16 +17,21 @@
     <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$require(jar in attachments.map { it.id }) { "Expected to find type jar: $jar in transaction attachment list, but did not" }</ID>
     <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$val groups = groupStates(tx) { TokenInfo(it.state.data.javaClass, it.state.data.issuedTokenType, it.state.contract) }</ID>
     <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$val inputsToVerify = (0 until tx.inputs.size).map { it to tx.inputs[it].state }.mapNotNull { castIfPossible(it) }</ID>
-    <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$val matchedCommands: List&lt;CommandWithParties&lt;TokenCommand&gt;&gt; = tokenCommands.filter { groupMatchesCommand(it, group) }</ID>
     <ID>MaxLineLength:EvolvableTokenContract.kt$EvolvableTokenContract$"Only evolvable token maintainers (from inputs and outputs) may sign the update evolvable token transaction."</ID>
     <ID>MaxLineLength:FungibleToken.kt$FungibleToken$*</ID>
     <ID>MaxLineLength:FungibleTokenContract.kt$FungibleTokenContract$require(amount &gt; Amount.zero(issuedToken)) { "If there is an output, it must have a value greater than zero." }</ID>
     <ID>MaxLineLength:FungibleTokenContract.kt$FungibleTokenContract$require(inputAmount &gt; Amount.zero(issuedToken)) { "In move groups there must be an amount of input tokens &gt; ZERO." }</ID>
     <ID>MaxLineLength:FungibleTokenContract.kt$FungibleTokenContract$require(outputAmount &gt; Amount.zero(issuedToken)) { "In move groups there must be an amount of output tokens &gt; ZERO." }</ID>
     <ID>MaxLineLength:FungibleTokenContract.kt$FungibleTokenContract$val issuerKey: PublicKey = inputs.map { it.state.data }.map(FungibleToken::issuer).toSet().single().owningKey</ID>
+    <ID>MaxLineLength:FungibleTokenSchema.kt$FungibleTokenSchemaV1.PersistentFungibleToken$" FROM com.r3.corda.lib.tokens.contracts.internal.schemas.FungibleTokenSchemaV1\$PersistentFungibleToken token,"</ID>
+    <ID>MaxLineLength:FungibleTokenSchema.kt$FungibleTokenSchemaV1.PersistentFungibleToken$name = "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierAndExternalId"</ID>
+    <ID>MaxLineLength:FungibleTokenSchema.kt$FungibleTokenSchemaV1.PersistentFungibleToken$name = "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierHolderAndIssuer"</ID>
+    <ID>MaxLineLength:FungibleTokenSchema.kt$FungibleTokenSchemaV1.PersistentFungibleToken$name = "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierIssuerAndExternalId"</ID>
     <ID>MaxLineLength:IssuedTokenType.kt$IssuedTokenType$data</ID>
     <ID>MaxLineLength:NonFungibleToken.kt$NonFungibleToken$return NonFungibleToken(token = token, holder = newHolder, linearId = linearId, tokenTypeJarHash = tokenTypeJarHash)</ID>
     <ID>MaxLineLength:NonFungibleTokenContract.kt$NonFungibleTokenContract$require(moveCommands.size == 1) { "There should be only one move command per group when moving non fungible tokens." }</ID>
+    <ID>MaxLineLength:NonFungibleTokenSchema.kt$NonFungibleTokenSchemaV1.PersistentNonFungibleToken$" FROM com.r3.corda.lib.tokens.contracts.internal.schemas.NonFungibleTokenSchemaV1\$PersistentNonFungibleToken token,"</ID>
+    <ID>MaxLineLength:NonFungibleTokenSchema.kt$NonFungibleTokenSchemaV1.PersistentNonFungibleToken$name = "NonFungibleTokenSchemaV1.PersistentNonFungibleToken.findAllUnconsumedTokensByClassIdentifierAndIssuer"</ID>
     <ID>MaxLineLength:TokenCommand.kt$MoveTokenCommand$class</ID>
     <ID>MaxLineLength:TokenCommand.kt$RedeemTokenCommand$class</ID>
     <ID>MaxLineLength:TokenType.kt$TokenType$*</ID>
