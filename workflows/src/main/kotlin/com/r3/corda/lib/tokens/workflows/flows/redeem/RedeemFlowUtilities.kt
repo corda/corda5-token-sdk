@@ -5,6 +5,7 @@ package com.r3.corda.lib.tokens.workflows.flows.redeem
 import com.r3.corda.lib.tokens.contracts.commands.RedeemTokenCommand
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
+import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.sumTokenStateAndRefs
 import com.r3.corda.lib.tokens.selection.TokenQueryBy
@@ -22,9 +23,9 @@ import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.StateAndRef
-import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /**
@@ -69,6 +70,7 @@ fun addTokensToRedeem(
     return transactionBuilder
 }
 
+
 /**
  * Redeem non-fungible [heldToken] issued by the [issuer] and add it to the [transactionBuilder].
  */
@@ -79,7 +81,12 @@ fun addNonFungibleTokensToRedeem(
     heldToken: TokenType,
     issuer: Party
 ): TransactionBuilder {
-    val heldTokenStateAndRef = persistenceService.heldTokensByTokenIssuer(heldToken, issuer).states
+    val cursor = persistenceService.heldTokensByTokenIssuer(heldToken, issuer)
+    val heldTokenStateAndRef = mutableListOf<StateAndRef<NonFungibleToken>>()
+    do {
+        val pollResult = cursor.poll(10, 5.seconds)
+        heldTokenStateAndRef.addAll(pollResult.values)
+    } while (!pollResult.isLastResult)
     check(heldTokenStateAndRef.size == 1) {
         "Exactly one held token of a particular type $heldToken should be in the vault at any one time."
     }
@@ -91,10 +98,8 @@ fun addNonFungibleTokensToRedeem(
 
 /**
  * Redeem amount of certain type of the token issued by [issuer]. Pay possible change to the [changeHolder] - it can be confidential identity.
- * Additional query criteria can be provided using [additionalQueryCriteria].
  */
 @Suspendable
-@JvmOverloads
 fun addFungibleTokensToRedeem(
     transactionBuilder: TransactionBuilder,
     persistenceService: PersistenceService,
@@ -103,15 +108,11 @@ fun addFungibleTokensToRedeem(
     amount: Amount<TokenType>,
     issuer: Party,
     changeHolder: AbstractParty,
-    additionalQueryCriteria: QueryCriteria? = null
 ): TransactionBuilder {
     // TODO For now default to database query, but switch this line on after we can change API in 2.0
-//    val selector: Selector = ConfigSelection.getPreferredSelection(serviceHub)
     val selector = DatabaseTokenSelection(persistenceService, identityService, flowEngine)
-    val baseCriteria = tokenAmountWithIssuerCriteria(amount.token, issuer)
-    val queryCriteria = additionalQueryCriteria?.let { baseCriteria.and(it) } ?: baseCriteria
     val fungibleStates =
-        selector.selectTokens(amount, TokenQueryBy(issuer = issuer, queryCriteria = queryCriteria), transactionBuilder.lockId)
+        selector.selectTokens(amount, TokenQueryBy(issuer = issuer), transactionBuilder.lockId)
     checkSameNotary(fungibleStates)
     check(fungibleStates.isNotEmpty()) {
         "Received empty list of states to redeem."

@@ -8,7 +8,6 @@ import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount
-import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /**
@@ -19,7 +18,6 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * @param changeHolder owner of possible change output, which defaults to the node identity of the calling node
  * @param issuerSession session with the issuer tokens should be redeemed with
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
- * @param additionalQueryCriteria additional criteria for token selection
  */
 class RedeemFungibleTokensFlow
 @JvmOverloads
@@ -28,7 +26,6 @@ constructor(
     override val issuerSession: FlowSession,
     val changeHolder: AbstractParty? = null,
     override val observerSessions: List<FlowSession> = emptyList(),
-    val additionalQueryCriteria: QueryCriteria? = null
 ) : AbstractRedeemTokensFlow() {
 
     @CordaInject
@@ -47,7 +44,6 @@ constructor(
             amount = amount,
             issuer = issuerSession.counterparty,
             changeHolder = changeHolder ?: flowIdentity.ourIdentity,
-            additionalQueryCriteria = additionalQueryCriteria
         )
     }
 }

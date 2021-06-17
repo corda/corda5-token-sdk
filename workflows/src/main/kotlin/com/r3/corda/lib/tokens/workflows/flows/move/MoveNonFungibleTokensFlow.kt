@@ -6,7 +6,6 @@ import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /**
@@ -19,7 +18,6 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * @param partyAndToken pairing party - token that is to be moved to that party
  * @param participantSessions sessions with the participants of move transaction
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
- * @param queryCriteria additional criteria for token selection
  */
 class MoveNonFungibleTokensFlow
 @JvmOverloads
@@ -27,7 +25,6 @@ constructor(
     val partyAndToken: PartyAndToken,
     override val participantSessions: List<FlowSession>,
     override val observerSessions: List<FlowSession> = emptyList(),
-    val queryCriteria: QueryCriteria?
 ) : AbstractMoveTokensFlow() {
 
     @CordaInject
@@ -35,6 +32,6 @@ constructor(
 
     @Suspendable
     override fun addMove(transactionBuilder: TransactionBuilder) {
-        addMoveNonFungibleTokens(transactionBuilder, persistenceService, partyAndToken, queryCriteria)
+        addMoveNonFungibleTokens(transactionBuilder, persistenceService, partyAndToken)
     }
 }

@@ -10,13 +10,15 @@ import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.StartableByRPC
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.internal.uncheckedCast
+import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.StateAndRef
 import net.corda.v5.ledger.services.StateLoaderService
-import net.corda.v5.ledger.services.queryBy
-import net.corda.v5.ledger.services.vault.QueryCriteria
+import net.corda.v5.ledger.services.vault.StateStatus
 import net.corda.v5.ledger.transactions.SignedTransaction
 
 @StartableByRPC
@@ -30,16 +32,33 @@ class UpdateHouseValuation(
     lateinit var flowEngine: FlowEngine
 
     @CordaInject
-    lateinit var vaultService: VaultService
+    lateinit var stateLoaderService: StateLoaderService
 
     @CordaInject
-    lateinit var stateLoaderService: StateLoaderService
+    lateinit var persistenceService: PersistenceService
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val houseNft = vaultService.queryBy<NonFungibleToken>(
-            criteria = QueryCriteria.LinearStateQueryCriteria(linearId = listOf(UniqueIdentifier.fromString(linearId)))
-        ).states.single()
+
+        val cursor = persistenceService.query<StateAndRef<NonFungibleToken>>(
+            "LinearState.findByUuidAndStateStatus",
+            mapOf(
+                "uuid" to UniqueIdentifier.fromString(linearId),
+                "stateStatus" to StateStatus.UNCONSUMED,
+            )
+        )
+
+        val results = mutableListOf<StateAndRef<NonFungibleToken>>()
+        do {
+            val pollResult = cursor.poll(1, 5.seconds)
+            results.addAll(pollResult.values)
+        } while (!pollResult.isLastResult)
+
+        require(results.size == 1)
+
+
+        val houseNft = results.single()
+
 
         require(houseNft.state.data.token.isPointer())
         val oldHouseTokenStateAndRef = stateLoaderService

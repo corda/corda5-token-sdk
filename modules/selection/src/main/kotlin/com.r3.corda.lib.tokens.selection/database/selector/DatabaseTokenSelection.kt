@@ -13,19 +13,15 @@ import com.r3.corda.lib.tokens.selection.database.config.RETRY_SLEEP_DEFAULT
 import com.r3.corda.lib.tokens.selection.memory.internal.Holder
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.base.util.millis
+import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.StateAndRef
-import net.corda.v5.ledger.services.vault.DEFAULT_PAGE_NUM
-import net.corda.v5.ledger.services.vault.PageSpecification
-import net.corda.v5.ledger.services.vault.QueryCriteria
-import net.corda.v5.ledger.services.vault.RelevancyStatus
-import net.corda.v5.ledger.services.vault.Sort
-import net.corda.v5.ledger.services.vault.StateStatus
 import java.util.*
 
 /**
@@ -33,9 +29,8 @@ import java.util.*
  * AbstractCoinSelection within the finance module. The only difference is that now there are not specific database
  * implementations, instead hibernate is used for an agnostic approach.
  *
- * When calling [selectTokens] there is the option to pass in a custom [QueryCriteria]. The default behaviour
- * is to order all states by [StateRef] and query for a specific token type. The default behaviour is probably not very
- * efficient but the behaviour can be customised if necessary.
+ * The default behaviour is to order all states by [StateRef] and query for a specific token type. The default behaviour is probably not
+ * very efficient but the behaviour can be customised if necessary.
  *
  * This is only really here as a stopgap solution until in-memory token selection is implemented.
  *
@@ -62,53 +57,28 @@ class DatabaseTokenSelection @JvmOverloads constructor(
      * */
     private fun executeQuery(
         requiredAmount: Amount<TokenType>,
-        lockId: UUID,
-        additionalCriteria: QueryCriteria,
-        sorter: Sort,
+        namedQuery: String,
+        queryParams: Map<String, Any>,
         stateAndRefs: MutableList<StateAndRef<FungibleToken>>,
-        includeSoftLocked: Boolean,
-        softLockingType: QueryCriteria.SoftLockingType = QueryCriteria.SoftLockingType.UNLOCKED_ONLY
     ): Amount<TokenType> {
         // Didn't need to select any tokens.
         if (requiredAmount.quantity == 0L) {
             return Amount(0, requiredAmount.token)
         }
 
-        // Enrich QueryCriteria with additional default attributes (such as soft locks).
-        // We only want to return RELEVANT states here.
-        val baseCriteria = if (!includeSoftLocked) {
-            QueryCriteria.VaultQueryCriteria(
-                contractStateTypes = setOf(FungibleToken::class.java),
-                softLockingCondition = QueryCriteria.SoftLockingCondition(softLockingType, listOf(lockId)),
-                relevancyStatus = RelevancyStatus.RELEVANT,
-                status = StateStatus.UNCONSUMED
-            )
-        } else {
-            QueryCriteria.VaultQueryCriteria(
-                contractStateTypes = setOf(FungibleToken::class.java),
-                relevancyStatus = RelevancyStatus.RELEVANT,
-                status = StateStatus.UNCONSUMED
-            )
-        }
-
-        var pageNumber = DEFAULT_PAGE_NUM
         var claimedAmount = 0L
 
+        val cursor = persistenceService.query<StateAndRef<FungibleToken>>(namedQuery, queryParams)
         do {
-            val pageSpec = PageSpecification(pageNumber = pageNumber, pageSize = pageSize)
-            persistenceService.query<FungibleToken>()
-            val results: Vault.Page<FungibleToken> = vaultService.queryBy(baseCriteria.and(additionalCriteria), pageSpec, sorter)
-
-            for (state in results.states) {
+            val tokens = cursor.poll(pageSize, 10.seconds)
+            for (state in tokens.values) {
                 stateAndRefs += state
                 claimedAmount += state.state.data.amount.quantity
                 if (claimedAmount >= requiredAmount.quantity) {
                     break
                 }
             }
-
-            pageNumber++
-        } while (claimedAmount < requiredAmount.quantity && (pageSpec.pageSize * (pageNumber - 1)) <= results.totalStatesAvailable)
+        } while (claimedAmount < requiredAmount.quantity && !tokens.isLastResult)
 
         val claimedAmountWithToken = Amount(claimedAmount, requiredAmount.token)
         // No tokens available.
@@ -123,18 +93,15 @@ class DatabaseTokenSelection @JvmOverloads constructor(
      */
     private fun executeQueryAndReserve(
         requiredAmount: Amount<TokenType>,
-        lockId: UUID,
-        additionalCriteria: QueryCriteria,
-        sorter: Sort,
+        namedQueryString: String,
+        queryParams: Map<String, Any>,
         stateAndRefs: MutableList<StateAndRef<FungibleToken>>,
-        softLockingType: QueryCriteria.SoftLockingType = QueryCriteria.SoftLockingType.UNLOCKED_ONLY
     ): Boolean {
         // not including soft locked tokens
-        val claimedAmount = executeQuery(requiredAmount, lockId, additionalCriteria, sorter, stateAndRefs, false, softLockingType)
+        val claimedAmount = executeQuery(requiredAmount, namedQueryString, queryParams, stateAndRefs)
         return if (claimedAmount >= requiredAmount) {
-            // We picked enough tokensToIssue, so softlock and go.
+            // We picked enough tokensToIssue, continue
             logger.trace("TokenType selection for $requiredAmount retrieved ${stateAndRefs.count()} states totalling $claimedAmount: $stateAndRefs")
-            vaultService.softLockReserve(lockId, stateAndRefs.map { it.ref }.toNonEmptySet())
             true
         } else {
             logger.trace("TokenType selection requested $requiredAmount but retrieved $claimedAmount with state refs: ${stateAndRefs.map { it.ref }}")
@@ -149,10 +116,10 @@ class DatabaseTokenSelection @JvmOverloads constructor(
         requiredAmount: Amount<TokenType>,
         queryBy: TokenQueryBy
     ): List<StateAndRef<FungibleToken>> {
-        val criteria = constructQueryCriteria(requiredAmount, holder, queryBy)
+        val (namedQuery, queryParams) = getNamedQuery(requiredAmount, holder, queryBy)
         val stateAndRefs = mutableListOf<StateAndRef<FungibleToken>>()
         for (retryCount in 1..maxRetries) {
-            if (!executeQueryAndReserve(requiredAmount, lockId, criteria, sortByStateRefAscending(), stateAndRefs)) {
+            if (!executeQueryAndReserve(requiredAmount, namedQuery, queryParams, stateAndRefs)) {
                 // TODO: Need to specify exactly why it fails. Locked states or literally _no_ states!
                 // No point in retrying if there will never be enough...
                 logger.warn("TokenType selection failed on attempt $retryCount.")
@@ -162,11 +129,11 @@ class DatabaseTokenSelection @JvmOverloads constructor(
                     val durationMillis = (minOf(retrySleep.shl(retryCount), retryCap / 2) * (1.0 + Math.random())).toInt()
                     flowEngine.sleep(durationMillis.millis)
                 } else {
-                    // if there is enough soft locked tokens available to satisfy the amount then we need to throw
+                    // if there is enough tokens available to satisfy the amount then we need to throw
                     // [InsufficientNotLockedBalanceException] instead
-                    val amountWithSoftLocked =
-                        executeQuery(requiredAmount, lockId, criteria, sortByStateRefAscending(), mutableListOf(), true)
-                    if (amountWithSoftLocked < requiredAmount) {
+                    val amount =
+                        executeQuery(requiredAmount, namedQuery, queryParams, mutableListOf())
+                    if (amount < requiredAmount) {
                         logger.warn("Insufficient spendable states identified for $requiredAmount.")
                         throw InsufficientBalanceException("Insufficient spendable states identified for $requiredAmount.")
                     } else {
@@ -185,26 +152,22 @@ class DatabaseTokenSelection @JvmOverloads constructor(
         } else stateAndRefs
     }
 
-    private fun constructQueryCriteria(requiredAmount: Amount<TokenType>, holder: Holder, queryBy: TokenQueryBy): QueryCriteria {
+    private fun getNamedQuery(requiredAmount: Amount<TokenType>, holder: Holder, queryBy: TokenQueryBy): Pair<String, Map<String, Any>> {
         // This is due to the fact, that user can pass Amount<IssuedTokenType>, this usually shouldn't happen, but just in case
         val amountToken = requiredAmount.token
         val (token, issuer) = when (amountToken) {
             is IssuedTokenType -> Pair(amountToken.tokenType, amountToken.issuer)
             else -> Pair(amountToken, queryBy.issuer)
         }
-        val criteria = holderToCriteria(holder, token).run {
-            if (issuer != null) {
-                and(tokenAmountWithIssuerCriteria(token, issuer))
-            } else this
-        }.run {
-            if (queryBy.queryCriteria != null) {
-                and(queryBy.queryCriteria)
-            } else this
-        }
-        return criteria
+
+        return holderToNamedQuery(holder, token, issuer)
     }
 
-    private fun holderToCriteria(holder: Holder, token: TokenType): QueryCriteria {
+    private fun holderToNamedQuery(
+        holder: Holder,
+        token: TokenType,
+        issuer: Party?,
+    ): Pair<String, Map<String,Any>> {
         return when (holder) {
             is Holder.KeyIdentity -> {
                 // We want the AbstractParty that this key refers to, unfortunately, partyFromKey returns always well known party
@@ -212,12 +175,29 @@ class DatabaseTokenSelection @JvmOverloads constructor(
                 val knownParty: AbstractParty = identityService.partyFromKey(holder.owningKey)
                     ?: AnonymousPartyImpl(holder.owningKey)
                 val holderParty = if (knownParty.owningKey == holder.owningKey) knownParty else AnonymousPartyImpl(holder.owningKey)
-                tokenAmountWithHolderCriteria(token, holderParty)
+                if(issuer == null) {
+                    namedQueryForTokenClassIdentifierAndHolder(token, holderParty)
+                } else {
+                    namedQueryForTokenClassIdentifierHolderAndIssuer(token, holderParty, issuer)
+                }
+
             }
-            is Holder.MappedIdentity -> tokenAmountCriteria(token).and(QueryCriteria.VaultQueryCriteria(externalIds = listOf(holder.uuid)))
+            is Holder.MappedIdentity -> if(issuer == null) {
+                namedQueryForTokenClassIdentifierAndExternalId(token, holder.uuid)
+            } else {
+                namedQueryForTokenClassIdentifierIssuerAndExternalId(token, issuer, holder.uuid)
+            }
             // TODO After looking at VaultQueryCriteria implemenation of querying by external id we don't really support querying for keys not mapped to external id!
-            is Holder.UnmappedIdentity -> tokenAmountCriteria(token)
-            is Holder.TokenOnly -> tokenAmountCriteria(token)
+            is Holder.UnmappedIdentity -> if(issuer == null) {
+                namedQueryForTokenClassAndIdentifier(token)
+            } else {
+                namedQueryForTokenClassIdentifierAndIssuer(token, issuer)
+            }
+            is Holder.TokenOnly ->  if(issuer == null) {
+                namedQueryForTokenClassAndIdentifier(token)
+            } else {
+                namedQueryForTokenClassIdentifierAndIssuer(token, issuer)
+            }
         }
     }
 }

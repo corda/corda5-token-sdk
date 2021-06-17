@@ -10,7 +10,6 @@ import net.corda.v5.application.node.NodeInfo
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /**
@@ -23,7 +22,6 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * @param partiesAndAmounts list of pairing party - amount of token that is to be moved to that party
  * @param participantSessions sessions with the participants of move transaction
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
- * @param queryCriteria additional criteria for token selection
  * @param changeHolder optional holder of the change outputs, it can be confidential identity, if not specified it
  *                     defaults to caller's legal identity
  */
@@ -33,7 +31,6 @@ constructor(
     val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
     override val participantSessions: List<FlowSession>,
     override val observerSessions: List<FlowSession> = emptyList(),
-    val queryCriteria: QueryCriteria? = null,
     val changeHolder: AbstractParty? = null
 ) : AbstractMoveTokensFlow() {
 
@@ -52,11 +49,10 @@ constructor(
     @JvmOverloads
     constructor(
         partyAndAmount: PartyAndAmount<TokenType>,
-        queryCriteria: QueryCriteria? = null,
         participantSessions: List<FlowSession>,
         observerSessions: List<FlowSession> = emptyList(),
         changeHolder: AbstractParty? = null
-    ) : this(listOf(partyAndAmount), participantSessions, observerSessions, queryCriteria, changeHolder)
+    ) : this(listOf(partyAndAmount), participantSessions, observerSessions, changeHolder)
 
     @Suspendable
     override fun addMove(transactionBuilder: TransactionBuilder) {
@@ -68,7 +64,6 @@ constructor(
             nodeInfo,
             partiesAndAmounts = partiesAndAmounts,
             changeHolder = changeHolder ?: flowIdentity.ourIdentity,
-            queryCriteria = queryCriteria
         )
     }
 }

@@ -16,7 +16,6 @@ import net.corda.v5.application.node.NodeInfo
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.SignedTransaction
 
 /**
@@ -30,7 +29,6 @@ import net.corda.v5.ledger.transactions.SignedTransaction
  * @param participantSessions sessions with the participants of move transaction
  * @param changeHolder holder of the change outputs, it can be confidential identity
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
- * @param queryCriteria additional criteria for token selection
  */
 class ConfidentialMoveFungibleTokensFlow
 @JvmOverloads
@@ -39,7 +37,6 @@ constructor(
     val participantSessions: List<FlowSession>,
     val changeHolder: AbstractParty,
     val observerSessions: List<FlowSession> = emptyList(),
-    val queryCriteria: QueryCriteria? = null
 ) : Flow<SignedTransaction> {
 
     @CordaInject
@@ -59,10 +56,9 @@ constructor(
         partyAndAmount: PartyAndAmount<TokenType>,
         participantSessions: List<FlowSession>,
         changeHolder: AbstractParty,
-        queryCriteria: QueryCriteria? = null,
         observerSessions: List<FlowSession> = emptyList()
 
-    ) : this(listOf(partyAndAmount), participantSessions, changeHolder, observerSessions, queryCriteria)
+    ) : this(listOf(partyAndAmount), participantSessions, changeHolder, observerSessions)
 
     @Suspendable
     override fun call(): SignedTransaction {
@@ -74,7 +70,7 @@ constructor(
             lockId = flowEngine.runId.uuid,
             partiesAndAmounts = partiesAndAmounts.toPairs(),
             changeHolder = changeHolder,
-            queryBy = TokenQueryBy(queryCriteria = queryCriteria)
+            queryBy = TokenQueryBy()
         )
         // TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role
         participantSessions.forEach { it.send(TransactionRole.PARTICIPANT) }

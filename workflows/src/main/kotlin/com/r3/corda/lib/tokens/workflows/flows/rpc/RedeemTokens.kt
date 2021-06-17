@@ -22,7 +22,6 @@ import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount
-import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.SignedTransaction
 
 @StartableByService
@@ -34,7 +33,6 @@ constructor(
     val amount: Amount<TokenType>,
     val issuer: Party,
     val observers: List<Party> = emptyList(),
-    val queryCriteria: QueryCriteria? = null,
     val changeHolder: AbstractParty? = null
 ) : Flow<SignedTransaction> {
 
@@ -57,7 +55,7 @@ constructor(
         return flowEngine.subFlow(
             RedeemFungibleTokensFlow(
                 amount, issuerSession, changeHolder
-                    ?: flowIdentity.ourIdentity, observerSessions, queryCriteria
+                    ?: flowIdentity.ourIdentity, observerSessions
             )
         )
     }
@@ -126,7 +124,6 @@ constructor(
     val amount: Amount<TokenType>,
     val issuer: Party,
     val observers: List<Party> = emptyList(),
-    val queryCriteria: QueryCriteria? = null,
     val changeHolder: AbstractParty? = null
 ) : Flow<SignedTransaction> {
 
@@ -148,7 +145,6 @@ constructor(
                 amount = amount,
                 issuerSession = issuerSession,
                 observerSessions = observerSessions,
-                additionalQueryCriteria = queryCriteria,
                 changeHolder = changeHolder
             )
         )

@@ -10,7 +10,6 @@ import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.services.KeyManagementService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount
-import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.SignedTransaction
 
 /**
@@ -21,7 +20,6 @@ import net.corda.v5.ledger.transactions.SignedTransaction
  * @param amount amount of token to redeem
  * @param issuerSession session with the issuer tokens should be redeemed with
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
- * @param additionalQueryCriteria additional criteria for token selection
  * @param changeHolder optional change key, if using accounts you should generate the change key prior to calling this
  *                     flow then pass it in to the flow via this parameter
  */
@@ -31,7 +29,6 @@ constructor(
     val amount: Amount<TokenType>,
     val issuerSession: FlowSession,
     val observerSessions: List<FlowSession> = emptyList(),
-    val additionalQueryCriteria: QueryCriteria? = null,
     val changeHolder: AbstractParty? = null
 ) : Flow<SignedTransaction> {
     @CordaInject
@@ -55,7 +52,6 @@ constructor(
                 issuerSession = issuerSession,
                 changeHolder = confidentialHolder,  // This will never be null.
                 observerSessions = observerSessions,
-                additionalQueryCriteria = additionalQueryCriteria
             )
         )
     }

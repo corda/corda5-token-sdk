@@ -11,7 +11,6 @@ import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.SignedTransaction
 
 /**
@@ -24,7 +23,6 @@ import net.corda.v5.ledger.transactions.SignedTransaction
  * @param partyAndToken list of pairing party - token that is to be moved to that party
  * @param participantSessions sessions with the participants of move transaction
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
- * @param queryCriteria additional criteria for token selection
  */
 class ConfidentialMoveNonFungibleTokensFlow
 @JvmOverloads
@@ -32,7 +30,6 @@ constructor(
     val partyAndToken: PartyAndToken,
     val participantSessions: List<FlowSession>,
     val observerSessions: List<FlowSession> = emptyList(),
-    val queryCriteria: QueryCriteria? = null
 ) : Flow<SignedTransaction> {
 
     @CordaInject
@@ -43,7 +40,7 @@ constructor(
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val (input, output) = generateMoveNonFungible(partyAndToken, persistenceService, queryCriteria)
+        val (input, output) = generateMoveNonFungible(partyAndToken, persistenceService)
         // TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role
         participantSessions.forEach { it.send(TransactionRole.PARTICIPANT) }
         observerSessions.forEach { it.send(TransactionRole.OBSERVER) }

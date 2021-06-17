@@ -21,7 +21,6 @@ import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.StateAndRef
-import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /* For fungible tokens. */
@@ -90,12 +89,10 @@ fun addMoveTokens(
 /**
  * Adds multiple token moves to transaction. [partiesAndAmounts] parameter specify which parties should receive amounts of the token.
  * With possible change paid to [changeHolder]. This method will combine multiple token amounts from different issuers if needed.
- * If you would like to choose only tokens from one issuer you can provide optional [queryCriteria] for move generation.
  * Note: For now this method always uses database token selection, to use in memory one, use [addMoveTokens] with already selected
  * input and output states.
  */
 @Suspendable
-@JvmOverloads
 fun addMoveFungibleTokens(
     transactionBuilder: TransactionBuilder,
     persistenceService: PersistenceService,
@@ -104,7 +101,6 @@ fun addMoveFungibleTokens(
     nodeInfo: NodeInfo,
     partiesAndAmounts: List<PartyAndAmount<TokenType>>,
     changeHolder: AbstractParty,
-    queryCriteria: QueryCriteria? = null
 ): TransactionBuilder {
     // TODO For now default to database query, but switch this line on after we can change API in 2.0
 //    val selector: Selector = ConfigSelection.getPreferredSelection(serviceHub)
@@ -115,7 +111,7 @@ fun addMoveFungibleTokens(
             nodeInfo,
             partiesAndAmounts.toPairs(),
             changeHolder,
-            TokenQueryBy(queryCriteria = queryCriteria),
+            TokenQueryBy(),
             transactionBuilder.lockId
         )
     return addMoveTokens(transactionBuilder = transactionBuilder, inputs = inputs, outputs = outputs)
@@ -124,12 +120,10 @@ fun addMoveFungibleTokens(
 /**
  * Add single move of [amount] of token to the new [holder]. Possible change output will be paid to [changeHolder].
  * This method will combine multiple token amounts from different issuers if needed.
- * If you would like to choose only tokens from one issuer you can provide optional [queryCriteria] for move generation.
  * Note: For now this method always uses database token selection, to use in memory one, use [addMoveTokens] with already selected
  * input and output states.
  */
 @Suspendable
-@JvmOverloads
 fun addMoveFungibleTokens(
     transactionBuilder: TransactionBuilder,
     persistenceService: PersistenceService,
@@ -139,7 +133,6 @@ fun addMoveFungibleTokens(
     amount: Amount<TokenType>,
     holder: AbstractParty,
     changeHolder: AbstractParty,
-    queryCriteria: QueryCriteria? = null
 ): TransactionBuilder {
     return addMoveFungibleTokens(
         transactionBuilder = transactionBuilder,
@@ -149,7 +142,6 @@ fun addMoveFungibleTokens(
         nodeInfo = nodeInfo,
         partiesAndAmounts = listOf(PartyAndAmount(holder, amount)),
         changeHolder = changeHolder,
-        queryCriteria = queryCriteria
     )
 }
 
@@ -157,31 +149,25 @@ fun addMoveFungibleTokens(
 
 /**
  * Add single move of [token] to the new [holder].
- * Provide optional [queryCriteria] for move generation.
  */
 @Suspendable
-@JvmOverloads
 fun addMoveNonFungibleTokens(
     transactionBuilder: TransactionBuilder,
     persistenceService: PersistenceService,
     token: TokenType,
     holder: AbstractParty,
-    queryCriteria: QueryCriteria? = null
 ): TransactionBuilder {
-    return generateMoveNonFungible(transactionBuilder, PartyAndToken(holder, token), persistenceService, queryCriteria)
+    return generateMoveNonFungible(transactionBuilder, PartyAndToken(holder, token), persistenceService)
 }
 
 /**
  * Add single move of token to the new holder specified using [partyAndToken] parameter.
- * Provide optional [queryCriteria] for move generation.
  */
 @Suspendable
-@JvmOverloads
 fun addMoveNonFungibleTokens(
     transactionBuilder: TransactionBuilder,
     persistenceService: PersistenceService,
     partyAndToken: PartyAndToken,
-    queryCriteria: QueryCriteria? = null
 ): TransactionBuilder {
-    return generateMoveNonFungible(transactionBuilder, partyAndToken, persistenceService, queryCriteria)
+    return generateMoveNonFungible(transactionBuilder, partyAndToken, persistenceService)
 }

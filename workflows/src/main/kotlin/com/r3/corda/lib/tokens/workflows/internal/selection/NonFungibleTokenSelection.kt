@@ -7,22 +7,25 @@ import com.r3.corda.lib.tokens.contracts.utilities.withNotary
 import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import com.r3.corda.lib.tokens.workflows.utilities.addNotaryWithCheck
 import com.r3.corda.lib.tokens.workflows.utilities.addTokenTypeJar
-import com.r3.corda.lib.tokens.workflows.utilities.heldTokenCriteria
+import com.r3.corda.lib.tokens.workflows.utilities.namedQueryForNonfungibleTokenClassAndIdentifier
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.contracts.StateAndRef
-import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.TransactionBuilder
 
 @Suspendable
 fun generateMoveNonFungible(
     partyAndToken: PartyAndToken,
     persistenceService: PersistenceService,
-    queryCriteria: QueryCriteria?
 ): Pair<StateAndRef<NonFungibleToken>, NonFungibleToken> {
-    val query = queryCriteria ?: heldTokenCriteria(partyAndToken.token)
-    val criteria = heldTokenCriteria(partyAndToken.token).and(query)
-    val nonFungibleTokens = persistenceService.queryBy<NonFungibleToken>(criteria).states
+    val (namedQuery, params) = namedQueryForNonfungibleTokenClassAndIdentifier(partyAndToken.token)
+    val cursor = persistenceService.query<StateAndRef<NonFungibleToken>>(namedQuery, params)
+    val nonFungibleTokens = mutableListOf<StateAndRef<NonFungibleToken>>()
+    do {
+        val pollResult = cursor.poll(50, 5.seconds)
+        nonFungibleTokens.addAll(pollResult.values)
+    } while (!pollResult.isLastResult)
     // There can be multiple non-fungible tokens of the same TokenType. E.g. There can be multiple House tokens, each
     // with a different address. Whilst they have the same TokenType, they are still non-fungible. Therefore care must
     // be taken to ensure that only one token is returned for each query. As non-fungible tokens are also LinearStates,
@@ -39,9 +42,8 @@ fun generateMoveNonFungible(
     transactionBuilder: TransactionBuilder,
     partyAndToken: PartyAndToken,
     persistenceService: PersistenceService,
-    queryCriteria: QueryCriteria?
 ): TransactionBuilder {
-    val (input, output) = generateMoveNonFungible(partyAndToken, persistenceService, queryCriteria)
+    val (input, output) = generateMoveNonFungible(partyAndToken, persistenceService)
     val notary = input.state.notary
     addTokenTypeJar(listOf(input.state.data, output), transactionBuilder)
     addNotaryWithCheck(transactionBuilder, notary)

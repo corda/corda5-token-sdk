@@ -14,7 +14,7 @@ import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.TransactionState
-import net.corda.v5.ledger.services.NotaryAwareNetworkMapCache
+import net.corda.v5.ledger.services.NotaryLookupService
 import net.corda.v5.ledger.transactions.SignedTransaction
 
 @StartableByRPC
@@ -25,7 +25,7 @@ class CreateHouseToken(
 ) : Flow<SignedTransaction> {
 
     @CordaInject
-    lateinit var networkMapCache: NotaryAwareNetworkMapCache
+    lateinit var notaryLookupService: NotaryLookupService
 
     @CordaInject
     lateinit var flowEngine: FlowEngine
@@ -35,7 +35,7 @@ class CreateHouseToken(
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val notary = networkMapCache.notaryIdentities.first()
+        val notary = notaryLookupService.notaryIdentities.first()
 
         val house = House(
             address,

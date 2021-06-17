@@ -18,13 +18,11 @@ import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.flows.flowservices.FlowMessaging
 import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.application.identity.AbstractParty
-import net.corda.v5.application.identity.AnonymousParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.KeyManagementService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount
-import net.corda.v5.ledger.services.vault.QueryCriteria
 import net.corda.v5.ledger.transactions.SignedTransaction
 
 /**
@@ -48,7 +46,6 @@ class MoveFungibleTokens
 constructor(
     val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
     val observers: List<Party> = emptyList(),
-    val queryCriteria: QueryCriteria? = null,
     val changeHolder: AbstractParty? = null
 ) : Flow<SignedTransaction> {
 
@@ -56,9 +53,8 @@ constructor(
     constructor(
         partyAndAmount: PartyAndAmount<TokenType>,
         observers: List<Party> = emptyList(),
-        queryCriteria: QueryCriteria? = null,
         changeHolder: AbstractParty? = null
-    ) : this(listOf(partyAndAmount), observers, queryCriteria, changeHolder)
+    ) : this(listOf(partyAndAmount), observers, changeHolder)
 
     constructor(amount: Amount<TokenType>, holder: AbstractParty) : this(PartyAndAmount(holder, amount), emptyList())
 
@@ -81,7 +77,6 @@ constructor(
                 partiesAndAmounts = partiesAndAmounts,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
-                queryCriteria = queryCriteria,
                 changeHolder = changeHolder
             )
         )
@@ -119,7 +114,6 @@ class MoveNonFungibleTokens
 constructor(
     val partyAndToken: PartyAndToken,
     val observers: List<Party> = emptyList(),
-    val queryCriteria: QueryCriteria? = null
 ) : Flow<SignedTransaction> {
 
     @CordaInject
@@ -140,7 +134,6 @@ constructor(
                 partyAndToken = partyAndToken,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
-                queryCriteria = queryCriteria
             )
         )
     }
@@ -170,7 +163,6 @@ class MoveNonFungibleTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
  *
  * @param partiesAndAmounts list of pairing party - amount of token that is to be moved to that party
  * @param observers optional observing parties to which the transaction will be broadcast
- * @param queryCriteria additional criteria for token selection
  * @param changeHolder holder of the change outputs, it can be confidential identity
  */
 @StartableByService
@@ -179,16 +171,14 @@ class MoveNonFungibleTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
 class ConfidentialMoveFungibleTokens(
     val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
     val observers: List<Party>,
-    val queryCriteria: QueryCriteria? = null,
     val changeHolder: AbstractParty? = null
 ) : Flow<SignedTransaction> {
 
     constructor(
         partyAndAmount: PartyAndAmount<TokenType>,
         observers: List<Party>,
-        queryCriteria: QueryCriteria? = null,
         changeHolder: AbstractParty? = null
-    ) : this(listOf(partyAndAmount), observers, queryCriteria, changeHolder)
+    ) : this(listOf(partyAndAmount), observers, changeHolder)
 
     @CordaInject
     lateinit var keyManagementService: KeyManagementService
@@ -227,7 +217,6 @@ class ConfidentialMoveFungibleTokens(
                 partiesAndAmounts = partiesAndAmounts,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
-                queryCriteria = queryCriteria,
                 changeHolder = confidentialHolder
             )
         )
@@ -256,7 +245,6 @@ class ConfidentialMoveFungibleTokensHandler(val otherSession: FlowSession) : Flo
  *
  * @param partyAndToken list of pairing party - token that is to be moved to that party
  * @param observers optional observing parties to which the transaction will be broadcast
- * @param queryCriteria additional criteria for token selection
  */
 @StartableByService
 @StartableByRPC
@@ -264,7 +252,6 @@ class ConfidentialMoveFungibleTokensHandler(val otherSession: FlowSession) : Flo
 class ConfidentialMoveNonFungibleTokens(
     val partyAndToken: PartyAndToken,
     val observers: List<Party>,
-    val queryCriteria: QueryCriteria? = null
 ) : Flow<SignedTransaction> {
 
     @CordaInject
@@ -285,7 +272,6 @@ class ConfidentialMoveNonFungibleTokens(
                 partyAndToken = partyAndToken,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
-                queryCriteria = queryCriteria
             )
         )
     }
