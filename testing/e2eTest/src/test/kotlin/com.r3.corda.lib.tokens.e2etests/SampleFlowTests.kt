@@ -27,7 +27,7 @@ import java.util.*
  * This test class is used to verify the confidential identities flows can run successfully by
  * calling them via sample flows.
  */
-//@Disabled("Disabled so that it is not run as part of the build since it depends on a running e2e test network")
+@Disabled("Disabled so that it is not run as part of the build since it depends on a running e2e test network")
 class SampleFlowTests {
 
     companion object {
