@@ -1,13 +1,14 @@
 package com.r3.corda.lib.tokens.workflows.internal.flows.distribution
 
 import com.r3.corda.lib.tokens.workflows.utilities.addPartyToDistributionList
+import com.r3.corda.lib.tokens.workflows.utilities.requireKnownConfidentialIdentity
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.InitiatedBy
-import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.persistence.PersistenceService
-import net.corda.v5.application.utilities.unwrap
+import net.corda.v5.application.flows.unwrap
 import net.corda.v5.base.annotations.Suspendable
 
 @InitiatedBy(UpdateDistributionListFlow::class)
@@ -30,7 +31,7 @@ class UpdateDistributionListFlowHandler(val otherSession: FlowSession) : Flow<Un
             it
         }
         // Check that receiver is well known party.
-        identityService.requireWellKnownPartyFromAnonymous(distListUpdate.receiver)
+        identityService.requireKnownConfidentialIdentity(distListUpdate.receiver)
         addPartyToDistributionList(persistenceService, distListUpdate.receiver, distListUpdate.linearId)
     }
 }

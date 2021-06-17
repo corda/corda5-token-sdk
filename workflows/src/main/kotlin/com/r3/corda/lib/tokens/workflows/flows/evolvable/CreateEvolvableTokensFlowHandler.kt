@@ -5,8 +5,8 @@ import net.corda.systemflows.SignTransactionFlow
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
-import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
-import net.corda.v5.application.utilities.unwrap
+import net.corda.v5.application.flows.unwrap
+import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.requireThat
 import net.corda.v5.ledger.transactions.SignedTransaction

@@ -9,7 +9,7 @@ import net.corda.sample.states.House
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.StartableByRPC
 import net.corda.v5.application.flows.flowservices.FlowEngine
-import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.internal.uncheckedCast

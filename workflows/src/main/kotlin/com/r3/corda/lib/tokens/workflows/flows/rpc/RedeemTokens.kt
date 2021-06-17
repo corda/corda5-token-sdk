@@ -16,7 +16,7 @@ import net.corda.v5.application.flows.StartableByService
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.flows.flowservices.FlowMessaging
-import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.IdentityService

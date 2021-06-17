@@ -1,12 +1,12 @@
 package com.r3.corda.lib.tokens.workflows.flows.redeem
 
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import com.r3.corda.lib.tokens.contracts.AnonymousPartyImpl
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
-import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
 import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.KeyManagementService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount
@@ -37,6 +37,9 @@ constructor(
     @CordaInject
     lateinit var flowEngine: FlowEngine
 
+    @CordaInject
+    lateinit var identityService: IdentityService
+
     @Suspendable
     override fun call(): SignedTransaction {
         // If a change holder key is not specified then one will be created for you. NB. If you want to use accounts
@@ -44,7 +47,7 @@ constructor(
         // "changeHolder".
         val confidentialHolder = changeHolder ?: let {
             val key = keyManagementService.freshKey()
-            AnonymousPartyImpl(key)
+            identityService.anonymousPartyFromKey(key)
         }
         return flowEngine.subFlow(
             RedeemFungibleTokensFlow(

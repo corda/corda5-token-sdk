@@ -55,7 +55,7 @@ fun lookupExternalIdFromKey(owningKey: PublicKey, identityService: IdentityServi
  * Establish whether a public key is one of the node's identity keys, by looking in the node's identity database table.
  */
 private fun isKeyIdentityKey(key: PublicKey, identityService: IdentityService): Boolean {
-    val party = identityService.partyFromKey(key)
+    val party = identityService.nameFromKey(key)?.let { identityService.partyFromName(it) }
     return party?.owningKey == key
 }
 

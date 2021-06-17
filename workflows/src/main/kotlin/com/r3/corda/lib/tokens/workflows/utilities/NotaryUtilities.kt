@@ -8,6 +8,7 @@ import net.corda.v5.application.identity.CordaX500Name
 import net.corda.v5.application.identity.Party
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.services.NotaryLookupService
+import net.corda.v5.ledger.services.isValidating
 import net.corda.v5.ledger.transactions.TransactionBuilder
 
 // TODO getPreferredNotary should be loaded on start
@@ -63,7 +64,7 @@ fun randomNotary() = { notaryLookupService: NotaryLookupService ->
 @Suspendable
 fun randomNonValidatingNotary() = { notaryLookupService: NotaryLookupService ->
     notaryLookupService.notaryIdentities.filter { notary ->
-        notaryLookupService.isValidatingNotary(notary).not()
+        notaryLookupService.isValidating(notary).not()
     }.randomOrNull()
 }
 
@@ -71,7 +72,7 @@ fun randomNonValidatingNotary() = { notaryLookupService: NotaryLookupService ->
 @Suspendable
 fun randomValidatingNotary() = { notaryLookupService: NotaryLookupService ->
     notaryLookupService.notaryIdentities.filter { notary ->
-        notaryLookupService.isValidatingNotary(notary)
+        notaryLookupService.isValidating(notary)
     }.randomOrNull()
 }
 

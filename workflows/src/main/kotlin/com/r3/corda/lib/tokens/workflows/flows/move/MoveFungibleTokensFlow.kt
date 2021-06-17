@@ -4,7 +4,7 @@ import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.workflows.types.PartyAndAmount
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowIdentity
-import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.node.NodeInfo
 import net.corda.v5.application.services.IdentityService

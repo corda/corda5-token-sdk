@@ -94,7 +94,7 @@ fun Flow<*>.sessionsForParties(
 // Extension function that has nicer error message than the default one from [IdentityService::requireWellKnownPartyFromAnonymous].
 @Suspendable
 fun IdentityService.requireKnownConfidentialIdentity(party: AbstractParty): Party {
-    return wellKnownPartyFromAnonymous(party)
+    return partyFromAnonymous(party)
         ?: throw IllegalArgumentException(
             "Called flow with anonymous party that node doesn't know about. " +
                     "Make sure that RequestConfidentialIdentity flow is called before."

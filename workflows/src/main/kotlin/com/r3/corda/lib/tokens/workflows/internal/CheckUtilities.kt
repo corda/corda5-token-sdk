@@ -38,7 +38,7 @@ internal fun checkOwner(
     stateAndRefs: List<StateAndRef<AbstractToken>>,
     counterparty: Party
 ) {
-    val owners = stateAndRefs.map { identityService.wellKnownPartyFromAnonymous(it.state.data.holder) }
+    val owners = stateAndRefs.map { identityService.partyFromAnonymous(it.state.data.holder) }
     check(owners.all { it != null }) {
         "Received states with owner that we don't know about."
     }

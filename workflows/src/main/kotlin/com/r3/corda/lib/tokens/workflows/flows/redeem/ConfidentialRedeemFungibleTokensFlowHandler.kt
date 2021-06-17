@@ -3,7 +3,7 @@ package com.r3.corda.lib.tokens.workflows.flows.redeem
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
-import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.base.annotations.Suspendable
 
 /**

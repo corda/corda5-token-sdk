@@ -17,7 +17,7 @@ import net.corda.v5.application.flows.StartableByRPC
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.flows.flowservices.FlowMessaging
-import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.IdentityService
@@ -76,7 +76,7 @@ constructor(
     private val statesObservers
         get(): List<Party> {
             val observers = evolvableTokens.participants().minus(evolvableTokens.maintainers()).minus(flowIdentity.ourIdentity)
-            return observers.map { identityService.wellKnownPartyFromAnonymous(it)!! }
+            return observers.map { identityService.partyFromAnonymous(it)!! }
         }
 }
 
@@ -146,7 +146,7 @@ constructor(
 
     private val statesObservers
         get(): List<Party> {
-            return otherObservers.map { identityService.wellKnownPartyFromAnonymous(it)!! }
+            return otherObservers.map { identityService.partyFromAnonymous(it)!! }
         }
 }
 

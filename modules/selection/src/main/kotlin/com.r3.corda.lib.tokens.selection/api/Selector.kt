@@ -193,7 +193,7 @@ abstract class Selector {
         }
 
         // Check that the change identity belongs to the node that called generateMove.
-        val ownerId = identityService.wellKnownPartyFromAnonymous(changeHolder)
+        val ownerId = identityService.partyFromAnonymous(changeHolder)
         check(ownerId != null && myInfo.isLegalIdentity(ownerId)) {
             "Owner of the change: $changeHolder is not the identity that belongs to the node."
         }

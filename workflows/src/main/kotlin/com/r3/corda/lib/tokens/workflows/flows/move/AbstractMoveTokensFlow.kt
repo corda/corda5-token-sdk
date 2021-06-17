@@ -5,7 +5,7 @@ import com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFi
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
-import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.ledger.transactions.SignedTransaction

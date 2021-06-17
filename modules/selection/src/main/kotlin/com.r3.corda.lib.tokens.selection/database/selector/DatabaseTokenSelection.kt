@@ -1,6 +1,5 @@
 package com.r3.corda.lib.tokens.selection.database.selector
 
-import com.r3.corda.lib.tokens.contracts.AnonymousPartyImpl
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
@@ -172,9 +171,10 @@ class DatabaseTokenSelection @JvmOverloads constructor(
             is Holder.KeyIdentity -> {
                 // We want the AbstractParty that this key refers to, unfortunately, partyFromKey returns always well known party
                 // for that key, so afterwards we need to construct AnonymousParty.
-                val knownParty: AbstractParty = identityService.partyFromKey(holder.owningKey)
-                    ?: AnonymousPartyImpl(holder.owningKey)
-                val holderParty = if (knownParty.owningKey == holder.owningKey) knownParty else AnonymousPartyImpl(holder.owningKey)
+                val knownParty: AbstractParty = identityService.nameFromKey(holder.owningKey)?.let {
+                    identityService.partyFromName(it)
+                } ?: identityService.anonymousPartyFromKey(holder.owningKey)
+                val holderParty = if (knownParty.owningKey == holder.owningKey) knownParty else identityService.anonymousPartyFromKey(holder.owningKey)
                 if(issuer == null) {
                     namedQueryForTokenClassIdentifierAndHolder(token, holderParty)
                 } else {

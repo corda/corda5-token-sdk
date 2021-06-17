@@ -10,7 +10,7 @@ import com.r3.corda.lib.tokens.selection.memory.config.InMemorySelectionConfig
 import com.r3.corda.lib.tokens.selection.memory.internal.Holder
 import com.r3.corda.lib.tokens.selection.memory.internal.lookupExternalIdFromKey
 import net.corda.v5.application.cordapp.CordappProvider
-import net.corda.v5.application.flows.flowservices.dependencies.CordaInjectPreStart
+import net.corda.v5.application.injection.CordaInjectPreStart
 import net.corda.v5.application.services.CordaService
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.KeyManagementService

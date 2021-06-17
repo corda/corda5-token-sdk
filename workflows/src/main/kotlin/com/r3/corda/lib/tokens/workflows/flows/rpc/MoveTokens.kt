@@ -1,6 +1,5 @@
 package com.r3.corda.lib.tokens.workflows.flows.rpc
 
-import com.r3.corda.lib.tokens.contracts.AnonymousPartyImpl
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.workflows.flows.move.*
 import com.r3.corda.lib.tokens.workflows.types.PartyAndAmount
@@ -16,7 +15,7 @@ import net.corda.v5.application.flows.StartableByService
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.flows.flowservices.FlowMessaging
-import net.corda.v5.application.flows.flowservices.dependencies.CordaInject
+import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.IdentityService
@@ -203,14 +202,14 @@ class ConfidentialMoveFungibleTokens(
         val confidentialHolder = changeHolder ?: let {
             val key = keyManagementService.freshKey()
             try {
-                identityService.registerKey(key, flowIdentity.ourIdentity)
+                identityService.registerKey(key, flowIdentity.ourIdentity.name)
             } catch (e: Exception) {
                 throw FlowException(
                     "Could not register a new key for party: ${flowIdentity.ourIdentity} as the provided public key is already registered " +
                             "or registered to a different party."
                 )
             }
-            AnonymousPartyImpl(key)
+            identityService.anonymousPartyFromKey(key)
         }
         return flowEngine.subFlow(
             ConfidentialMoveFungibleTokensFlow(
