@@ -6,6 +6,7 @@ include 'freighter-tests'
 
 include 'testing'
 include 'testing:cordapps'
+include 'testing:cordapps:testflows'
 include 'testing:cordapps:sample'
 include 'testing:cordapps:sample:sample-contracts'
 include 'testing:cordapps:sample:sample-flows'

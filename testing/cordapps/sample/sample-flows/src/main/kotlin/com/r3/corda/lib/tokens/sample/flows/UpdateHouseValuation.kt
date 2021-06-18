@@ -1,15 +1,19 @@
-package net.corda.sample.flows
+package com.r3.corda.lib.tokens.sample.flows
 
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.money.FiatCurrency
 import com.r3.corda.lib.tokens.workflows.flows.rpc.UpdateEvolvableToken
-import net.corda.sample.states.House
+import com.r3.corda.lib.tokens.sample.states.House
 import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.JsonConstructor
+import net.corda.v5.application.flows.RpcStartFlowRequestParameters
 import net.corda.v5.application.flows.StartableByRPC
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.application.services.json.JsonMarshallingService
+import net.corda.v5.application.services.json.parseJsonInline
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.internal.uncheckedCast
@@ -22,10 +26,8 @@ import net.corda.v5.ledger.services.vault.StateStatus
 import net.corda.v5.ledger.transactions.SignedTransaction
 
 @StartableByRPC
-class UpdateHouseValuation(
-    val currencyCode: String,
-    val value: Long,
-    val linearId: String,
+class UpdateHouseValuation @JsonConstructor constructor(
+    val inputParams: RpcStartFlowRequestParameters
 ) : Flow<SignedTransaction> {
 
     @CordaInject
@@ -37,8 +39,16 @@ class UpdateHouseValuation(
     @CordaInject
     lateinit var persistenceService: PersistenceService
 
+    @CordaInject
+    lateinit var jsonMarshallingService: JsonMarshallingService
+
     @Suspendable
     override fun call(): SignedTransaction {
+
+        val params = jsonMarshallingService.parseJsonInline<Map<String, String>>(inputParams.parametersInJson)
+        val currencyCode: String = params["currencyCode"]!!
+        val value: Long = params["value"]!!.toLong()
+        val linearId: String = params["linearId"]!!
 
         val cursor = persistenceService.query<StateAndRef<NonFungibleToken>>(
             "LinearState.findByUuidAndStateStatus",

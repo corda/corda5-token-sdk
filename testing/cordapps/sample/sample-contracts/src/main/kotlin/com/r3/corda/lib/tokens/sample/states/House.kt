@@ -1,8 +1,8 @@
-package net.corda.sample.states
+package com.r3.corda.lib.tokens.sample.states
 
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.sample.contracts.HouseContract
+import com.r3.corda.lib.tokens.sample.contracts.HouseContract
 import net.corda.v5.application.identity.Party
 import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.Amount

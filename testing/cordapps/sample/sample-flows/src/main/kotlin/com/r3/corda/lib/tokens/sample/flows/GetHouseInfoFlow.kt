@@ -1,11 +1,15 @@
-package net.corda.sample.flows
+package com.r3.corda.lib.tokens.sample.flows
 
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.sample.states.House
+import com.r3.corda.lib.tokens.sample.states.House
 import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.JsonConstructor
+import net.corda.v5.application.flows.RpcStartFlowRequestParameters
 import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.application.services.json.JsonMarshallingService
+import net.corda.v5.application.services.json.parseJsonInline
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.internal.uncheckedCast
@@ -16,8 +20,8 @@ import net.corda.v5.ledger.services.StateLoaderService
 
 import net.corda.v5.ledger.services.vault.StateStatus
 
-class GetHouseInfoFlow(
-    val nftLinearId: String
+class GetHouseInfoFlow @JsonConstructor constructor(
+    val inputParams: RpcStartFlowRequestParameters
 ) : Flow<House> {
 
     @CordaInject
@@ -26,8 +30,13 @@ class GetHouseInfoFlow(
     @CordaInject
     lateinit var persistenceService: PersistenceService
 
+    @CordaInject
+    lateinit var jsonMarshallingService: JsonMarshallingService
+
     @Suspendable
     override fun call(): House {
+        val nftLinearId: String = jsonMarshallingService.parseJsonInline<Map<String, String>>(inputParams.parametersInJson)["nftLinearId"]!!
+
         val cursor = persistenceService.query<StateAndRef<NonFungibleToken>>(
             "LinearState.findByUuidAndStateStatus",
             mapOf(

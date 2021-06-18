@@ -1,16 +1,20 @@
-package net.corda.sample.flows
+package com.r3.corda.lib.tokens.sample.flows
 
 import com.r3.corda.lib.tokens.contracts.utilities.amount
 import com.r3.corda.lib.tokens.money.FiatCurrency
 import com.r3.corda.lib.tokens.workflows.flows.rpc.CreateEvolvableTokens
 import com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens
 import com.r3.corda.lib.tokens.workflows.utilities.NonFungibleTokenBuilder
-import net.corda.sample.states.House
+import com.r3.corda.lib.tokens.sample.states.House
 import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.JsonConstructor
+import net.corda.v5.application.flows.RpcStartFlowRequestParameters
 import net.corda.v5.application.flows.StartableByRPC
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.application.services.json.JsonMarshallingService
+import net.corda.v5.application.services.json.parseJsonInline
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.TransactionState
@@ -18,10 +22,8 @@ import net.corda.v5.ledger.services.NotaryLookupService
 import net.corda.v5.ledger.transactions.SignedTransaction
 
 @StartableByRPC
-class CreateHouseToken(
-    val address: String,
-    val currencyCode: String,
-    val value: Long,
+class CreateHouseToken @JsonConstructor constructor(
+    val inputParams: RpcStartFlowRequestParameters
 ) : Flow<SignedTransaction> {
 
     @CordaInject
@@ -33,8 +35,16 @@ class CreateHouseToken(
     @CordaInject
     lateinit var flowIdentity: FlowIdentity
 
+    @CordaInject
+    lateinit var jsonMarshallingService: JsonMarshallingService
+
     @Suspendable
     override fun call(): SignedTransaction {
+        val x = jsonMarshallingService.parseJsonInline<Map<String, String>>(inputParams.parametersInJson)
+        val address: String = x["address"]!!
+        val currencyCode: String = x["currencyCode"]!!
+        val value: Long = x["value"]!!.toLong()
+
         val notary = notaryLookupService.notaryIdentities.first()
 
         val house = House(

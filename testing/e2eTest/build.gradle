@@ -15,6 +15,7 @@ dependencies {
 
     testImplementation project(":workflows")
     testImplementation project(":contracts")
+    testImplementation project(":modules:contracts-for-testing")
     testImplementation project(":testing:cordapps:sample:sample-flows")
     testImplementation project(":testing:cordapps:sample:sample-contracts")
 }

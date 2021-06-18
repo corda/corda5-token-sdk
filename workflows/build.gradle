@@ -74,10 +74,6 @@ dependencies {
     //CI for confidential tokens
     cordapp "$confidential_id_release_group:ci-workflows:$confidential_id_release_version"
 
-    //just for testing - this means you MUST specify the contracts-for-testing cordapp as a cordapp in all tests using test flows
-    compile project(":modules:contracts-for-testing")
-    testCompile project(":modules:contracts-for-testing")
-
     compile("org.postgresql:postgresql:42.2.18")
 }
 

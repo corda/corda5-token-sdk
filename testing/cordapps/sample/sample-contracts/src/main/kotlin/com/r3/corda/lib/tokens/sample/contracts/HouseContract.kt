@@ -1,7 +1,7 @@
-package net.corda.sample.contracts
+package com.r3.corda.lib.tokens.sample.contracts
 
 import com.r3.corda.lib.tokens.contracts.EvolvableTokenContract
-import net.corda.sample.states.House
+import com.r3.corda.lib.tokens.sample.states.House
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.Contract
 import net.corda.v5.ledger.transactions.LedgerTransaction
