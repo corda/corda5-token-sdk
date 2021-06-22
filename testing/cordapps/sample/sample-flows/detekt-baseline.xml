@@ -2,6 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>MaxLineLength:GetHouseInfoFlow.kt$GetHouseInfoFlow$val nftLinearId: String = jsonMarshallingService.parseJsonInline&lt;Map&lt;String, String&gt;&gt;(inputParams.parametersInJson)["nftLinearId"]!!</ID>
+    <ID>MaxLineLength:GetHouseInfoFlow.kt$GetHouseInfoFlow$val nftLinearId: String = jsonMarshallingService.parseJson&lt;Map&lt;String, String&gt;&gt;(inputParams.parametersInJson)["nftLinearId"]!!</ID>
   </CurrentIssues>
 </SmellBaseline>

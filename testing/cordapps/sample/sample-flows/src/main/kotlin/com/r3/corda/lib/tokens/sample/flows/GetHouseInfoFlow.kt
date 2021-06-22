@@ -9,10 +9,10 @@ import net.corda.v5.application.flows.JsonConstructor
 import net.corda.v5.application.flows.RpcStartFlowRequestParameters
 import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.services.json.JsonMarshallingService
-import net.corda.v5.application.services.json.parseJsonInline
+import net.corda.v5.application.services.json.parseJson
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.base.internal.uncheckedCast
+import net.corda.v5.base.util.uncheckedCast
 import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.UniqueIdentifier.Companion.fromString
 import net.corda.v5.ledger.contracts.StateAndRef
@@ -35,7 +35,7 @@ class GetHouseInfoFlow @JsonConstructor constructor(
 
     @Suspendable
     override fun call(): House {
-        val nftLinearId: String = jsonMarshallingService.parseJsonInline<Map<String, String>>(inputParams.parametersInJson)["nftLinearId"]!!
+        val nftLinearId: String = jsonMarshallingService.parseJson<Map<String, String>>(inputParams.parametersInJson)["nftLinearId"]!!
 
         val cursor = persistenceService.query<StateAndRef<NonFungibleToken>>(
             "LinearState.findByUuidAndStateStatus",

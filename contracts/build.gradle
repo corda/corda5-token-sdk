@@ -47,7 +47,7 @@ cordapp {
         versionId 3
     }
     signing {
-        enabled = false
+        enabled = true
     }
 }
 

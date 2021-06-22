@@ -5,7 +5,7 @@ import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.utilities.sumTokenStatesOrZero
-import net.corda.v5.base.internal.uncheckedCast
+import net.corda.v5.base.util.uncheckedCast
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.Attachment
 import net.corda.v5.ledger.contracts.Command

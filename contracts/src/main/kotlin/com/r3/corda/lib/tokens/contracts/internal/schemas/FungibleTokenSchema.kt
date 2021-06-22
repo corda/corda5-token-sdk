@@ -128,31 +128,31 @@ object FungibleTokenSchemaV1 : MappedSchema(
             query = "SELECT token" +
                     " FROM com.r3.corda.lib.tokens.contracts.internal.schemas.FungibleTokenSchemaV1\$PersistentFungibleToken token," +
                     " net.corda.v5.ledger.schemas.vault.VaultSchemaV1\$VaultState state," +
-                    " net.corda.v5.ledger.schemas.vault.VaultSchemaV1\$StateToExternalId stateToExternalId," +
+                    " net.corda.v5.ledger.schemas.vault.VaultSchemaV1\$StateToExternalId stateToExternalId" +
                     " WHERE state.stateStatus = 0" +
                     " AND state.stateRef.txId = token.stateRef.txId" +
                     " AND state.stateRef.index = token.stateRef.index" +
                     " AND token.tokenClass = :tokenClass" +
                     " AND token.tokenIdentifier = :tokenIdentifier" +
-                    " AND stateToExternalId.stateRef.txId = token.stateRef.txId" +
-                    " AND stateToExternalId.stateRef.index = token.stateRef.index" +
-                    " AND stateToExternalId.external_id = :externalId"
+                    " AND stateToExternalId.compositeKey.stateRef.txId = token.stateRef.txId" +
+                    " AND stateToExternalId.compositeKey.stateRef.index = token.stateRef.index" +
+                    " AND stateToExternalId.externalId = :externalId"
         ),
         NamedQuery(
             name = "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierIssuerAndExternalId",
             query = "SELECT token" +
                     " FROM com.r3.corda.lib.tokens.contracts.internal.schemas.FungibleTokenSchemaV1\$PersistentFungibleToken token," +
-                    " net.corda.v5.ledger.schemas.vault.VaultSchemaV1\$VaultState state" +
-                    " net.corda.v5.ledger.schemas.vault.VaultSchemaV1\$StateToExternalId stateToExternalId," +
+                    " net.corda.v5.ledger.schemas.vault.VaultSchemaV1\$VaultState state," +
+                    " net.corda.v5.ledger.schemas.vault.VaultSchemaV1\$StateToExternalId stateToExternalId" +
                     " WHERE state.stateStatus = 0" +
                     " AND state.stateRef.txId = token.stateRef.txId" +
                     " AND state.stateRef.index = token.stateRef.index" +
                     " AND token.tokenClass = :tokenClass" +
                     " AND token.tokenIdentifier = :tokenIdentifier" +
                     " AND token.issuer = :issuer" +
-                    " AND stateToExternalId.stateRef.txId = token.stateRef.txId" +
-                    " AND stateToExternalId.stateRef.index = token.stateRef.index" +
-                    " AND stateToExternalId.external_id = :externalId"
+                    " AND stateToExternalId.compositeKey.stateRef.txId = token.stateRef.txId" +
+                    " AND stateToExternalId.compositeKey.stateRef.index = token.stateRef.index" +
+                    " AND stateToExternalId.externalId = :externalId"
         )
     )
     class PersistentFungibleToken(

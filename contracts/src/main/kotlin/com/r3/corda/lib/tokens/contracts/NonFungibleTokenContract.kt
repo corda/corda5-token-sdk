@@ -2,7 +2,7 @@ package com.r3.corda.lib.tokens.contracts
 
 import com.r3.corda.lib.tokens.contracts.commands.TokenCommand
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
-import net.corda.v5.base.internal.uncheckedCast
+import net.corda.v5.base.util.uncheckedCast
 import net.corda.v5.ledger.contracts.Attachment
 import net.corda.v5.ledger.contracts.Command
 import net.corda.v5.ledger.contracts.ContractState

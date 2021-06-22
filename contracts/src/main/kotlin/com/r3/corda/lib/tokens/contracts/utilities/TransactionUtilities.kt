@@ -5,7 +5,6 @@ import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import net.corda.v5.application.identity.Party
-import net.corda.v5.base.internal.location
 import net.corda.v5.crypto.SecureHash
 import net.corda.v5.crypto.sha256
 import net.corda.v5.ledger.contracts.Amount
@@ -96,10 +95,12 @@ fun TokenType.getAttachmentIdForGenericParam(): SecureHash? {
             while (classToSearch != this.tokenClass && classToSearch != TokenPointer::class.java) {
                 classToSearch = this.tokenClass
             }
-            if (classToSearch.location == TokenType::class.java.location) {
+            if (classToSearch.protectionDomain.codeSource.location
+                    == TokenType::class.java.protectionDomain.codeSource.location) {
                 NULL_SECURE_HASH
             } else {
-                val hash = classToSearch.location.readBytes().sha256()
+                val hash = classToSearch.protectionDomain.codeSource
+                    .location.readBytes().sha256()
                 hash
             }
         }

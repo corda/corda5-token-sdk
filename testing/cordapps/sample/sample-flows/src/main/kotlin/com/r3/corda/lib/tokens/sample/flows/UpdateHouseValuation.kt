@@ -13,10 +13,10 @@ import net.corda.v5.application.flows.StartableByRPC
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.services.json.JsonMarshallingService
-import net.corda.v5.application.services.json.parseJsonInline
 import net.corda.v5.application.services.persistence.PersistenceService
+import net.corda.v5.application.services.json.parseJson
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.base.internal.uncheckedCast
+import net.corda.v5.base.util.uncheckedCast
 import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.Amount
@@ -45,7 +45,7 @@ class UpdateHouseValuation @JsonConstructor constructor(
     @Suspendable
     override fun call(): SignedTransaction {
 
-        val params = jsonMarshallingService.parseJsonInline<Map<String, String>>(inputParams.parametersInJson)
+        val params: Map<String, String> = jsonMarshallingService.parseJson(inputParams.parametersInJson)
         val currencyCode: String = params["currencyCode"]!!
         val value: Long = params["value"]!!.toLong()
         val linearId: String = params["linearId"]!!

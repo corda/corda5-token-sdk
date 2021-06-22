@@ -8,9 +8,16 @@ import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import com.r3.corda.lib.tokens.sample.flows.CreateHouseToken
 import com.r3.corda.lib.tokens.sample.flows.GetHouseInfoFlow
 import com.r3.corda.lib.tokens.sample.flows.UpdateHouseValuation
+import net.corda.client.rpc.flow.FlowStarterRPCOps
+import net.corda.client.rpc.flow.RpcFlowOutcomeResponse
+import net.corda.client.rpc.flow.RpcFlowStatus
+import net.corda.client.rpc.flow.RpcStartFlowRequest
+import net.corda.client.rpc.flow.RpcStartFlowResponse
 import net.corda.test.dev.network.Credentials
 import net.corda.test.dev.network.Nodes
+import net.corda.test.dev.network.httpRpcClient
 import net.corda.test.dev.network.withFlow
+import net.corda.v5.application.flows.RpcStartFlowRequestParameters
 import net.corda.v5.ledger.transactions.SignedTransaction
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
@@ -50,7 +57,7 @@ class SampleFlowTests {
 
         // Alice issues a state to be exchanged
         //var (stx, aliceId) =
-        alice().httpRpc(Credentials.DEFAULT_CREDENTIALS) {
+        alice().httpRpcClient<FlowStarterRPCOps, Unit> {
             val clientId = "client-${UUID.randomUUID()}"
             val parametersInJson = GsonBuilder()
                 .create()
@@ -58,34 +65,35 @@ class SampleFlowTests {
                     mapOf(
                         "address" to address,
                         "currencyCode" to currencyCode,
-                        "initialHouseValue" to initialHouseValue.toString(),
+                        "value" to initialHouseValue.toString(),
                     )
                 )
-            val body = mapOf(
-                "rpcStartFlowRequest" to
-                        mapOf(
-                            "flowName" to "net.corda.sample.flows.CreateHouseToken",
-                            "clientId" to clientId,
-                            "parameters" to mapOf(
-                                "parametersInJson" to parametersInJson
-                            )
-                        )
+
+
+
+            val response: RpcStartFlowResponse = startFlow(
+                RpcStartFlowRequest(
+                    CreateHouseToken::class.java.name,
+                    clientId,
+                    RpcStartFlowRequestParameters(parametersInJson)
+                )
             )
 
-            val request = post("flowstarter/startflow")
-                .header("Content-Type", "application/json")
-                .body(body)
+            assertThat(response.clientId).isEqualTo(clientId)
+            assertThat(response.stateMachineRunId).isNotNull
 
-            val response = request.asJson()
 
-            assertThat(response.status).isEqualTo(200)
-            assertThat(response.body.`object`.get("clientId")).isEqualTo(clientId)
-            assertThat(response.body.`object`.get("stateMachineRunId")).isNotNull
+            var result: RpcFlowOutcomeResponse
+            do {
+                result = getFlowOutcome(response.stateMachineRunId.uuid.toString())
+            } while (result.status == RpcFlowStatus.RUNNING)
+
+            assertThat(RpcFlowStatus.COMPLETED).isEqualTo(result.status)
+
 
             /*startFlowDynamic(CreateHouseToken::class.java, address, currencyCode, initialHouseValue)
                 .returnValue.getOrThrow() to nodeInfo().legalIdentities.first()*/
         }
-
 //        val linearId = stx.getNFT().linearId.toString()
 //        assertHouseProperties(linearId, address, initialHouseValue, currencyCode)
 //

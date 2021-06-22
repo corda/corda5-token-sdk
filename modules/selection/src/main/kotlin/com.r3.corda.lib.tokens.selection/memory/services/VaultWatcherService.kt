@@ -17,7 +17,7 @@ import net.corda.v5.application.services.KeyManagementService
 import net.corda.v5.application.services.lifecycle.ServiceLifecycleEvent
 import net.corda.v5.application.services.lifecycle.ServiceStart
 import net.corda.v5.application.services.persistence.PersistenceService
-import net.corda.v5.base.internal.uncheckedCast
+import net.corda.v5.base.util.uncheckedCast
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.contracts.Amount
@@ -49,9 +49,7 @@ class VaultWatcherService : CordaService {
     private lateinit var providedConfig: InMemorySelectionConfig
 
     private val __backingMap: ConcurrentMap<StateAndRef<FungibleToken>, String> = ConcurrentHashMap()
-    private val __indexed: ConcurrentMap<Class<out Holder>, ConcurrentMap<TokenIndex, TokenBucket>> = ConcurrentHashMap(
-        providedConfig.indexingStrategies.associate { it.ownerType to ConcurrentHashMap() }
-    )
+    private lateinit var __indexed: ConcurrentMap<Class<out Holder>, ConcurrentMap<TokenIndex, TokenBucket>>
 
     private val indexViewCreationLock: ReentrantReadWriteLock = ReentrantReadWriteLock()
 
@@ -90,6 +88,9 @@ class VaultWatcherService : CordaService {
         if (event is ServiceStart) {
             tokenObserver = getObservableFromAppConfig()
             providedConfig = InMemorySelectionConfig.parse(cordappProvider.appConfig, this)
+            __indexed = ConcurrentHashMap(
+                providedConfig.indexingStrategies.associate { it.ownerType to ConcurrentHashMap() }
+            )
 
             addTokensToCache(tokenObserver.initialValues)
             tokenObserver.startLoading(::onVaultUpdate)

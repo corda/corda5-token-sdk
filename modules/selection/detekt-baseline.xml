@@ -76,8 +76,8 @@
     <ID>TooGenericExceptionCaught:VaultWatcherService.kt$VaultWatcherService$t: Throwable</ID>
     <ID>TooGenericExceptionCaught:VaultWatcherService.kt$VaultWatcherService.&lt;no name provided&gt;$t: Throwable</ID>
     <ID>TooManyFunctions:VaultWatcherService.kt$VaultWatcherService : CordaService</ID>
+    <ID>VariableNaming:VaultWatcherService.kt$VaultWatcherService$private lateinit var __indexed: ConcurrentMap&lt;Class&lt;out Holder&gt;, ConcurrentMap&lt;TokenIndex, TokenBucket&gt;&gt;</ID>
     <ID>VariableNaming:VaultWatcherService.kt$VaultWatcherService$private val __backingMap: ConcurrentMap&lt;StateAndRef&lt;FungibleToken&gt;, String&gt; = ConcurrentHashMap()</ID>
-    <ID>VariableNaming:VaultWatcherService.kt$VaultWatcherService$private val __indexed: ConcurrentMap&lt;Class&lt;out Holder&gt;, ConcurrentMap&lt;TokenIndex, TokenBucket&gt;&gt; = ConcurrentHashMap( providedConfig.indexingStrategies.associate { it.ownerType to ConcurrentHashMap() } )</ID>
     <ID>WildcardImport:DatabaseTokenSelection.kt$import com.r3.corda.lib.tokens.selection.*</ID>
   </CurrentIssues>
 </SmellBaseline>

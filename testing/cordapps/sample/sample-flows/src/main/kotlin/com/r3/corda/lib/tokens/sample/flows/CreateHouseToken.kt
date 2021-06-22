@@ -14,7 +14,7 @@ import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.services.json.JsonMarshallingService
-import net.corda.v5.application.services.json.parseJsonInline
+import net.corda.v5.application.services.json.parseJson
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.TransactionState
@@ -40,10 +40,10 @@ class CreateHouseToken @JsonConstructor constructor(
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val x = jsonMarshallingService.parseJsonInline<Map<String, String>>(inputParams.parametersInJson)
-        val address: String = x["address"]!!
-        val currencyCode: String = x["currencyCode"]!!
-        val value: Long = x["value"]!!.toLong()
+        val params: Map<String, String> = jsonMarshallingService.parseJson(inputParams.parametersInJson)
+        val address: String = params["address"]!!
+        val currencyCode: String = params["currencyCode"]!!
+        val value: Long = params["value"]!!.toLong()
 
         val notary = notaryLookupService.notaryIdentities.first()
 

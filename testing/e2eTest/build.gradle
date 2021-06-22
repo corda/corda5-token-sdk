@@ -11,6 +11,7 @@ dependencies {
     testImplementation "$corda_release_group:corda-ledger:$corda_release_version"
     testImplementation "$corda_release_group:corda-dev-network-lib:$corda_release_version"
     testImplementation "$corda_release_group:corda-client-rpc:$corda_release_version"
+    testImplementation "$corda_release_group:corda-client-extensions-rpc:$corda_release_version"
     testImplementation "$corda_release_group:corda-legacy-api:$corda_release_version"
 
     testImplementation project(":workflows")
