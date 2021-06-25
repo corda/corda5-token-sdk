@@ -1,4 +1,4 @@
-package com.r3.corda.lib.tokens.e2etests
+package com.r3.corda.lib.tokens.e2eTests
 
 import net.corda.test.dev.network.Node
 import net.corda.test.dev.network.Nodes

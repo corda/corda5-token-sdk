@@ -1,24 +1,17 @@
-package com.r3.corda.lib.tokens.e2etests
+package com.r3.corda.lib.tokens.e2eTests
 
 import com.google.gson.GsonBuilder
-import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
+import com.google.gson.JsonParser
 import com.r3.corda.lib.tokens.testing.states.House
-import com.r3.corda.lib.tokens.workflows.flows.rpc.MoveNonFungibleTokens
-import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import com.r3.corda.lib.tokens.sample.flows.CreateHouseToken
-import com.r3.corda.lib.tokens.sample.flows.GetHouseInfoFlow
-import com.r3.corda.lib.tokens.sample.flows.UpdateHouseValuation
 import net.corda.client.rpc.flow.FlowStarterRPCOps
 import net.corda.client.rpc.flow.RpcFlowOutcomeResponse
 import net.corda.client.rpc.flow.RpcFlowStatus
 import net.corda.client.rpc.flow.RpcStartFlowRequest
 import net.corda.client.rpc.flow.RpcStartFlowResponse
-import net.corda.test.dev.network.Credentials
-import net.corda.test.dev.network.Nodes
 import net.corda.test.dev.network.httpRpcClient
 import net.corda.test.dev.network.withFlow
 import net.corda.v5.application.flows.RpcStartFlowRequestParameters
-import net.corda.v5.ledger.transactions.SignedTransaction
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Disabled
@@ -29,7 +22,7 @@ import java.util.*
  * This test class is used to verify the confidential identities flows can run successfully by
  * calling them via sample flows.
  */
-@Disabled("Disabled so that it is not run as part of the build since it depends on a running e2e test network")
+//@Disabled("Disabled so that it is not run as part of the build since it depends on a running e2e test network")
 class SampleFlowTests {
 
     companion object {
@@ -38,62 +31,62 @@ class SampleFlowTests {
         fun verifySetup() {
             e2eTestNetwork.verify {
                 listOf("alice", "bob", "caroline")
-                    .map { hasNode(it) }
-                    .forEach {
-                        it.withFlow<CreateHouseToken>()
-                    }
+                        .map { hasNode(it) }
+                        .forEach {
+                            it.withFlow<CreateHouseToken>()
+                        }
             }
         }
     }
 
     @Test
-    fun runSampleFlowsForEvolvableToken() = e2eTestNetwork.use {
-        /**
-         * Issue [House] state
-         */
-        val initialHouseValue = 400000L
-        val currencyCode = "EUR"
-        val address = "1 Fake Street"
+    fun runSampleFlowsForEvolvableToken() {
+        e2eTestNetwork.use {
+            /**
+             * Issue [House] state
+             */
+            val initialHouseValue = 400000L
+            val currencyCode = "EUR"
+            val address = "1 Fake Street"
 
-        // Alice issues a state to be exchanged
-        //var (stx, aliceId) =
-        alice().httpRpcClient<FlowStarterRPCOps, Unit> {
-            val clientId = "client-${UUID.randomUUID()}"
-            val parametersInJson = GsonBuilder()
-                .create()
-                .toJson(
-                    mapOf(
-                        "address" to address,
-                        "currencyCode" to currencyCode,
-                        "value" to initialHouseValue.toString(),
-                    )
+            // Alice issues a state to be exchanged
+            //var (stx, aliceId) =
+            val houseId = alice().httpRpcClient<FlowStarterRPCOps, String> {
+                val clientId = "client-${UUID.randomUUID()}"
+                val parametersInJson = GsonBuilder()
+                        .create()
+                        .toJson(
+                                mapOf(
+                                        "address" to address,
+                                        "currencyCode" to currencyCode,
+                                        "value" to initialHouseValue.toString(),
+                                )
+                        )
+
+
+                val response: RpcStartFlowResponse = startFlow(
+                        RpcStartFlowRequest(
+                                CreateHouseToken::class.java.name,
+                                clientId,
+                                RpcStartFlowRequestParameters(parametersInJson)
+                        )
                 )
 
+                assertThat(response.clientId).isEqualTo(clientId)
+                assertThat(response.stateMachineRunId).isNotNull
 
 
-            val response: RpcStartFlowResponse = startFlow(
-                RpcStartFlowRequest(
-                    CreateHouseToken::class.java.name,
-                    clientId,
-                    RpcStartFlowRequestParameters(parametersInJson)
-                )
-            )
+                var result: RpcFlowOutcomeResponse
+                do {
+                    result = getFlowOutcome(response.stateMachineRunId.uuid.toString())
+                } while (result.status == RpcFlowStatus.RUNNING)
 
-            assertThat(response.clientId).isEqualTo(clientId)
-            assertThat(response.stateMachineRunId).isNotNull
+                assertThat(RpcFlowStatus.COMPLETED).isEqualTo(result.status)
 
+                JsonParser.parseString(result.resultJson).asJsonObject["linearId"].asString
+            }
 
-            var result: RpcFlowOutcomeResponse
-            do {
-                result = getFlowOutcome(response.stateMachineRunId.uuid.toString())
-            } while (result.status == RpcFlowStatus.RUNNING)
-
-            assertThat(RpcFlowStatus.COMPLETED).isEqualTo(result.status)
-
-
-            /*startFlowDynamic(CreateHouseToken::class.java, address, currencyCode, initialHouseValue)
-                .returnValue.getOrThrow() to nodeInfo().legalIdentities.first()*/
-        }
+            assertThat(houseId).isNotBlank
 //        val linearId = stx.getNFT().linearId.toString()
 //        assertHouseProperties(linearId, address, initialHouseValue, currencyCode)
 //
@@ -124,6 +117,7 @@ class SampleFlowTests {
 //
 //        assertThat(stx.getNFT().issuer).isEqualTo(aliceId)
 //        assertThat(stx.getNFT().holder).isEqualTo(bobId)
+        }
     }
 
 //    private fun SignedTransaction.getNFT() = tx.outputStates.single() as NonFungibleToken

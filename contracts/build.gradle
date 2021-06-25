@@ -32,9 +32,8 @@ dependencies {
     testCompile project(":modules:contracts-for-testing")
 
     testImplementation "org.assertj:assertj-core:$assertj_version"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
+    testCompile "org.junit.jupiter:junit-jupiter:$junit_version"
     testImplementation "io.mockk:mockk:$mockkVersion"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
 }
 
 cordapp {

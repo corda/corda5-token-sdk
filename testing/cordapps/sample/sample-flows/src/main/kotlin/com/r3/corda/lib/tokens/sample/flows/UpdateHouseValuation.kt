@@ -5,7 +5,7 @@ import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.money.FiatCurrency
 import com.r3.corda.lib.tokens.workflows.flows.rpc.UpdateEvolvableToken
-import com.r3.corda.lib.tokens.sample.states.House
+import com.r3.corda.lib.tokens.sample.states.HouseToken
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.JsonConstructor
 import net.corda.v5.application.flows.RpcStartFlowRequestParameters
@@ -73,7 +73,7 @@ class UpdateHouseValuation @JsonConstructor constructor(
         require(houseNft.state.data.token.isPointer())
         val oldHouseTokenStateAndRef = stateLoaderService
             .resolve(
-                uncheckedCast<TokenType, TokenPointer<House>>(houseNft.state.data.tokenType)
+                uncheckedCast<TokenType, TokenPointer<HouseToken>>(houseNft.state.data.tokenType)
                     .pointer
             )
 

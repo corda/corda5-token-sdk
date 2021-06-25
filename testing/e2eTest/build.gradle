@@ -4,8 +4,7 @@ plugins {
 
 dependencies {
     testImplementation "org.assertj:assertj-core:$assertj_version"
-    testImplementation "org.junit.jupiter:junit-jupiter-api:$junit_version"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junit_version"
+    testCompile "org.junit.jupiter:junit-jupiter:$junit_version"
 
     testImplementation "$corda_release_group:corda-application:$corda_release_version"
     testImplementation "$corda_release_group:corda-ledger:$corda_release_version"
@@ -21,6 +20,7 @@ dependencies {
     testImplementation project(":testing:cordapps:sample:sample-contracts")
 }
 
-test {
+tasks.withType(Test).configureEach {
     useJUnitPlatform()
+    reports { junitXml.setEnabled(true) }
 }

@@ -5,7 +5,7 @@ import com.r3.corda.lib.tokens.money.FiatCurrency
 import com.r3.corda.lib.tokens.workflows.flows.rpc.CreateEvolvableTokens
 import com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens
 import com.r3.corda.lib.tokens.workflows.utilities.NonFungibleTokenBuilder
-import com.r3.corda.lib.tokens.sample.states.House
+import com.r3.corda.lib.tokens.sample.states.HouseToken
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.JsonConstructor
 import net.corda.v5.application.flows.RpcStartFlowRequestParameters
@@ -19,12 +19,11 @@ import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.TransactionState
 import net.corda.v5.ledger.services.NotaryLookupService
-import net.corda.v5.ledger.transactions.SignedTransaction
 
 @StartableByRPC
 class CreateHouseToken @JsonConstructor constructor(
     val inputParams: RpcStartFlowRequestParameters
-) : Flow<SignedTransaction> {
+) : Flow<HouseToken> {
 
     @CordaInject
     lateinit var notaryLookupService: NotaryLookupService
@@ -39,7 +38,7 @@ class CreateHouseToken @JsonConstructor constructor(
     lateinit var jsonMarshallingService: JsonMarshallingService
 
     @Suspendable
-    override fun call(): SignedTransaction {
+    override fun call(): HouseToken {
         val params: Map<String, String> = jsonMarshallingService.parseJson(inputParams.parametersInJson)
         val address: String = params["address"]!!
         val currencyCode: String = params["currencyCode"]!!
@@ -47,7 +46,7 @@ class CreateHouseToken @JsonConstructor constructor(
 
         val notary = notaryLookupService.notaryIdentities.first()
 
-        val house = House(
+        val house = HouseToken(
             address,
             amount(value, FiatCurrency.getInstance(currencyCode)),
             listOf(flowIdentity.ourIdentity),
@@ -57,11 +56,13 @@ class CreateHouseToken @JsonConstructor constructor(
         flowEngine.subFlow(CreateEvolvableTokens(transactionState))
 
         val houseToken = NonFungibleTokenBuilder()
-            .ofTokenType(house.toPointer<House>())
+            .ofTokenType(house.toPointer<HouseToken>())
             .issuedBy(flowIdentity.ourIdentity)
             .heldBy(flowIdentity.ourIdentity)
             .buildNonFungibleToken()
 
-        return flowEngine.subFlow(IssueTokens(listOf(houseToken)))
+        flowEngine.subFlow(IssueTokens(listOf(houseToken)))
+
+        return house
     }
 }

@@ -3,7 +3,7 @@ package com.r3.corda.lib.tokens.sample.flows
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import com.r3.corda.lib.tokens.sample.states.House
+import com.r3.corda.lib.tokens.sample.states.HouseToken
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.JsonConstructor
 import net.corda.v5.application.flows.RpcStartFlowRequestParameters
@@ -22,7 +22,7 @@ import net.corda.v5.ledger.services.vault.StateStatus
 
 class GetHouseInfoFlow @JsonConstructor constructor(
     val inputParams: RpcStartFlowRequestParameters
-) : Flow<House> {
+) : Flow<HouseToken> {
 
     @CordaInject
     lateinit var stateLoaderService: StateLoaderService
@@ -34,7 +34,7 @@ class GetHouseInfoFlow @JsonConstructor constructor(
     lateinit var jsonMarshallingService: JsonMarshallingService
 
     @Suspendable
-    override fun call(): House {
+    override fun call(): HouseToken {
         val nftLinearId: String = jsonMarshallingService.parseJson<Map<String, String>>(inputParams.parametersInJson)["nftLinearId"]!!
 
         val cursor = persistenceService.query<StateAndRef<NonFungibleToken>>(
@@ -59,7 +59,7 @@ class GetHouseInfoFlow @JsonConstructor constructor(
         require(houseNft.state.data.token.isPointer())
         val house =
             stateLoaderService.resolve(
-                uncheckedCast<TokenType, TokenPointer<House>>(houseNft.state.data.tokenType)
+                uncheckedCast<TokenType, TokenPointer<HouseToken>>(houseNft.state.data.tokenType)
                     .pointer
             )
         return house.state.data
