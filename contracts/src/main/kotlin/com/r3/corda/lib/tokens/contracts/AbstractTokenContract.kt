@@ -8,7 +8,7 @@ import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.v5.base.util.uncheckedCast
+import net.corda.v5.base.internal.uncheckedCast
 import net.corda.v5.crypto.SecureHash
 import net.corda.v5.ledger.contracts.Attachment
 import net.corda.v5.ledger.contracts.Command
