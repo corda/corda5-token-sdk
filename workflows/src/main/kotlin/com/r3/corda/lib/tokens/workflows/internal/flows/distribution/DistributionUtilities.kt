@@ -41,6 +41,7 @@ fun getDistributionList(persistenceService: PersistenceService, linearId: Unique
 }
 
 // Gets the distribution record for a particular token and party.
+@Suspendable
 fun getDistributionRecord(persistenceService: PersistenceService, linearId: UniqueIdentifier, party: Party): DistributionRecord? {
 	return persistenceService.query<DistributionRecord>(
 		"DistributionRecord.findByLinearIdAndParty",
@@ -50,6 +51,7 @@ fun getDistributionRecord(persistenceService: PersistenceService, linearId: Uniq
 		.singleOrNull()
 }
 
+@Suspendable
 fun hasDistributionRecord(persistenceService: PersistenceService, linearId: UniqueIdentifier, party: Party): Boolean {
 	return getDistributionRecord(persistenceService, linearId, party) != null
 }
