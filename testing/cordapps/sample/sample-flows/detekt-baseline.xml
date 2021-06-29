@@ -2,6 +2,7 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>MaxLineLength:GetHouseInfoFlow.kt$GetHouseInfoFlow$val nftLinearId: String = jsonMarshallingService.parseJson&lt;Map&lt;String, String&gt;&gt;(inputParams.parametersInJson)["nftLinearId"]!!</ID>
+    <ID>MaxLineLength:GetHouseInfoFlow.kt$GetHouseInfoFlow$val nftLinearId: String = jsonMarshallingService.parseJson&lt;Map&lt;String, String&gt;&gt;(inputParams.parametersInJson)["linearId"]!!</ID>
+    <ID>NewLineAtEndOfFile:MoveHouseTokenFlow.kt$com.r3.corda.lib.tokens.sample.flows.MoveHouseTokenFlow.kt</ID>
   </CurrentIssues>
 </SmellBaseline>

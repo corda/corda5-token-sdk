@@ -139,12 +139,14 @@ constructor(
 
     // TODO Refactor it more.
     private val otherObservers
+        @Suspendable
         get(): Set<AbstractParty> {
             return (evolvableTokens.participants() + subscribersForState(newState, persistenceService))
                 .minus(evolvableTokens.maintainers()).minus(flowIdentity.ourIdentity)
         }
 
     private val statesObservers
+        @Suspendable
         get(): List<Party> {
             return otherObservers.map { identityService.partyFromAnonymous(it)!! }
         }

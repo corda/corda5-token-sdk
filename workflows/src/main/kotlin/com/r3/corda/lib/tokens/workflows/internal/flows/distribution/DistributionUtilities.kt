@@ -25,6 +25,7 @@ import net.corda.v5.ledger.services.StateLoaderService
 data class DistributionListUpdate(val sender: Party, val receiver: Party, val linearId: UniqueIdentifier)
 
 // Gets the distribution list for a particular token.
+@Suspendable
 fun getDistributionList(persistenceService: PersistenceService, linearId: UniqueIdentifier): List<DistributionRecord> {
 	val cursor = persistenceService.query<DistributionRecord>(
 		"DistributionRecord.findByLinearId",
@@ -61,6 +62,7 @@ fun hasDistributionRecord(persistenceService: PersistenceService, linearId: Uniq
  * TODO: Add some error handling.
  * TODO: Don't duplicate pairs of linearId and party.
  */
+@Suspendable
 fun PersistenceService.addPartyToDistributionList(party: Party, linearId: UniqueIdentifier) {
 	// Create an persist a new entity.
 	persist(DistributionRecord(linearId.id, party))

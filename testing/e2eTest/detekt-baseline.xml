@@ -2,6 +2,6 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>MaxLineLength:SampleFlowTests.kt$SampleFlowTests$// private fun Nodes&lt;*&gt;.assertHouseProperties(linearId: String, address: String, value: Long, valueCurrency: String) {</ID>
+    <ID>UnusedPrivateMember:SampleFlowTests.kt$SampleFlowTests$recipient: CordaX500Name</ID>
   </CurrentIssues>
 </SmellBaseline>

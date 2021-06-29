@@ -23,7 +23,7 @@ data class HouseToken(
             |{ 
             | "address" : "$address", 
             | "valuation" : { 
-            | "amount" : "${valuation.quantity}", 
+            | "amount" : "${valuation.quantity * valuation.displayTokenSize.toDouble()}", 
             | "type" : "${valuation.token.tokenIdentifier}" 
             | } ,
             | "linearId" : "$linearId"

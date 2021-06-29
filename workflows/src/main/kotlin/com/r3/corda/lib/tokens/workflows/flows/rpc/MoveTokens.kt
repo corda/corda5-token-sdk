@@ -103,7 +103,6 @@ class MoveFungibleTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
  *
  * @param partyAndToken pairing party - token that is to be moved to that party
  * @param observers optional observing parties to which the transaction will be broadcast
- * @param queryCriteria additional criteria for token selection
  */
 @StartableByService
 @StartableByRPC

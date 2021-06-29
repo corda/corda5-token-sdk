@@ -22,6 +22,7 @@ import net.corda.v5.ledger.services.vault.StateStatus
 /** Miscellaneous helpers. */
 
 // Grabs the latest version of a linear state for a specified linear ID.
+@Suspendable
 inline fun <reified T : LinearState> PersistenceService.getLinearStateById(linearId: UniqueIdentifier): StateAndRef<T>? {
     return query<StateAndRef<T>>(
         "LinearState.findByUuidAndStateStatus",
@@ -39,12 +40,10 @@ inline fun <reified T : LinearState> PersistenceService.getLinearStateById(linea
 
 // Returns all held token amounts of a specified token with given issuer.
 // We need to discriminate on the token type as well as the symbol as different tokens might use the same symbols.
-@Suspendable
 fun tokenAmountWithIssuerCriteria(token: TokenType, issuer: Party): Pair<String, Map<String, Any>> {
     return namedQueryForFungibleTokenClassIdentifierAndIssuer(token, issuer)
 }
 
-@Suspendable
 fun sumTokenAmountWithIssuerCriteria(token: TokenType, issuer: Party): Pair<String, Map<String, Any>> {
     return namedQueryForSumFungibleTokenAmountClassIdentifierAndIssuer(token, issuer)
 }
@@ -56,7 +55,6 @@ fun heldTokenAmountCriteria(token: TokenType, holder: AbstractParty): Pair<Strin
 // Returns all held token amounts of a specified token.
 // We need to discriminate on the token type as well as the symbol as different tokens might use the same symbols.
 // TODO should be called token amount criteria (there is no owner selection)
-@Suspendable
 fun namedQueryForFungibleTokenClassAndIdentifier(token: TokenType): Pair<String, Map<String, Any>> {
     return Pair(
         "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassAndIdentifier",
@@ -67,7 +65,6 @@ fun namedQueryForFungibleTokenClassAndIdentifier(token: TokenType): Pair<String,
     )
 }
 
-@Suspendable
 fun namedQueryForSumFungibleTokenAmountClassAndIdentifier(token: TokenType): Pair<String, Map<String, Any>> {
     return Pair(
         "FungibleTokenSchemaV1.PersistentFungibleToken.sumAllUnconsumedTokensByClassAndIdentifier",
@@ -78,7 +75,6 @@ fun namedQueryForSumFungibleTokenAmountClassAndIdentifier(token: TokenType): Pai
     )
 }
 
-@Suspendable
 fun namedQueryForFungibleTokenClassIdentifierAndIssuer(token: TokenType, issuer: Party): Pair<String, Map<String, Any>> {
     return Pair(
         "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierAndIssuer",
@@ -90,7 +86,6 @@ fun namedQueryForFungibleTokenClassIdentifierAndIssuer(token: TokenType, issuer:
     )
 }
 
-@Suspendable
 fun namedQueryForSumFungibleTokenAmountClassIdentifierAndIssuer(token: TokenType, issuer: Party): Pair<String, Map<String, Any>> {
     return Pair(
         "FungibleTokenSchemaV1.PersistentFungibleToken.sumAllUnconsumedTokensByClassIdentifierAndIssuer",
@@ -102,7 +97,6 @@ fun namedQueryForSumFungibleTokenAmountClassIdentifierAndIssuer(token: TokenType
     )
 }
 
-@Suspendable
 fun namedQueryForFungibleTokenClassIdentifierAndOwningKey(token: TokenType, holder: AbstractParty): Pair<String, Map<String, Any>> {
     return Pair(
         "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierAndOwningKey",
@@ -114,7 +108,6 @@ fun namedQueryForFungibleTokenClassIdentifierAndOwningKey(token: TokenType, hold
     )
 }
 
-@Suspendable
 fun namedQueryForNonfungibleTokenClassAndIdentifier(token: TokenType): Pair<String, Map<String, Any>> {
     return Pair(
         "NonFungibleTokenSchemaV1.PersistentNonFungibleToken.findAllUnconsumedTokensByClassAndIdentifier",
@@ -125,7 +118,6 @@ fun namedQueryForNonfungibleTokenClassAndIdentifier(token: TokenType): Pair<Stri
     )
 }
 
-@Suspendable
 fun namedQueryForNonfungibleTokenClassIdentifierAndIssuer(token: TokenType, issuer: Party): Pair<String, Map<String, Any>> {
     return Pair(
         "NonFungibleTokenSchemaV1.PersistentNonFungibleToken.findAllUnconsumedTokensByClassIdentifierAndIssuer",
@@ -137,8 +129,8 @@ fun namedQueryForNonfungibleTokenClassIdentifierAndIssuer(token: TokenType, issu
     )
 }
 
+@Suspendable
 fun cursorToAmount(token: TokenType, cursor: Cursor<StateAndRef<FungibleToken>>): Amount<TokenType> {
-
     val results = mutableListOf<StateAndRef<FungibleToken>>()
     do {
         val pollResult = cursor.poll(10, 5.seconds)

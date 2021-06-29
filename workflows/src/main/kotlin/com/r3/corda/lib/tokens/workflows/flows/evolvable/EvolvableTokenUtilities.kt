@@ -10,6 +10,7 @@ import com.r3.corda.lib.tokens.workflows.internal.flows.distribution.getDistribu
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.persistence.PersistenceService
+import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.ContractClassName
 import net.corda.v5.ledger.contracts.StateAndRef
 import net.corda.v5.ledger.contracts.TransactionState
@@ -74,6 +75,7 @@ internal fun Iterable<EvolvableTokenType>.participants(): Set<AbstractParty> =
 
 internal fun Iterable<EvolvableTokenType>.otherMaintainers(ourIdentity: Party) = maintainers().minus(ourIdentity)
 
+@Suspendable
 internal fun subscribersForState(state: EvolvableTokenType, persistenceService: PersistenceService): Set<Party> {
     return getDistributionList(persistenceService, state.linearId).map { it.party }.toSet()
 }

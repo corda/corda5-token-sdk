@@ -3,5 +3,6 @@
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
     <ID>ForbiddenComment:HouseContract.kt$HouseContract$// TODO: When contract scanning bug is fixed then this does not need to implement Contract.</ID>
+    <ID>NewLineAtEndOfFile:JsonRepresentableHouseNFT.kt$com.r3.corda.lib.tokens.sample.states.JsonRepresentableHouseNFT.kt</ID>
   </CurrentIssues>
 </SmellBaseline>

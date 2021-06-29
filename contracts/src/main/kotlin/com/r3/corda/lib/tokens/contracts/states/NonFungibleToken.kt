@@ -11,6 +11,7 @@ import com.r3.corda.lib.tokens.contracts.utilities.holderString
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.persistence.MappedSchema
+import net.corda.v5.application.utilities.JsonRepresentable
 import net.corda.v5.crypto.SecureHash
 import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.BelongsToContract

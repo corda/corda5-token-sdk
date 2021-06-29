@@ -1,15 +1,18 @@
 package com.r3.corda.lib.tokens.sample.flows
 
-import com.r3.corda.lib.tokens.contracts.utilities.amount
-import com.r3.corda.lib.tokens.money.FiatCurrency
+import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
+import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.sample.states.HouseToken
-import com.r3.corda.lib.tokens.workflows.flows.rpc.UpdateEvolvableToken
+import com.r3.corda.lib.tokens.workflows.flows.rpc.MoveNonFungibleTokens
+import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.JsonConstructor
 import net.corda.v5.application.flows.RpcStartFlowRequestParameters
 import net.corda.v5.application.flows.StartableByRPC
 import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.identity.CordaX500Name
 import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.json.JsonMarshallingService
 import net.corda.v5.application.services.json.parseJson
 import net.corda.v5.application.services.persistence.PersistenceService
@@ -21,37 +24,38 @@ import net.corda.v5.ledger.services.vault.StateStatus
 import java.util.*
 
 @StartableByRPC
-class UpdateHouseValuation @JsonConstructor constructor(
+class MoveHouseTokenFlow @JsonConstructor constructor(
     val inputParams: RpcStartFlowRequestParameters
-) : Flow<HouseToken> {
+) : Flow<Unit> {
 
     @CordaInject
     lateinit var flowEngine: FlowEngine
 
     @CordaInject
-    lateinit var persistenceService: PersistenceService
+    lateinit var identityService: IdentityService
 
     @CordaInject
     lateinit var jsonMarshallingService: JsonMarshallingService
 
+    @CordaInject
+    lateinit var persistenceService: PersistenceService
+
     @Suspendable
-    override fun call(): HouseToken {
+    override fun call() {
+        val inputJson = jsonMarshallingService.parseJson<Map<String, String>>(inputParams.parametersInJson)
+        val linearId = inputJson["linearId"]!!
+        val recipient = CordaX500Name.parse(inputJson["recipient"]!!)
 
-        val params: Map<String, String> = jsonMarshallingService.parseJson(inputParams.parametersInJson)
-        val currencyCode: String = params["currencyCode"]!!
-        val value: Double = params["newValuation"]!!.toDouble()
-        val linearId: String = params["linearId"]!!
-
-        val cursor = persistenceService.query<StateAndRef<HouseToken>>(
+        val cursor = persistenceService.query<StateAndRef<NonFungibleToken>>(
             "LinearState.findByUuidAndStateStatus",
             mapOf(
                 "uuid" to UUID.fromString(linearId),
                 "stateStatus" to StateStatus.UNCONSUMED,
             ),
-            IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME
+            IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME,
         )
 
-        val results = mutableListOf<StateAndRef<HouseToken>>()
+        val results = mutableListOf<StateAndRef<NonFungibleToken>>()
         do {
             val pollResult = cursor.poll(1, 5.seconds)
             results.addAll(pollResult.values)
@@ -59,13 +63,12 @@ class UpdateHouseValuation @JsonConstructor constructor(
 
         require(results.size == 1)
 
-        val oldHouseTokenStateAndRef = results.single()
+        val nft = results.single()
 
-        val newHouseToken = oldHouseTokenStateAndRef.state.data.copy(
-            valuation = amount(value, FiatCurrency.getInstance(currencyCode))
+        val partyAndToken = PartyAndToken(
+            identityService.partyFromName(recipient)!!,
+            nft.state.data.token
         )
-        flowEngine.subFlow(UpdateEvolvableToken(oldHouseTokenStateAndRef, newHouseToken))
-
-        return newHouseToken
+        flowEngine.subFlow(MoveNonFungibleTokens(partyAndToken))
     }
 }

@@ -6,6 +6,7 @@ import com.r3.corda.lib.tokens.workflows.flows.rpc.CreateEvolvableTokens
 import com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens
 import com.r3.corda.lib.tokens.workflows.utilities.NonFungibleTokenBuilder
 import com.r3.corda.lib.tokens.sample.states.HouseToken
+import com.r3.corda.lib.tokens.sample.states.JsonRepresentableHouseNFT
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.JsonConstructor
 import net.corda.v5.application.flows.RpcStartFlowRequestParameters
@@ -23,7 +24,7 @@ import net.corda.v5.ledger.services.NotaryLookupService
 @StartableByRPC
 class CreateHouseToken @JsonConstructor constructor(
     val inputParams: RpcStartFlowRequestParameters
-) : Flow<HouseToken> {
+) : Flow<JsonRepresentableHouseNFT> {
 
     @CordaInject
     lateinit var notaryLookupService: NotaryLookupService
@@ -38,11 +39,11 @@ class CreateHouseToken @JsonConstructor constructor(
     lateinit var jsonMarshallingService: JsonMarshallingService
 
     @Suspendable
-    override fun call(): HouseToken {
+    override fun call(): JsonRepresentableHouseNFT {
         val params: Map<String, String> = jsonMarshallingService.parseJson(inputParams.parametersInJson)
         val address: String = params["address"]!!
         val currencyCode: String = params["currencyCode"]!!
-        val value: Long = params["value"]!!.toLong()
+        val value: Double = params["value"]!!.toDouble()
 
         val notary = notaryLookupService.notaryIdentities.first()
 
@@ -63,6 +64,6 @@ class CreateHouseToken @JsonConstructor constructor(
 
         flowEngine.subFlow(IssueTokens(listOf(houseToken)))
 
-        return house
+        return JsonRepresentableHouseNFT(houseToken)
     }
 }
