@@ -57,7 +57,7 @@ tasks.withType(Test).configureEach {
 }
 
 tasks.named('jar', Jar) {
-    archiveBaseName = 'tokens-contract'
+    archiveBaseName = 'tokens-contracts'
     bnd """\
 Bundle-Name: Corda Token SDK Contracts
 Bundle-SymbolicName: \${project.group}.tokens-contracts
