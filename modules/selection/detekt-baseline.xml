@@ -9,10 +9,10 @@
     <ID>ForbiddenComment:TokenQueryBy.kt$TokenQueryBy$//TODO: After 2.0 we should get rid of queryCriteria, because it was a mistake to expose it in the</ID>
     <ID>LongMethod:VaultWatcherService.kt$VaultWatcherService$fun selectTokens( owner: Holder, requiredAmount: Amount&lt;TokenType&gt;, predicate: ((StateAndRef&lt;FungibleToken&gt;) -&gt; Boolean) = { true }, allowShortfall: Boolean = false, autoUnlockDelay: Duration = Duration.ofMinutes(5), selectionId: String ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
     <ID>LongParameterList:DatabaseTokenSelection.kt$DatabaseTokenSelection$( private val persistenceService: PersistenceService, private val identityService: IdentityService, private val flowEngine: FlowEngine, private val maxRetries: Int = MAX_RETRIES_DEFAULT, private val retrySleep: Int = RETRY_SLEEP_DEFAULT, private val retryCap: Int = RETRY_CAP_DEFAULT, private val pageSize: Int = PAGE_SIZE_DEFAULT )</ID>
-    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, myInfo: NodeInfo, holder: Holder, lockId: UUID = UUID.randomUUID(), partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, queryBy: TokenQueryBy = TokenQueryBy() )</ID>
-    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, nodeInfo: NodeInfo, externalId: UUID, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, queryBy: TokenQueryBy = TokenQueryBy(), lockId: UUID = UUID.randomUUID() )</ID>
-    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, nodeInfo: NodeInfo, holdingKey: PublicKey, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, queryBy: TokenQueryBy = TokenQueryBy(), lockId: UUID = UUID.randomUUID() )</ID>
-    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, nodeInfo: NodeInfo, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, queryBy: TokenQueryBy = TokenQueryBy(), lockId: UUID = UUID.randomUUID() )</ID>
+    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, externalId: UUID, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, queryBy: TokenQueryBy = TokenQueryBy(), lockId: UUID = UUID.randomUUID() )</ID>
+    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, holder: Holder, lockId: UUID = UUID.randomUUID(), partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, queryBy: TokenQueryBy = TokenQueryBy() )</ID>
+    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, holdingKey: PublicKey, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, queryBy: TokenQueryBy = TokenQueryBy(), lockId: UUID = UUID.randomUUID() )</ID>
+    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, queryBy: TokenQueryBy = TokenQueryBy(), lockId: UUID = UUID.randomUUID() )</ID>
     <ID>LongParameterList:VaultWatcherService.kt$VaultWatcherService$( owner: Holder, requiredAmount: Amount&lt;TokenType&gt;, predicate: ((StateAndRef&lt;FungibleToken&gt;) -&gt; Boolean) = { true }, allowShortfall: Boolean = false, autoUnlockDelay: Duration = Duration.ofMinutes(5), selectionId: String )</ID>
     <ID>MagicNumber:LocalTokenSelector.kt$LocalTokenSelector$5</ID>
     <ID>MagicNumber:VaultWatcherService.kt$VaultWatcherService$1000</ID>
@@ -44,9 +44,9 @@
     <ID>MaxLineLength:Selector.kt$Selector$"States selected have different notaries. For now we don't support notary change, it should be performed beforehand."</ID>
     <ID>MaxLineLength:Selector.kt$Selector$*</ID>
     <ID>MaxLineLength:Selector.kt$Selector$remainingTokensFromEachIssuer[remainingTokensFromEachIssuer.lastIndex] = Pair(token, Amount(delta, token))</ID>
-    <ID>MaxLineLength:Selector.kt$Selector$return generateMove(identityService, nodeInfo, Holder.KeyIdentity(holdingKey), lockId, partiesAndAmounts, changeHolder, queryBy)</ID>
-    <ID>MaxLineLength:Selector.kt$Selector$return generateMove(identityService, nodeInfo, Holder.TokenOnly(), lockId, partiesAndAmounts, changeHolder, queryBy)</ID>
-    <ID>MaxLineLength:Selector.kt$Selector$return generateMove(identityService, nodeInfo, Holder.fromUUID(externalId), lockId, partiesAndAmounts, changeHolder, queryBy)</ID>
+    <ID>MaxLineLength:Selector.kt$Selector$return generateMove(identityService, memberInfo, Holder.KeyIdentity(holdingKey), lockId, partiesAndAmounts, changeHolder, queryBy)</ID>
+    <ID>MaxLineLength:Selector.kt$Selector$return generateMove(identityService, memberInfo, Holder.TokenOnly(), lockId, partiesAndAmounts, changeHolder, queryBy)</ID>
+    <ID>MaxLineLength:Selector.kt$Selector$return generateMove(identityService, memberInfo, Holder.fromUUID(externalId), lockId, partiesAndAmounts, changeHolder, queryBy)</ID>
     <ID>MaxLineLength:StateSelectionConfig.kt$ConfigSelection$*</ID>
     <ID>MaxLineLength:StateSelectionConfig.kt$ConfigSelection$else -&gt; throw IllegalArgumentException("Provide correct state-selection type string in the config, see kdocs for ConfigSelection.")</ID>
     <ID>MaxLineLength:VaultMigratorService.kt$VaultMigratorService$//TODO - we should attempt to migrate the old vault contents. This must be done a service because we cannot guarantee</ID>
@@ -64,6 +64,7 @@
     <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService.&lt;no name provided&gt;$val cursor = persistenceService.query&lt;StateAndRef&lt;FungibleToken&gt;&gt;("FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumed", emptyMap())</ID>
     <ID>NestedBlockDepth:DatabaseTokenSelection.kt$DatabaseTokenSelection$@Suspendable override fun selectTokens( holder: Holder, lockId: UUID, requiredAmount: Amount&lt;TokenType&gt;, queryBy: TokenQueryBy ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
     <ID>NestedBlockDepth:VaultWatcherService.kt$VaultWatcherService$fun selectTokens( owner: Holder, requiredAmount: Amount&lt;TokenType&gt;, predicate: ((StateAndRef&lt;FungibleToken&gt;) -&gt; Boolean) = { true }, allowShortfall: Boolean = false, autoUnlockDelay: Duration = Duration.ofMinutes(5), selectionId: String ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
+    <ID>NewLineAtEndOfFile:NamedQueryAndParameters.kt$com.r3.corda.lib.tokens.selection.NamedQueryAndParameters.kt</ID>
     <ID>NewLineAtEndOfFile:SelectionUtilities.kt$com.r3.corda.lib.tokens.selection.SelectionUtilities.kt</ID>
     <ID>NewLineAtEndOfFile:Selector.kt$com.r3.corda.lib.tokens.selection.api.Selector.kt</ID>
     <ID>NewLineAtEndOfFile:StateSelectionConfig.kt$com.r3.corda.lib.tokens.selection.api.StateSelectionConfig.kt</ID>

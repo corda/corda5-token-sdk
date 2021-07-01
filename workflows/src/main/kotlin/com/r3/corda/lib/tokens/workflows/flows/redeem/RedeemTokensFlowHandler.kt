@@ -12,9 +12,11 @@ import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.FlowIdentity
+import net.corda.v5.application.flows.receive
 import net.corda.v5.application.flows.unwrap
 import net.corda.v5.application.injection.CordaInject
-import net.corda.v5.application.node.NodeInfo
+import net.corda.v5.application.node.MemberInfo
+import net.corda.v5.application.node.MemberInfo.Companion.hasParty
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.transactions.SignedTransaction
 
@@ -28,7 +30,7 @@ class RedeemTokensFlowHandler(val otherSession: FlowSession) : Flow<SignedTransa
     lateinit var flowEngine: FlowEngine
 
     @CordaInject
-    lateinit var nodeInfo: NodeInfo
+    lateinit var memberInfo: MemberInfo
 
     @Suspendable
     override fun call(): SignedTransaction? {
@@ -39,7 +41,7 @@ class RedeemTokensFlowHandler(val otherSession: FlowSession) : Flow<SignedTransa
             flowEngine.subFlow(SyncKeyMappingFlowHandler(otherSession))
             // There is edge case where issuer redeems with themselves, then we need to be careful not to call handler for
             // collect signatures for already fully signed transaction - it causes session messages mismatch.
-            if (!nodeInfo.isLegalIdentity(otherSession.counterparty)) {
+            if (!memberInfo.hasParty(otherSession.counterparty)) {
                 // Perform all the checks to sign the transaction.
                 flowEngine.subFlow(object : SignTransactionFlow(otherSession) {
                     @CordaInject
@@ -57,7 +59,7 @@ class RedeemTokensFlowHandler(val otherSession: FlowSession) : Flow<SignedTransa
                 })
             }
         }
-        return if (!nodeInfo.isLegalIdentity(otherSession.counterparty)) {
+        return if (!memberInfo.hasParty(otherSession.counterparty)) {
             // Call observer aware finality flow handler.
             flowEngine.subFlow(ObserverAwareFinalityFlowHandler(otherSession))
         } else null

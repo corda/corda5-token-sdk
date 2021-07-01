@@ -8,7 +8,8 @@ import com.r3.corda.lib.tokens.contracts.utilities.sumTokenStateAndRefs
 import com.r3.corda.lib.tokens.selection.TokenQueryBy
 import com.r3.corda.lib.tokens.selection.memory.internal.Holder
 import net.corda.v5.application.identity.AbstractParty
-import net.corda.v5.application.node.NodeInfo
+import net.corda.v5.application.node.MemberInfo
+import net.corda.v5.application.node.MemberInfo.Companion.hasParty
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount
@@ -108,13 +109,13 @@ abstract class Selector {
     @JvmOverloads
     fun generateMove(
         identityService: IdentityService,
-        nodeInfo: NodeInfo,
+        memberInfo: MemberInfo,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         queryBy: TokenQueryBy = TokenQueryBy(),
         lockId: UUID = UUID.randomUUID()
     ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
-        return generateMove(identityService, nodeInfo, Holder.TokenOnly(), lockId, partiesAndAmounts, changeHolder, queryBy)
+        return generateMove(identityService, memberInfo, Holder.TokenOnly(), lockId, partiesAndAmounts, changeHolder, queryBy)
     }
 
     /**
@@ -130,14 +131,14 @@ abstract class Selector {
     @JvmOverloads
     fun generateMove(
         identityService: IdentityService,
-        nodeInfo: NodeInfo,
+        memberInfo: MemberInfo,
         externalId: UUID,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         queryBy: TokenQueryBy = TokenQueryBy(),
         lockId: UUID = UUID.randomUUID()
     ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
-        return generateMove(identityService, nodeInfo, Holder.fromUUID(externalId), lockId, partiesAndAmounts, changeHolder, queryBy)
+        return generateMove(identityService, memberInfo, Holder.fromUUID(externalId), lockId, partiesAndAmounts, changeHolder, queryBy)
     }
 
     /**
@@ -153,14 +154,14 @@ abstract class Selector {
     @JvmOverloads
     fun generateMove(
         identityService: IdentityService,
-        nodeInfo: NodeInfo,
+        memberInfo: MemberInfo,
         holdingKey: PublicKey,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         queryBy: TokenQueryBy = TokenQueryBy(),
         lockId: UUID = UUID.randomUUID()
     ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
-        return generateMove(identityService, nodeInfo, Holder.KeyIdentity(holdingKey), lockId, partiesAndAmounts, changeHolder, queryBy)
+        return generateMove(identityService, memberInfo, Holder.KeyIdentity(holdingKey), lockId, partiesAndAmounts, changeHolder, queryBy)
     }
 
     @Suspendable
@@ -174,7 +175,7 @@ abstract class Selector {
     @Suspendable
     private fun generateMove(
         identityService: IdentityService,
-        myInfo: NodeInfo,
+        memberInfo: MemberInfo,
         holder: Holder,
         lockId: UUID = UUID.randomUUID(),
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
@@ -194,7 +195,7 @@ abstract class Selector {
 
         // Check that the change identity belongs to the node that called generateMove.
         val ownerId = identityService.partyFromAnonymous(changeHolder)
-        check(ownerId != null && myInfo.isLegalIdentity(ownerId)) {
+        check(ownerId != null && memberInfo.hasParty(ownerId)) {
             "Owner of the change: $changeHolder is not the identity that belongs to the node."
         }
 

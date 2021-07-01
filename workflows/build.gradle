@@ -82,6 +82,10 @@ task integrationTest(type: Test, dependsOn: []) {
     classpath = sourceSets.integrationTest.runtimeClasspath
 }
 
-jar {
-    baseName "tokens-workflows"
+tasks.named('jar', Jar) {
+    archiveBaseName = 'tokens-workflows'
+    bnd """\
+Bundle-Name: Corda Token SDK Workflows
+Bundle-SymbolicName: \${project.group}.tokens-workflows
+"""
 }

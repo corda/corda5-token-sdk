@@ -6,6 +6,7 @@ import net.corda.systemflows.SignTransactionFlow
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.receive
 import net.corda.v5.application.flows.unwrap
 import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.base.annotations.Suspendable

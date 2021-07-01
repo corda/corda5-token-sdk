@@ -34,10 +34,11 @@ import net.corda.v5.application.flows.StartableByRPC
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.flows.flowservices.FlowMessaging
+import net.corda.v5.application.flows.receive
 import net.corda.v5.application.flows.unwrap
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.injection.CordaInject
-import net.corda.v5.application.node.NodeInfo
+import net.corda.v5.application.node.MemberInfo
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.crypto.KeyManagementService
 import net.corda.v5.application.services.persistence.PersistenceService
@@ -123,7 +124,7 @@ class DvPFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
     lateinit var identityService: IdentityService
 
     @CordaInject
-    lateinit var nodeInfo: NodeInfo
+    lateinit var memberInfo: MemberInfo
 
     @CordaInject
     lateinit var flowIdentity: FlowIdentity
@@ -139,7 +140,7 @@ class DvPFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
         val (inputs, outputs) =
             DatabaseTokenSelection(persistenceService, identityService, flowEngine).generateMove(
                 identityService,
-                nodeInfo,
+                memberInfo,
                 lockId = flowEngine.runId.uuid,
                 partiesAndAmounts = listOf(Pair(otherSession.counterparty, dvPNotification.amount)),
                 changeHolder = changeHolder

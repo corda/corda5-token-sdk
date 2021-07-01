@@ -158,9 +158,14 @@ artifactory {
             repoKey = 'corda-lib-dev'
             username = cordaArtifactoryUsername
             password = cordaArtifactoryPassword
+            maven = true
         }
 
         defaults {
+            publishPom = true
+            publishArtifacts = true
+            publishBuildInfo = true
+
             if (publishProjects.contains(project)) {
                 publications(project.name)
             }

@@ -45,6 +45,10 @@ dependencies {
     cordapp project(":contracts")
 }
 
-jar {
-    baseName "tokens-selection"
+tasks.named('jar', Jar) {
+    archiveBaseName = 'tokens-selection'
+    bnd """\
+Bundle-Name: Corda Token SDK Selection
+Bundle-SymbolicName: \${project.group}.tokens-selection
+"""
 }

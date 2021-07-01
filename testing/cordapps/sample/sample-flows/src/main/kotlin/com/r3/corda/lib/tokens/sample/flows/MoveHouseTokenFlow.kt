@@ -67,7 +67,7 @@ class MoveHouseTokenFlow @JsonConstructor constructor(
 
         val partyAndToken = PartyAndToken(
             identityService.partyFromName(recipient)!!,
-            nft.state.data.token
+            nft.state.data.token.tokenType
         )
         flowEngine.subFlow(MoveNonFungibleTokens(partyAndToken))
     }

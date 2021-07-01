@@ -5,7 +5,8 @@ import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.injection.CordaInject
-import net.corda.v5.application.node.NodeInfo
+import net.corda.v5.application.node.MemberInfo
+import net.corda.v5.application.node.MemberInfo.Companion.hasParty
 import net.corda.v5.base.annotations.Suspendable
 
 /**
@@ -13,7 +14,7 @@ import net.corda.v5.base.annotations.Suspendable
  */
 class MoveTokensFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
     @CordaInject
-    lateinit var nodeInfo: NodeInfo
+    lateinit var memberInfo: MemberInfo
 
     @CordaInject
     lateinit var flowEngine: FlowEngine
@@ -21,7 +22,7 @@ class MoveTokensFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
     @Suspendable
     override fun call() {
         // Resolve the move transaction.
-        if (!nodeInfo.isLegalIdentity(otherSession.counterparty)) {
+        if (!memberInfo.hasParty(otherSession.counterparty)) {
             flowEngine.subFlow(ObserverAwareFinalityFlowHandler(otherSession))
         }
     }

@@ -6,7 +6,7 @@ import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.identity.AbstractParty
-import net.corda.v5.application.node.NodeInfo
+import net.corda.v5.application.node.MemberInfo
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
@@ -44,7 +44,7 @@ constructor(
     lateinit var identityService: IdentityService
 
     @CordaInject
-    lateinit var nodeInfo: NodeInfo
+    lateinit var memberInfo: MemberInfo
 
     @JvmOverloads
     constructor(
@@ -61,7 +61,7 @@ constructor(
             persistenceService,
             identityService,
             flowEngine,
-            nodeInfo,
+            memberInfo,
             partiesAndAmounts = partiesAndAmounts,
             changeHolder = changeHolder ?: flowIdentity.ourIdentity,
         )

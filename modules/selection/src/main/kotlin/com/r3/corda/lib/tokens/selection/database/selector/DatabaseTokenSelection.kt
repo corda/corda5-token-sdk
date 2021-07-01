@@ -151,7 +151,7 @@ class DatabaseTokenSelection @JvmOverloads constructor(
         } else stateAndRefs
     }
 
-    private fun getNamedQuery(requiredAmount: Amount<TokenType>, holder: Holder, queryBy: TokenQueryBy): Pair<String, Map<String, Any>> {
+    private fun getNamedQuery(requiredAmount: Amount<TokenType>, holder: Holder, queryBy: TokenQueryBy): NamedQueryAndParameters {
         // This is due to the fact, that user can pass Amount<IssuedTokenType>, this usually shouldn't happen, but just in case
         val amountToken = requiredAmount.token
         val (token, issuer) = when (amountToken) {
@@ -166,7 +166,7 @@ class DatabaseTokenSelection @JvmOverloads constructor(
         holder: Holder,
         token: TokenType,
         issuer: Party?,
-    ): Pair<String, Map<String,Any>> {
+    ): NamedQueryAndParameters {
         return when (holder) {
             is Holder.KeyIdentity -> {
                 // We want the AbstractParty that this key refers to, unfortunately, partyFromKey returns always well known party

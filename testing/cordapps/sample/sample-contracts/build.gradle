@@ -23,6 +23,10 @@ cordapp {
     }
 }
 
-jar {
+tasks.named('jar', Jar) {
     archiveBaseName = 'tokens-sample-contracts'
+    bnd """\
+Bundle-Name: Corda Token SDK Sample Contracts
+Bundle-SymbolicName: \${project.group}.tokens-sample-contracts
+"""
 }

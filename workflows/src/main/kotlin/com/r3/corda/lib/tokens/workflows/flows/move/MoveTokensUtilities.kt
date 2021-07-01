@@ -15,7 +15,7 @@ import com.r3.corda.lib.tokens.workflows.types.toPairs
 import com.r3.corda.lib.tokens.workflows.utilities.addTokenTypeJar
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.identity.AbstractParty
-import net.corda.v5.application.node.NodeInfo
+import net.corda.v5.application.node.MemberInfo
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
@@ -98,7 +98,7 @@ fun addMoveFungibleTokens(
     persistenceService: PersistenceService,
     identityService: IdentityService,
     flowEngine: FlowEngine,
-    nodeInfo: NodeInfo,
+    memberInfo: MemberInfo,
     partiesAndAmounts: List<PartyAndAmount<TokenType>>,
     changeHolder: AbstractParty,
 ): TransactionBuilder {
@@ -108,7 +108,7 @@ fun addMoveFungibleTokens(
     val (inputs, outputs) =
         selector.generateMove(
             identityService,
-            nodeInfo,
+            memberInfo,
             partiesAndAmounts.toPairs(),
             changeHolder,
             TokenQueryBy(),
@@ -129,7 +129,7 @@ fun addMoveFungibleTokens(
     persistenceService: PersistenceService,
     identityService: IdentityService,
     flowEngine: FlowEngine,
-    nodeInfo: NodeInfo,
+    memberInfo: MemberInfo,
     amount: Amount<TokenType>,
     holder: AbstractParty,
     changeHolder: AbstractParty,
@@ -139,7 +139,7 @@ fun addMoveFungibleTokens(
         persistenceService = persistenceService,
         identityService = identityService,
         flowEngine = flowEngine,
-        nodeInfo = nodeInfo,
+        memberInfo = memberInfo,
         partiesAndAmounts = listOf(PartyAndAmount(holder, amount)),
         changeHolder = changeHolder,
     )

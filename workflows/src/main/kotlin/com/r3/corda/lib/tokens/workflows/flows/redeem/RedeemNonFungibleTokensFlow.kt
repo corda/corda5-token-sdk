@@ -10,7 +10,7 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  *
  * @param heldToken non fungible token to redeem
  * @param issuerSession session with the issuer token should be redeemed with
- * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
+ * @param observerSessions optional sessions with the observer nodes, to which the transaction will be broadcasted
  */
 class RedeemNonFungibleTokensFlow(
     val heldToken: TokenType,

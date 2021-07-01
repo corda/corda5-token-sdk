@@ -12,7 +12,7 @@ import net.corda.client.rpc.flow.RpcFlowOutcomeResponse
 import net.corda.client.rpc.flow.RpcFlowStatus
 import net.corda.client.rpc.flow.RpcStartFlowRequest
 import net.corda.client.rpc.flow.RpcStartFlowResponse
-import net.corda.client.rpc.identity.NodeIdentityRPCOps
+import net.corda.client.rpc.proxy.network.MembershipGroupRPCOps
 import net.corda.test.dev.network.Node
 import net.corda.test.dev.network.httpRpcClient
 import net.corda.test.dev.network.withFlow
@@ -52,28 +52,22 @@ class SampleFlowTests {
             /**
              * Issue [House] state
              */
-            val initialHouseValue = 400000.0
+            var houseValue = 400000.0
             val currencyCode = "EUR"
             val address = "1 Fake Street"
 
             // Alice issues a state to be exchanged
-            val alice = alice()
-            val (nftLinearId, houseLinearId) = alice.createHouseToken(address, currencyCode, initialHouseValue)
-            alice.assertHouseStateProperties(houseLinearId, address, initialHouseValue, currencyCode)
+            val (nftLinearId, houseLinearId) = alice().createHouseToken(address, currencyCode, houseValue)
+            alice().assertHouseStateProperties(houseLinearId, address, houseValue, currencyCode)
 
-            val houseValueIncrement = 50000.0
-            val newHouseValuation = initialHouseValue + houseValueIncrement
+            houseValue += 50000.0
 
-            alice.updateHouseValuation(houseLinearId, newHouseValuation, currencyCode)
-            alice.assertHouseStateProperties(houseLinearId, address, newHouseValuation, currencyCode)
+            alice().updateHouseValuation(houseLinearId, houseValue, currencyCode)
+            alice().assertHouseStateProperties(houseLinearId, address, houseValue, currencyCode)
 
-            assertThat(nftLinearId).isNotBlank
-            val bob = bob()
-            val bobX500Name = bob.getX500Name()
-
-            alice.moveHouseToken(nftLinearId, bobX500Name)
-            alice.assertHouseStateProperties(houseLinearId, address, newHouseValuation, currencyCode)
-            bob.assertHouseStateProperties(houseLinearId, address, newHouseValuation, currencyCode)
+            alice().moveHouseToken(nftLinearId, bob().getX500Name())
+            alice().assertHouseStateProperties(houseLinearId, address, houseValue, currencyCode)
+            bob().assertHouseStateProperties(houseLinearId, address, houseValue, currencyCode)
         }
     }
 
@@ -143,7 +137,7 @@ class SampleFlowTests {
     }
 
     private fun Node.getX500Name(): CordaX500Name =
-        httpRpcClient<NodeIdentityRPCOps, CordaX500Name> { getMyMemberInfo().x500Name }
+        httpRpcClient<MembershipGroupRPCOps, CordaX500Name> { getMyMemberInfo().x500Name }
 
     private fun Node.moveHouseToken(linearId: String, recipient: CordaX500Name) {
         httpRpcClient<FlowStarterRPCOps, Unit> {

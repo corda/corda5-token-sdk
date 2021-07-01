@@ -10,7 +10,7 @@ import java.util.*
 
 // Returns all held token amounts of a specified token with given issuer.
 // We need to discriminate on the token type as well as the symbol as different tokens might use the same symbols.
-fun namedQueryForTokenClassIdentifierAndIssuer(token: TokenType, issuer: Party): Pair<String, Map<String, Any>> = Pair(
+fun namedQueryForTokenClassIdentifierAndIssuer(token: TokenType, issuer: Party): NamedQueryAndParameters = NamedQueryAndParameters(
     "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierAndIssuer",
     mapOf(
         "tokenClass" to token.tokenClass,
@@ -19,7 +19,7 @@ fun namedQueryForTokenClassIdentifierAndIssuer(token: TokenType, issuer: Party):
     )
 )
 
-fun namedQueryForTokenClassIdentifierIssuerAndExternalId(token: TokenType, issuer: Party, externalId: UUID): Pair<String, Map<String, Any>> = Pair(
+fun namedQueryForTokenClassIdentifierIssuerAndExternalId(token: TokenType, issuer: Party, externalId: UUID): NamedQueryAndParameters = NamedQueryAndParameters(
     "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierIssuerAndExternalId",
     mapOf(
         "tokenClass" to token.tokenClass,
@@ -32,7 +32,7 @@ fun namedQueryForTokenClassIdentifierIssuerAndExternalId(token: TokenType, issue
 
 // Returns all held token amounts of a specified token with given holder and issuer.
 // We need to discriminate on the token type as well as the symbol as different tokens might use the same symbols.
-fun namedQueryForTokenClassIdentifierHolderAndIssuer(token: TokenType, holder: AbstractParty, issuer: Party): Pair<String, Map<String, Any>> = Pair(
+fun namedQueryForTokenClassIdentifierHolderAndIssuer(token: TokenType, holder: AbstractParty, issuer: Party): NamedQueryAndParameters = NamedQueryAndParameters(
     "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierHolderAndIssuer",
     mapOf(
         "tokenClass" to token.tokenClass,
@@ -44,7 +44,7 @@ fun namedQueryForTokenClassIdentifierHolderAndIssuer(token: TokenType, holder: A
 
 // Returns all held token amounts of a specified token.
 // We need to discriminate on the token type as well as the symbol as different tokens might use the same symbols.
-fun namedQueryForTokenClassAndIdentifier(token: TokenType): Pair<String, Map<String, Any>> = Pair(
+fun namedQueryForTokenClassAndIdentifier(token: TokenType): NamedQueryAndParameters = NamedQueryAndParameters(
         "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassAndIdentifier",
         mapOf<String, Any>(
             "tokenClass" to token.tokenClass,
@@ -52,7 +52,7 @@ fun namedQueryForTokenClassAndIdentifier(token: TokenType): Pair<String, Map<Str
         )
     )
 
-fun namedQueryForTokenClassIdentifierAndExternalId(token: TokenType, externalId: UUID): Pair<String, Map<String, Any>> = Pair(
+fun namedQueryForTokenClassIdentifierAndExternalId(token: TokenType, externalId: UUID): NamedQueryAndParameters = NamedQueryAndParameters(
     "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierAndExternalId",
     mapOf<String, Any>(
         "tokenClass" to token.tokenClass,
@@ -62,7 +62,7 @@ fun namedQueryForTokenClassIdentifierAndExternalId(token: TokenType, externalId:
 )
 
 
-fun namedQueryForTokenClassIdentifierAndHolder(token: TokenType, holder: AbstractParty): Pair<String, Map<String, Any>> = Pair(
+fun namedQueryForTokenClassIdentifierAndHolder(token: TokenType, holder: AbstractParty): NamedQueryAndParameters = NamedQueryAndParameters(
     "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierAndHolder",
     mapOf(
         "tokenClass" to token.tokenClass,
