@@ -1,4 +1,4 @@
-package com.r3.corda.lib.tokens.selection
+package com.r3.corda.lib.tokens.datatypes
 
 /**
  * Simple data class to hold a named query string, and a map of parameters for that named query.

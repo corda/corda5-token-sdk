@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>NewLineAtEndOfFile:NamedQueryAndParameters.kt$com.r3.corda.lib.tokens.datatypes.NamedQueryAndParameters.kt</ID>
+  </CurrentIssues>
+</SmellBaseline>

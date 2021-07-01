@@ -5,6 +5,7 @@ package com.r3.corda.lib.tokens.workflows.utilities
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.TokenType
+import com.r3.corda.lib.tokens.datatypes.NamedQueryAndParameters
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.persistence.PersistenceService
@@ -40,23 +41,23 @@ inline fun <reified T : LinearState> PersistenceService.getLinearStateById(linea
 
 // Returns all held token amounts of a specified token with given issuer.
 // We need to discriminate on the token type as well as the symbol as different tokens might use the same symbols.
-fun tokenAmountWithIssuerCriteria(token: TokenType, issuer: Party): Pair<String, Map<String, Any>> {
+fun tokenAmountWithIssuerCriteria(token: TokenType, issuer: Party): NamedQueryAndParameters {
     return namedQueryForFungibleTokenClassIdentifierAndIssuer(token, issuer)
 }
 
-fun sumTokenAmountWithIssuerCriteria(token: TokenType, issuer: Party): Pair<String, Map<String, Any>> {
+fun sumTokenAmountWithIssuerCriteria(token: TokenType, issuer: Party): NamedQueryAndParameters {
     return namedQueryForSumFungibleTokenAmountClassIdentifierAndIssuer(token, issuer)
 }
 
-fun heldTokenAmountCriteria(token: TokenType, holder: AbstractParty): Pair<String, Map<String, Any>> {
+fun heldTokenAmountCriteria(token: TokenType, holder: AbstractParty): NamedQueryAndParameters {
     return namedQueryForFungibleTokenClassIdentifierAndOwningKey(token, holder)
 }
 
 // Returns all held token amounts of a specified token.
 // We need to discriminate on the token type as well as the symbol as different tokens might use the same symbols.
 // TODO should be called token amount criteria (there is no owner selection)
-fun namedQueryForFungibleTokenClassAndIdentifier(token: TokenType): Pair<String, Map<String, Any>> {
-    return Pair(
+fun namedQueryForFungibleTokenClassAndIdentifier(token: TokenType): NamedQueryAndParameters {
+    return NamedQueryAndParameters(
         "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassAndIdentifier",
         mapOf(
             "tokenClass" to token.tokenClass,
@@ -65,8 +66,8 @@ fun namedQueryForFungibleTokenClassAndIdentifier(token: TokenType): Pair<String,
     )
 }
 
-fun namedQueryForSumFungibleTokenAmountClassAndIdentifier(token: TokenType): Pair<String, Map<String, Any>> {
-    return Pair(
+fun namedQueryForSumFungibleTokenAmountClassAndIdentifier(token: TokenType): NamedQueryAndParameters {
+    return NamedQueryAndParameters(
         "FungibleTokenSchemaV1.PersistentFungibleToken.sumAllUnconsumedTokensByClassAndIdentifier",
         mapOf(
             "tokenClass" to token.tokenClass,
@@ -75,8 +76,8 @@ fun namedQueryForSumFungibleTokenAmountClassAndIdentifier(token: TokenType): Pai
     )
 }
 
-fun namedQueryForFungibleTokenClassIdentifierAndIssuer(token: TokenType, issuer: Party): Pair<String, Map<String, Any>> {
-    return Pair(
+fun namedQueryForFungibleTokenClassIdentifierAndIssuer(token: TokenType, issuer: Party): NamedQueryAndParameters {
+    return NamedQueryAndParameters(
         "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierAndIssuer",
         mapOf(
             "tokenClass" to token.tokenClass,
@@ -86,8 +87,8 @@ fun namedQueryForFungibleTokenClassIdentifierAndIssuer(token: TokenType, issuer:
     )
 }
 
-fun namedQueryForSumFungibleTokenAmountClassIdentifierAndIssuer(token: TokenType, issuer: Party): Pair<String, Map<String, Any>> {
-    return Pair(
+fun namedQueryForSumFungibleTokenAmountClassIdentifierAndIssuer(token: TokenType, issuer: Party): NamedQueryAndParameters {
+    return NamedQueryAndParameters(
         "FungibleTokenSchemaV1.PersistentFungibleToken.sumAllUnconsumedTokensByClassIdentifierAndIssuer",
         mapOf(
             "tokenClass" to token.tokenClass,
@@ -97,8 +98,8 @@ fun namedQueryForSumFungibleTokenAmountClassIdentifierAndIssuer(token: TokenType
     )
 }
 
-fun namedQueryForFungibleTokenClassIdentifierAndOwningKey(token: TokenType, holder: AbstractParty): Pair<String, Map<String, Any>> {
-    return Pair(
+fun namedQueryForFungibleTokenClassIdentifierAndOwningKey(token: TokenType, holder: AbstractParty): NamedQueryAndParameters {
+    return NamedQueryAndParameters(
         "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierAndOwningKey",
         mapOf(
             "tokenClass" to token.tokenClass,
@@ -108,8 +109,8 @@ fun namedQueryForFungibleTokenClassIdentifierAndOwningKey(token: TokenType, hold
     )
 }
 
-fun namedQueryForNonfungibleTokenClassAndIdentifier(token: TokenType): Pair<String, Map<String, Any>> {
-    return Pair(
+fun namedQueryForNonfungibleTokenClassAndIdentifier(token: TokenType): NamedQueryAndParameters {
+    return NamedQueryAndParameters(
         "NonFungibleTokenSchemaV1.PersistentNonFungibleToken.findAllUnconsumedTokensByClassAndIdentifier",
         mapOf(
             "tokenClass" to token.tokenClass,
@@ -118,8 +119,8 @@ fun namedQueryForNonfungibleTokenClassAndIdentifier(token: TokenType): Pair<Stri
     )
 }
 
-fun namedQueryForNonfungibleTokenClassIdentifierAndIssuer(token: TokenType, issuer: Party): Pair<String, Map<String, Any>> {
-    return Pair(
+fun namedQueryForNonfungibleTokenClassIdentifierAndIssuer(token: TokenType, issuer: Party): NamedQueryAndParameters {
+    return NamedQueryAndParameters(
         "NonFungibleTokenSchemaV1.PersistentNonFungibleToken.findAllUnconsumedTokensByClassIdentifierAndIssuer",
         mapOf(
             "tokenClass" to token.tokenClass,

@@ -64,7 +64,6 @@
     <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService.&lt;no name provided&gt;$val cursor = persistenceService.query&lt;StateAndRef&lt;FungibleToken&gt;&gt;("FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumed", emptyMap())</ID>
     <ID>NestedBlockDepth:DatabaseTokenSelection.kt$DatabaseTokenSelection$@Suspendable override fun selectTokens( holder: Holder, lockId: UUID, requiredAmount: Amount&lt;TokenType&gt;, queryBy: TokenQueryBy ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
     <ID>NestedBlockDepth:VaultWatcherService.kt$VaultWatcherService$fun selectTokens( owner: Holder, requiredAmount: Amount&lt;TokenType&gt;, predicate: ((StateAndRef&lt;FungibleToken&gt;) -&gt; Boolean) = { true }, allowShortfall: Boolean = false, autoUnlockDelay: Duration = Duration.ofMinutes(5), selectionId: String ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
-    <ID>NewLineAtEndOfFile:NamedQueryAndParameters.kt$com.r3.corda.lib.tokens.selection.NamedQueryAndParameters.kt</ID>
     <ID>NewLineAtEndOfFile:SelectionUtilities.kt$com.r3.corda.lib.tokens.selection.SelectionUtilities.kt</ID>
     <ID>NewLineAtEndOfFile:Selector.kt$com.r3.corda.lib.tokens.selection.api.Selector.kt</ID>
     <ID>NewLineAtEndOfFile:StateSelectionConfig.kt$com.r3.corda.lib.tokens.selection.api.StateSelectionConfig.kt</ID>

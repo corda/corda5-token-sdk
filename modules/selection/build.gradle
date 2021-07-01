@@ -43,6 +43,7 @@ dependencies {
 
     // CorDapp dependencies.
     cordapp project(":contracts")
+    cordapp project(":modules:datatypes")
 }
 
 tasks.named('jar', Jar) {
