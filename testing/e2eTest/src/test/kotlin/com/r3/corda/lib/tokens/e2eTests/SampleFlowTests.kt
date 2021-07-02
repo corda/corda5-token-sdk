@@ -3,10 +3,11 @@ package com.r3.corda.lib.tokens.e2eTests
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import com.r3.corda.lib.tokens.testing.states.House
-import com.r3.corda.lib.tokens.sample.flows.CreateHouseToken
-import com.r3.corda.lib.tokens.sample.flows.GetHouseInfoFlow
-import com.r3.corda.lib.tokens.sample.flows.MoveHouseTokenFlow
-import com.r3.corda.lib.tokens.sample.flows.UpdateHouseValuation
+import com.r3.corda.lib.tokens.sample.flows.evolvableNft.CreateHouseToken
+import com.r3.corda.lib.tokens.sample.flows.evolvableNft.GetHouseInfoFlow
+import com.r3.corda.lib.tokens.sample.flows.evolvableNft.MoveHouseTokenFlow
+import com.r3.corda.lib.tokens.sample.flows.evolvableNft.RedeemHouseTokenFlow
+import com.r3.corda.lib.tokens.sample.flows.evolvableNft.UpdateHouseValuation
 import net.corda.client.rpc.flow.FlowStarterRPCOps
 import net.corda.client.rpc.flow.RpcFlowOutcomeResponse
 import net.corda.client.rpc.flow.RpcFlowStatus
@@ -68,6 +69,8 @@ class SampleFlowTests {
             alice().moveHouseToken(nftLinearId, bob().getX500Name())
             alice().assertHouseStateProperties(houseLinearId, address, houseValue, currencyCode)
             bob().assertHouseStateProperties(houseLinearId, address, houseValue, currencyCode)
+
+            bob().redeemHouseToken(nftLinearId)
         }
     }
 
@@ -147,6 +150,20 @@ class SampleFlowTests {
                     mapOf(
                         "linearId" to linearId,
                         "recipient" to recipient.toString()
+                    )
+                )
+            )
+
+        }
+    }
+
+    private fun Node.redeemHouseToken(linearId: String) {
+        httpRpcClient<FlowStarterRPCOps, Unit> {
+            getFlowOutcome(
+                runFlow(
+                    RedeemHouseTokenFlow::class,
+                    mapOf(
+                        "linearId" to linearId,
                     )
                 )
             )

@@ -14,6 +14,7 @@ import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.util.contextLogger
 import net.corda.v5.ledger.contracts.Command
+import net.corda.v5.ledger.contracts.ContractState
 import net.corda.v5.ledger.contracts.ContractStateData
 import net.corda.v5.ledger.services.StateLoaderService
 import net.corda.v5.ledger.transactions.SignedTransaction
@@ -50,7 +51,7 @@ class UpdateDistributionListFlow(val signedTransaction: SignedTransaction) : Flo
     override fun call() {
         val tx = signedTransaction.tx
         val tokensWithTokenPointers: List<AbstractToken> = tx.outputs
-            .map(ContractStateData<*>::data)
+            .map(ContractStateData<ContractState>::data)
             .filterIsInstance<AbstractToken>()
             .filter { it.tokenType is TokenPointer<*> } // IntelliJ bug?? Check is not always true!
         // There are no evolvable tokens so we don't need to update any distribution lists. Otherwise, carry on.

@@ -1,18 +1,13 @@
-package com.r3.corda.lib.tokens.sample.flows
+package com.r3.corda.lib.tokens.sample.flows.evolvableNft
 
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
-import com.r3.corda.lib.tokens.contracts.types.TokenType
-import com.r3.corda.lib.tokens.sample.states.HouseToken
-import com.r3.corda.lib.tokens.workflows.flows.rpc.MoveNonFungibleTokens
-import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
+import com.r3.corda.lib.tokens.workflows.flows.rpc.RedeemNonFungibleTokens
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.JsonConstructor
 import net.corda.v5.application.flows.RpcStartFlowRequestParameters
 import net.corda.v5.application.flows.StartableByRPC
 import net.corda.v5.application.flows.flowservices.FlowEngine
-import net.corda.v5.application.identity.CordaX500Name
 import net.corda.v5.application.injection.CordaInject
-import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.json.JsonMarshallingService
 import net.corda.v5.application.services.json.parseJson
 import net.corda.v5.application.services.persistence.PersistenceService
@@ -24,27 +19,23 @@ import net.corda.v5.ledger.services.vault.StateStatus
 import java.util.*
 
 @StartableByRPC
-class MoveHouseTokenFlow @JsonConstructor constructor(
-    val inputParams: RpcStartFlowRequestParameters
+class RedeemHouseTokenFlow @JsonConstructor constructor(
+    val requestParameters: RpcStartFlowRequestParameters
 ) : Flow<Unit> {
 
     @CordaInject
     lateinit var flowEngine: FlowEngine
 
     @CordaInject
-    lateinit var identityService: IdentityService
+    lateinit var persistenceService: PersistenceService
 
     @CordaInject
     lateinit var jsonMarshallingService: JsonMarshallingService
 
-    @CordaInject
-    lateinit var persistenceService: PersistenceService
-
     @Suspendable
     override fun call() {
-        val inputJson = jsonMarshallingService.parseJson<Map<String, String>>(inputParams.parametersInJson)
-        val linearId = inputJson["linearId"]!!
-        val recipient = CordaX500Name.parse(inputJson["recipient"]!!)
+        val linearId: String = jsonMarshallingService
+            .parseJson<Map<String, String>>(requestParameters.parametersInJson)["linearId"]!!
 
         val cursor = persistenceService.query<StateAndRef<NonFungibleToken>>(
             "LinearState.findByUuidAndStateStatus",
@@ -63,12 +54,7 @@ class MoveHouseTokenFlow @JsonConstructor constructor(
 
         require(results.size == 1)
 
-        val nft = results.single()
-
-        val partyAndToken = PartyAndToken(
-            identityService.partyFromName(recipient)!!,
-            nft.state.data.token.tokenType
-        )
-        flowEngine.subFlow(MoveNonFungibleTokens(partyAndToken))
+        val nft = results.single().state.data
+        flowEngine.subFlow(RedeemNonFungibleTokens(nft.tokenType, nft.issuer))
     }
 }

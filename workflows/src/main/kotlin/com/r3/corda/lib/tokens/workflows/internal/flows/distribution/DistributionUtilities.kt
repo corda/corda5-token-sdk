@@ -93,7 +93,7 @@ fun updateDistributionList(
 	tokens.filter { it.tokenType as? TokenPointer<*> != null }.forEach { token ->
 		val tokenPointer = token.tokenType as TokenPointer<*>
 		val holderParty = identityService.requireKnownConfidentialIdentity(token.holder)
-		val evolvableToken = stateLoaderService.resolve(tokenPointer.pointer).state.data
+		val evolvableToken = stateLoaderService.load(tokenPointer.pointer).state.data
 		val distributionListUpdate = DistributionListUpdate(ourIdentity, holderParty, evolvableToken.linearId)
 		val maintainers = evolvableToken.maintainers
 		val maintainersSessions = maintainers.map(flowMessaging::initiateFlow)

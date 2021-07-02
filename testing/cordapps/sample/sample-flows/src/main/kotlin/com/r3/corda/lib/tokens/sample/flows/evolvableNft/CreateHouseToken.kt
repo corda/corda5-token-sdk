@@ -1,4 +1,4 @@
-package com.r3.corda.lib.tokens.sample.flows
+package com.r3.corda.lib.tokens.sample.flows.evolvableNft
 
 import com.r3.corda.lib.tokens.contracts.utilities.amount
 import com.r3.corda.lib.tokens.money.FiatCurrency

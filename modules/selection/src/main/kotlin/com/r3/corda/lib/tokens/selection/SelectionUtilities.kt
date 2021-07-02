@@ -3,7 +3,7 @@
 package com.r3.corda.lib.tokens.selection
 
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import com.r3.corda.lib.tokens.datatypes.NamedQueryAndParameters
+import com.r3.corda.lib.tokens.contracts.datatypes.NamedQueryAndParameters
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.base.exceptions.CordaRuntimeException

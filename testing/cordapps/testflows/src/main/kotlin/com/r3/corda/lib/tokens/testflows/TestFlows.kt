@@ -174,7 +174,7 @@ class CheckTokenPointer(val housePtr: TokenPointer<House>) : Flow<House> {
 
     @Suspendable
     override fun call(): House {
-        return stateLoaderService.resolve(housePtr.pointer).state.data
+        return stateLoaderService.load(housePtr.pointer).state.data
     }
 }
 

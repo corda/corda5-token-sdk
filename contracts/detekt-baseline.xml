@@ -43,6 +43,7 @@
     <ID>NewLineAtEndOfFile:EvolvableTokenTypeCommand.kt$com.r3.corda.lib.tokens.contracts.commands.EvolvableTokenTypeCommand.kt</ID>
     <ID>NewLineAtEndOfFile:FungibleToken.kt$com.r3.corda.lib.tokens.contracts.states.FungibleToken.kt</ID>
     <ID>NewLineAtEndOfFile:IssuedTokenType.kt$com.r3.corda.lib.tokens.contracts.types.IssuedTokenType.kt</ID>
+    <ID>NewLineAtEndOfFile:NamedQueryAndParameters.kt$com.r3.corda.lib.tokens.contracts.datatypes.NamedQueryAndParameters.kt</ID>
     <ID>NewLineAtEndOfFile:NonFungibleToken.kt$com.r3.corda.lib.tokens.contracts.states.NonFungibleToken.kt</ID>
     <ID>NewLineAtEndOfFile:NonFungibleTokenContract.kt$com.r3.corda.lib.tokens.contracts.NonFungibleTokenContract.kt</ID>
     <ID>NewLineAtEndOfFile:TokenCommand.kt$com.r3.corda.lib.tokens.contracts.commands.TokenCommand.kt</ID>
