@@ -20,35 +20,46 @@ import net.corda.v5.ledger.transactions.SignedTransaction
  * @property participantSessions a list of sessions for the parties being issued tokens.
  * @property observerSessions a list of sessions for any observers.
  */
-class ConfidentialIssueTokensFlow
-@JvmOverloads
-constructor(
+class ConfidentialIssueTokensFlow (
     val tokens: List<AbstractToken>,
     val participantSessions: List<FlowSession>,
-    val observerSessions: List<FlowSession> = emptyList()
+    val observerSessions: List<FlowSession>
 ) : Flow<SignedTransaction> {
+
+    constructor(
+        tokens: List<AbstractToken>,
+        participantSessions: List<FlowSession>,
+    ) : this(tokens, participantSessions, emptyList())
 
     @CordaInject
     lateinit var flowEngine: FlowEngine
 
     /** Issue a single [FungibleToken]. */
-    @JvmOverloads
     constructor(
         token: FungibleToken,
         participantSessions: List<FlowSession>,
-        observerSessions: List<FlowSession> = emptyList()
+        observerSessions: List<FlowSession>
     ) : this(listOf(token), participantSessions, observerSessions)
+
+    constructor(
+        token: FungibleToken,
+        participantSessions: List<FlowSession>,
+    ) : this(listOf(token), participantSessions, emptyList())
 
     /** Issue a single [FungibleToken] to self with no observers. */
     constructor(token: FungibleToken) : this(listOf(token), emptyList(), emptyList())
 
     /** Issue a single [NonFungibleToken]. */
-    @JvmOverloads
     constructor(
         token: NonFungibleToken,
         participantSessions: List<FlowSession>,
-        observerSessions: List<FlowSession> = emptyList()
+        observerSessions: List<FlowSession>
     ) : this(listOf(token), participantSessions, observerSessions)
+
+    constructor(
+        token: NonFungibleToken,
+        participantSessions: List<FlowSession>,
+    ) : this(listOf(token), participantSessions, emptyList())
 
     /** Issue a single [NonFungibleToken] to self with no observers. */
     constructor(token: NonFungibleToken) : this(listOf(token), emptyList(), emptyList())

@@ -19,21 +19,31 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * @param participantSessions session with the participants of move tokens transaction
  * @param observerSessions session with optional observers of the redeem transaction
  */
-class MoveTokensFlow
-@JvmOverloads
-constructor(
+class MoveTokensFlow (
     val inputs: List<StateAndRef<AbstractToken>>,
     val outputs: List<AbstractToken>,
     override val participantSessions: List<FlowSession>,
-    override val observerSessions: List<FlowSession> = emptyList()
+    override val observerSessions: List<FlowSession>
 ) : AbstractMoveTokensFlow() {
-    @JvmOverloads
+
+    constructor(
+        input: List<StateAndRef<AbstractToken>>,
+        output: List<AbstractToken>,
+        participantSessions: List<FlowSession>,
+    ) : this(input, output, participantSessions, emptyList())
+
     constructor(
         input: StateAndRef<AbstractToken>,
         output: AbstractToken,
         participantSessions: List<FlowSession>,
-        observerSessions: List<FlowSession> = emptyList()
+        observerSessions: List<FlowSession>
     ) : this(listOf(input), listOf(output), participantSessions, observerSessions)
+
+    constructor(
+        input: StateAndRef<AbstractToken>,
+        output: AbstractToken,
+        participantSessions: List<FlowSession>,
+    ) : this(input, output, participantSessions, emptyList())
 
     @Suspendable
     override fun addMove(transactionBuilder: TransactionBuilder) {

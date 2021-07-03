@@ -25,20 +25,27 @@ import net.corda.v5.ledger.transactions.TransactionBuilderFactory
  * @property participantSessions a list of sessions for participants in the evolvable token types
  * @property observerSessions a list of sessions for any observers to the create observable token transaction
  */
-class CreateEvolvableTokensFlow
-@JvmOverloads
-constructor(
+class CreateEvolvableTokensFlow (
     val transactionStates: List<TransactionState<EvolvableTokenType>>,
     val participantSessions: List<FlowSession>,
-    val observerSessions: List<FlowSession> = emptyList()
+    val observerSessions: List<FlowSession>
 ) : Flow<SignedTransaction> {
-    @JvmOverloads
+
+    constructor(
+        transactionStates: List<TransactionState<EvolvableTokenType>>,
+        participantSessions: List<FlowSession>,
+    ) : this(transactionStates, participantSessions, emptyList())
+
     constructor(
         transactionState: TransactionState<EvolvableTokenType>,
         participantSessions: List<FlowSession>,
-        observerSessions: List<FlowSession> = emptyList()
-    ) :
-            this(listOf(transactionState), participantSessions, observerSessions)
+        observerSessions: List<FlowSession>
+    ) : this(listOf(transactionState), participantSessions, observerSessions)
+
+    constructor(
+        transactionState: TransactionState<EvolvableTokenType>,
+        participantSessions: List<FlowSession>,
+    ) : this(listOf(transactionState), participantSessions, emptyList())
 
     @CordaSerializable
     data class Notification(val signatureRequired: Boolean = false)

@@ -20,14 +20,19 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * @param observerSessions session with optional observers of the redeem transaction
  */
 // Called on owner side.
-class RedeemTokensFlow
-@JvmOverloads
-constructor(
+class RedeemTokensFlow (
     val inputs: List<StateAndRef<AbstractToken>>,
     val changeOutput: AbstractToken?,
     override val issuerSession: FlowSession,
-    override val observerSessions: List<FlowSession> = emptyList()
+    override val observerSessions: List<FlowSession>
 ) : AbstractRedeemTokensFlow() {
+
+    constructor(
+        inputs: List<StateAndRef<AbstractToken>>,
+        changeOutput: AbstractToken?,
+        issuerSession: FlowSession,
+    ) : this(inputs, changeOutput, issuerSession, emptyList())
+
     @Suspendable
     override fun generateExit(transactionBuilder: TransactionBuilder) {
         addTokensToRedeem(transactionBuilder, inputs, changeOutput)

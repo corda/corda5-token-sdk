@@ -27,12 +27,19 @@ import net.corda.v5.ledger.transactions.TransactionBuilderFactory
  * @property participantSessions a list of sessions for participants in the evolvable token types
  * @property observerSessions a list of sessions for any observers to the create observable token transaction
  */
-class UpdateEvolvableTokenFlow @JvmOverloads constructor(
+class UpdateEvolvableTokenFlow (
     val oldStateAndRef: StateAndRef<EvolvableTokenType>,
     val newState: EvolvableTokenType,
     val participantSessions: List<FlowSession>,
-    val observerSessions: List<FlowSession> = emptyList()
+    val observerSessions: List<FlowSession>
 ) : Flow<SignedTransaction> {
+
+    constructor(
+        oldStateAndRef: StateAndRef<EvolvableTokenType>,
+        newState: EvolvableTokenType,
+        participantSessions: List<FlowSession>,
+    ) : this(oldStateAndRef, newState, participantSessions, emptyList())
+
     /**
      * Simple notification class to inform counterparties of their role. In this instance, informs participants if
      * they are required to sign the command. This is intended to allow maintainers to sign commands while participants

@@ -37,15 +37,21 @@ import java.util.*
  *
  * @param services for performing vault queries.
  */
-class DatabaseTokenSelection @JvmOverloads constructor(
+class DatabaseTokenSelection (
     private val persistenceService: PersistenceService,
     private val identityService: IdentityService,
     private val flowEngine: FlowEngine,
-    private val maxRetries: Int = MAX_RETRIES_DEFAULT,
-    private val retrySleep: Int = RETRY_SLEEP_DEFAULT,
-    private val retryCap: Int = RETRY_CAP_DEFAULT,
-    private val pageSize: Int = PAGE_SIZE_DEFAULT
+    private val maxRetries: Int,
+    private val retrySleep: Int,
+    private val retryCap: Int,
+    private val pageSize: Int
 ) : Selector() {
+
+    constructor(
+        persistenceService: PersistenceService,
+        identityService: IdentityService,
+        flowEngine: FlowEngine,
+    ) : this(persistenceService, identityService, flowEngine, MAX_RETRIES_DEFAULT, RETRY_SLEEP_DEFAULT, RETRY_CAP_DEFAULT, PAGE_SIZE_DEFAULT)
 
     companion object {
         val logger = contextLogger()

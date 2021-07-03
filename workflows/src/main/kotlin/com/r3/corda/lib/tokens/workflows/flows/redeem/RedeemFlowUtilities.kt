@@ -32,11 +32,10 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * Add redeeming of multiple [inputs] to the [transactionBuilder] with possible [changeOutput].
  */
 @Suspendable
-@JvmOverloads
 fun addTokensToRedeem(
     transactionBuilder: TransactionBuilder,
     inputs: List<StateAndRef<AbstractToken>>,
-    changeOutput: AbstractToken? = null
+    changeOutput: AbstractToken?
 ): TransactionBuilder {
     checkSameIssuer(inputs, changeOutput?.issuer)
     checkSameNotary(inputs)
@@ -69,6 +68,12 @@ fun addTokensToRedeem(
     addTokenTypeJar(states, transactionBuilder)
     return transactionBuilder
 }
+
+@Suspendable
+fun addTokensToRedeem(
+    transactionBuilder: TransactionBuilder,
+    inputs: List<StateAndRef<AbstractToken>>,
+) = addTokensToRedeem(transactionBuilder, inputs, null)
 
 
 /**

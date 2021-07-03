@@ -15,12 +15,15 @@ const val RETRY_SLEEP_DEFAULT = 100
 const val RETRY_CAP_DEFAULT = 2000
 const val PAGE_SIZE_DEFAULT = 200
 
-data class DatabaseSelectionConfig @JvmOverloads constructor(
-    val maxRetries: Int = MAX_RETRIES_DEFAULT,
-    val retrySleep: Int = RETRY_SLEEP_DEFAULT,
-    val retryCap: Int = RETRY_CAP_DEFAULT,
-    val pageSize: Int = PAGE_SIZE_DEFAULT
+data class DatabaseSelectionConfig (
+    val maxRetries: Int,
+    val retrySleep: Int,
+    val retryCap: Int,
+    val pageSize: Int
 ) : StateSelectionConfig {
+
+    constructor() : this(MAX_RETRIES_DEFAULT, RETRY_SLEEP_DEFAULT, RETRY_CAP_DEFAULT, PAGE_SIZE_DEFAULT)
+
     companion object {
         @JvmStatic
         fun parse(config: CordappConfig): DatabaseSelectionConfig {

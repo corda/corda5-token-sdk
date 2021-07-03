@@ -19,13 +19,16 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * @param participantSessions sessions with the participants of move transaction
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
  */
-class MoveNonFungibleTokensFlow
-@JvmOverloads
-constructor(
+class MoveNonFungibleTokensFlow (
     val partyAndToken: PartyAndToken,
     override val participantSessions: List<FlowSession>,
-    override val observerSessions: List<FlowSession> = emptyList(),
+    override val observerSessions: List<FlowSession>,
 ) : AbstractMoveTokensFlow() {
+
+    constructor(
+        partyAndToken: PartyAndToken,
+        participantSessions: List<FlowSession>,
+    ) : this(partyAndToken, participantSessions, emptyList())
 
     @CordaInject
     lateinit var persistenceService: PersistenceService

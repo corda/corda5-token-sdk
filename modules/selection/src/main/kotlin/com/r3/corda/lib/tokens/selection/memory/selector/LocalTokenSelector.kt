@@ -26,11 +26,25 @@ import java.util.concurrent.atomic.AtomicReference
  * @property vaultObserver corda service that watches and caches new states
  * @property autoUnlockDelay Time after which the tokens that are not spent will be automatically released. Defaults to Duration.ofMinutes(5).
  */
-class LocalTokenSelector @JvmOverloads constructor(
+class LocalTokenSelector (
     private val vaultObserver: VaultWatcherService,
-    private val autoUnlockDelay: Duration = Duration.ofMinutes(5),
-    state: Pair<List<StateAndRef<FungibleToken>>, String>? = null // Used for deserializing
+    private val autoUnlockDelay: Duration,
+    state: Pair<List<StateAndRef<FungibleToken>>, String>? // Used for deserializing
 ) : SerializeAsToken, Selector() {
+
+    constructor(
+        vaultObserver: VaultWatcherService,
+    ) : this(vaultObserver, Duration.ofMinutes(5), null)
+
+    constructor(
+        vaultObserver: VaultWatcherService,
+        autoUnlockDelay: Duration,
+    ) : this(vaultObserver, autoUnlockDelay, null)
+
+    constructor(
+        vaultObserver: VaultWatcherService,
+        state: Pair<List<StateAndRef<FungibleToken>>, String>?,
+    ) : this(vaultObserver, Duration.ofMinutes(5), state)
 
     private val mostRecentlyLocked = AtomicReference<Pair<List<StateAndRef<FungibleToken>>, String>>(state)
 

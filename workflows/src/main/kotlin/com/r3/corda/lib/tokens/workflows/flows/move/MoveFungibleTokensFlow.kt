@@ -25,14 +25,29 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * @param changeHolder optional holder of the change outputs, it can be confidential identity, if not specified it
  *                     defaults to caller's legal identity
  */
-class MoveFungibleTokensFlow
-@JvmOverloads
-constructor(
+class MoveFungibleTokensFlow (
     val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
     override val participantSessions: List<FlowSession>,
-    override val observerSessions: List<FlowSession> = emptyList(),
-    val changeHolder: AbstractParty? = null
+    override val observerSessions: List<FlowSession>,
+    val changeHolder: AbstractParty?
 ) : AbstractMoveTokensFlow() {
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        participantSessions: List<FlowSession>,
+    ) : this(partiesAndAmounts, participantSessions, emptyList(), null)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession>,
+    ) : this(partiesAndAmounts, participantSessions, observerSessions, null)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        participantSessions: List<FlowSession>,
+        changeHolder: AbstractParty?
+    ) : this(partiesAndAmounts, participantSessions, emptyList(), changeHolder)
 
     @CordaInject
     lateinit var flowIdentity: FlowIdentity
@@ -46,13 +61,29 @@ constructor(
     @CordaInject
     lateinit var memberInfo: MemberInfo
 
-    @JvmOverloads
     constructor(
         partyAndAmount: PartyAndAmount<TokenType>,
         participantSessions: List<FlowSession>,
-        observerSessions: List<FlowSession> = emptyList(),
-        changeHolder: AbstractParty? = null
+        observerSessions: List<FlowSession>,
+        changeHolder: AbstractParty?
     ) : this(listOf(partyAndAmount), participantSessions, observerSessions, changeHolder)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        participantSessions: List<FlowSession>,
+    ) : this(listOf(partyAndAmount), participantSessions, emptyList(), null)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession>,
+    ) : this(listOf(partyAndAmount), participantSessions, observerSessions, null)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        participantSessions: List<FlowSession>,
+        changeHolder: AbstractParty?
+    ) : this(listOf(partyAndAmount), participantSessions, emptyList(), changeHolder)
 
     @Suspendable
     override fun addMove(transactionBuilder: TransactionBuilder) {

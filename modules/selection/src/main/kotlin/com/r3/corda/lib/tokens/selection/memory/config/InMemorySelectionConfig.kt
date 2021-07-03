@@ -13,12 +13,19 @@ import org.slf4j.LoggerFactory
 
 const val CACHE_SIZE_DEFAULT = 1024 // TODO Return good default, for now it's not wired, it will be done in separate PR.
 
-data class InMemorySelectionConfig @JvmOverloads constructor(
+data class InMemorySelectionConfig (
     val vaultWatcherService: VaultWatcherService,
     val enabled: Boolean,
     val indexingStrategies: List<VaultWatcherService.IndexingType>,
-    val cacheSize: Int = CACHE_SIZE_DEFAULT
+    val cacheSize: Int
 ) : StateSelectionConfig {
+
+    constructor(
+        vaultWatcherService: VaultWatcherService,
+        enabled: Boolean,
+        indexingStrategies: List<VaultWatcherService.IndexingType>
+    ) : this(vaultWatcherService, enabled, indexingStrategies, CACHE_SIZE_DEFAULT)
+
     companion object {
         private val logger = LoggerFactory.getLogger("inMemoryConfigSelectionLogger")
 

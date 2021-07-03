@@ -27,14 +27,29 @@ import net.corda.v5.ledger.transactions.SignedTransaction
 @StartableByService
 @StartableByRPC
 @InitiatingFlow
-class RedeemFungibleTokens
-@JvmOverloads
-constructor(
+class RedeemFungibleTokens (
     val amount: Amount<TokenType>,
     val issuer: Party,
-    val observers: List<Party> = emptyList(),
-    val changeHolder: AbstractParty? = null
+    val observers: List<Party>,
+    val changeHolder: AbstractParty?
 ) : Flow<SignedTransaction> {
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuer: Party,
+    ) : this(amount, issuer, emptyList(), null)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuer: Party,
+        observers: List<Party>,
+    ) : this(amount, issuer, observers, null)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuer: Party,
+        changeHolder: AbstractParty?
+    ) : this(amount, issuer, emptyList(), changeHolder)
 
     @CordaInject
     lateinit var flowMessaging: FlowMessaging
@@ -76,13 +91,16 @@ open class RedeemFungibleTokensHandler(val otherSession: FlowSession) : Flow<Uni
 @StartableByService
 @StartableByRPC
 @InitiatingFlow
-class RedeemNonFungibleTokens
-@JvmOverloads
-constructor(
+class RedeemNonFungibleTokens (
     val heldToken: TokenType,
     val issuer: Party,
-    val observers: List<Party> = emptyList()
+    val observers: List<Party>
 ) : Flow<SignedTransaction> {
+
+    constructor(
+        heldToken: TokenType,
+        issuer: Party,
+    ) : this(heldToken, issuer, emptyList())
 
     @CordaInject
     lateinit var flowEngine: FlowEngine
@@ -118,14 +136,29 @@ open class RedeemNonFungibleTokensHandler(val otherSession: FlowSession) : Flow<
 @StartableByService
 @StartableByRPC
 @InitiatingFlow
-class ConfidentialRedeemFungibleTokens
-@JvmOverloads
-constructor(
+class ConfidentialRedeemFungibleTokens (
     val amount: Amount<TokenType>,
     val issuer: Party,
-    val observers: List<Party> = emptyList(),
-    val changeHolder: AbstractParty? = null
+    val observers: List<Party>,
+    val changeHolder: AbstractParty?
 ) : Flow<SignedTransaction> {
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuer: Party,
+    ) : this(amount, issuer, emptyList(), null)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuer: Party,
+        observers: List<Party>,
+    ) : this(amount, issuer, observers, null)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuer: Party,
+        changeHolder: AbstractParty?
+    ) : this(amount, issuer, emptyList(), changeHolder)
 
     @CordaInject
     lateinit var flowEngine: FlowEngine

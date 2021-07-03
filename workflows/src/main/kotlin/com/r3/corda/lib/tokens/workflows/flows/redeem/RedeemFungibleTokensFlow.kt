@@ -19,14 +19,29 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * @param issuerSession session with the issuer tokens should be redeemed with
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
  */
-class RedeemFungibleTokensFlow
-@JvmOverloads
-constructor(
+class RedeemFungibleTokensFlow (
     val amount: Amount<TokenType>,
     override val issuerSession: FlowSession,
-    val changeHolder: AbstractParty? = null,
-    override val observerSessions: List<FlowSession> = emptyList(),
+    val changeHolder: AbstractParty?,
+    override val observerSessions: List<FlowSession>,
 ) : AbstractRedeemTokensFlow() {
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuerSession: FlowSession,
+    ) : this(amount, issuerSession, null, emptyList())
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuerSession: FlowSession,
+        changeHolder: AbstractParty?,
+    ) : this(amount, issuerSession, changeHolder, emptyList())
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuerSession: FlowSession,
+        observerSessions: List<FlowSession>,
+    ) : this(amount, issuerSession, null, observerSessions)
 
     @CordaInject
     lateinit var identityService: IdentityService

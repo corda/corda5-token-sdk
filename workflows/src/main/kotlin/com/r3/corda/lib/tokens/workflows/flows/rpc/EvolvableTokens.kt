@@ -35,12 +35,14 @@ import net.corda.v5.ledger.transactions.SignedTransaction
  */
 @InitiatingFlow
 @StartableByRPC
-class CreateEvolvableTokens
-@JvmOverloads
-constructor(
+class CreateEvolvableTokens (
     val transactionStates: List<TransactionState<EvolvableTokenType>>,
-    val observers: List<Party> = emptyList()
+    val observers: List<Party>
 ) : Flow<SignedTransaction> {
+
+    constructor(
+        transactionStates: List<TransactionState<EvolvableTokenType>>,
+    ) : this(transactionStates, emptyList())
 
     @CordaInject
     lateinit var flowMessaging: FlowMessaging
@@ -54,11 +56,14 @@ constructor(
     @CordaInject
     lateinit var identityService: IdentityService
 
-    @JvmOverloads
     constructor(
         transactionState: TransactionState<EvolvableTokenType>,
-        observers: List<Party> = emptyList()
+        observers: List<Party>
     ) : this(listOf(transactionState), observers)
+
+    constructor(
+        transactionState: TransactionState<EvolvableTokenType>,
+    ) : this(listOf(transactionState), emptyList())
 
     @Suspendable
     override fun call(): SignedTransaction {
@@ -101,13 +106,16 @@ class CreateEvolvableTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
  */
 @InitiatingFlow
 @StartableByRPC
-class UpdateEvolvableToken
-@JvmOverloads
-constructor(
+class UpdateEvolvableToken (
     val oldStateAndRef: StateAndRef<EvolvableTokenType>,
     val newState: EvolvableTokenType,
-    val observers: List<Party> = emptyList()
+    val observers: List<Party>
 ) : Flow<SignedTransaction> {
+
+    constructor(
+        oldStateAndRef: StateAndRef<EvolvableTokenType>,
+        newState: EvolvableTokenType,
+    ) : this(oldStateAndRef, newState, emptyList())
 
     @CordaInject
     lateinit var flowMessaging: FlowMessaging

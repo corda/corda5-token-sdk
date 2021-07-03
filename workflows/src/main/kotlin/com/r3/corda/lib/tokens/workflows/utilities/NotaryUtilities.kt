@@ -17,16 +17,15 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * is returned. From this list the CorDapp developer can employ their own strategy to choose a notary. for now, the
  * strategies will be to either choose the first notary or a random notary from the list.
  *
- * @param services a [ServiceHub] instance.
+ * @param notaryLookupService a [NotaryLookupService] instance.
  * @param backupSelector a function which selects a notary when the notary property is not set in the CorDapp config.
  * @return the selected notary [Party] object.
  */
 @Suspendable
-@JvmOverloads
 fun getPreferredNotary(
     notaryLookupService: NotaryLookupService,
     cordappConfig: CordappConfig,
-    backupSelector: (NotaryLookupService) -> Party = firstNotary()
+    backupSelector: (NotaryLookupService) -> Party
 ): Party {
     val notaryString = try {
         cordappConfig.getString("notary")
@@ -45,6 +44,12 @@ fun getPreferredNotary(
         notaryParty
     }
 }
+
+@Suspendable
+fun getPreferredNotary(
+    notaryLookupService: NotaryLookupService,
+    cordappConfig: CordappConfig,
+) = getPreferredNotary(notaryLookupService, cordappConfig, firstNotary())
 
 /** Choose the first notary in the list. */
 @Suspendable

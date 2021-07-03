@@ -30,14 +30,18 @@ import net.corda.v5.ledger.transactions.SignedTransaction
  * @param changeHolder holder of the change outputs, it can be confidential identity
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
  */
-class ConfidentialMoveFungibleTokensFlow
-@JvmOverloads
-constructor(
+class ConfidentialMoveFungibleTokensFlow (
     val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
     val participantSessions: List<FlowSession>,
     val changeHolder: AbstractParty,
-    val observerSessions: List<FlowSession> = emptyList(),
+    val observerSessions: List<FlowSession>,
 ) : Flow<SignedTransaction> {
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        participantSessions: List<FlowSession>,
+        changeHolder: AbstractParty
+    ) : this (partiesAndAmounts, participantSessions, changeHolder, emptyList())
 
     @CordaInject
     lateinit var flowEngine: FlowEngine
@@ -51,14 +55,18 @@ constructor(
     @CordaInject
     lateinit var memberInfo: MemberInfo
 
-    @JvmOverloads
     constructor(
         partyAndAmount: PartyAndAmount<TokenType>,
         participantSessions: List<FlowSession>,
         changeHolder: AbstractParty,
-        observerSessions: List<FlowSession> = emptyList()
-
+        observerSessions: List<FlowSession>
     ) : this(listOf(partyAndAmount), participantSessions, changeHolder, observerSessions)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        participantSessions: List<FlowSession>,
+        changeHolder: AbstractParty,
+    ) : this(listOf(partyAndAmount), participantSessions, changeHolder, emptyList())
 
     @Suspendable
     override fun call(): SignedTransaction {

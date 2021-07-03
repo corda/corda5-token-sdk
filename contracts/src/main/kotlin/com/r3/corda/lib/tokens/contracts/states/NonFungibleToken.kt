@@ -37,12 +37,18 @@ import net.corda.v5.ledger.schemas.QueryableState
  * @param TokenType the [TokenType].
  */
 @BelongsToContract(NonFungibleTokenContract::class)
-open class NonFungibleToken @JvmOverloads constructor(
+open class NonFungibleToken (
     val token: IssuedTokenType,
     override val holder: AbstractParty,
     override val linearId: UniqueIdentifier,
-    override val tokenTypeJarHash: SecureHash? = token.tokenType.getAttachmentIdForGenericParam()
+    override val tokenTypeJarHash: SecureHash?
 ) : AbstractToken, QueryableState, LinearState {
+
+    constructor(
+        token: IssuedTokenType,
+        holder: AbstractParty,
+        linearId: UniqueIdentifier,
+    ) : this(token, holder, linearId, token.tokenType.getAttachmentIdForGenericParam())
 
     override val issuedTokenType: IssuedTokenType get() = token
 

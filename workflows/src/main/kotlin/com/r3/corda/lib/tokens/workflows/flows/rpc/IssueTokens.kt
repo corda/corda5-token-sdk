@@ -32,12 +32,14 @@ import net.corda.v5.ledger.transactions.SignedTransaction
 @StartableByService
 @StartableByRPC
 @InitiatingFlow
-class IssueTokens
-@JvmOverloads
-constructor(
+class IssueTokens (
     val tokensToIssue: List<AbstractToken>,
-    val observers: List<Party> = emptyList()
+    val observers: List<Party>
 ) : Flow<SignedTransaction> {
+
+    constructor(
+        tokensToIssue: List<AbstractToken>,
+    ) : this(tokensToIssue, emptyList())
 
     @CordaInject
     lateinit var flowEngine: FlowEngine
@@ -80,12 +82,14 @@ class IssueTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
 @StartableByService
 @StartableByRPC
 @InitiatingFlow
-class ConfidentialIssueTokens
-@JvmOverloads
-constructor(
+class ConfidentialIssueTokens (
     val tokensToIssue: List<AbstractToken>,
-    val observers: List<Party> = emptyList()
+    val observers: List<Party>
 ) : Flow<SignedTransaction> {
+
+    constructor(
+        tokensToIssue: List<AbstractToken>,
+    ) : this(tokensToIssue, emptyList())
 
     @CordaInject
     lateinit var flowEngine: FlowEngine

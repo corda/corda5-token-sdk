@@ -23,14 +23,30 @@ import net.corda.v5.ledger.transactions.SignedTransaction
  * @param changeHolder optional change key, if using accounts you should generate the change key prior to calling this
  *                     flow then pass it in to the flow via this parameter
  */
-class ConfidentialRedeemFungibleTokensFlow
-@JvmOverloads
-constructor(
+class ConfidentialRedeemFungibleTokensFlow (
     val amount: Amount<TokenType>,
     val issuerSession: FlowSession,
-    val observerSessions: List<FlowSession> = emptyList(),
-    val changeHolder: AbstractParty? = null
+    val observerSessions: List<FlowSession>,
+    val changeHolder: AbstractParty?
 ) : Flow<SignedTransaction> {
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuerSession: FlowSession
+    ) : this(amount, issuerSession, emptyList(), null)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuerSession: FlowSession,
+        observerSessions: List<FlowSession>
+    ) : this(amount, issuerSession, observerSessions, null)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuerSession: FlowSession,
+        changeHolder: AbstractParty?
+    ) : this(amount, issuerSession, emptyList(), changeHolder)
+
     @CordaInject
     lateinit var keyManagementService: KeyManagementService
 

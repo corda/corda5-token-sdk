@@ -40,20 +40,45 @@ import net.corda.v5.ledger.transactions.SignedTransaction
 @StartableByService
 @StartableByRPC
 @InitiatingFlow
-class MoveFungibleTokens
-@JvmOverloads
-constructor(
+class MoveFungibleTokens (
     val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
     val observers: List<Party> = emptyList(),
     val changeHolder: AbstractParty? = null
 ) : Flow<SignedTransaction> {
 
-    @JvmOverloads
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+    ) : this(partiesAndAmounts, emptyList(), null)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        observers: List<Party>,
+    ) : this(partiesAndAmounts, observers, null)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        changeHolder: AbstractParty?
+    ) : this(partiesAndAmounts, emptyList(), changeHolder)
+
     constructor(
         partyAndAmount: PartyAndAmount<TokenType>,
-        observers: List<Party> = emptyList(),
-        changeHolder: AbstractParty? = null
+        observers: List<Party>,
+        changeHolder: AbstractParty?
     ) : this(listOf(partyAndAmount), observers, changeHolder)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+    ) : this(listOf(partyAndAmount), emptyList(), null)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        observers: List<Party>,
+    ) : this(listOf(partyAndAmount), observers, null)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        changeHolder: AbstractParty?
+    ) : this(listOf(partyAndAmount), emptyList(), changeHolder)
 
     constructor(amount: Amount<TokenType>, holder: AbstractParty) : this(PartyAndAmount(holder, amount), emptyList())
 
@@ -107,12 +132,14 @@ class MoveFungibleTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
 @StartableByService
 @StartableByRPC
 @InitiatingFlow
-class MoveNonFungibleTokens
-@JvmOverloads
-constructor(
+class MoveNonFungibleTokens (
     val partyAndToken: PartyAndToken,
-    val observers: List<Party> = emptyList(),
+    val observers: List<Party>,
 ) : Flow<SignedTransaction> {
+
+    constructor(
+        partyAndToken: PartyAndToken,
+    ) : this(partyAndToken, emptyList())
 
     @CordaInject
     lateinit var flowEngine: FlowEngine

@@ -38,13 +38,20 @@ abstract class Selector {
      */
     // Token Only
     @Suspendable
-    @JvmOverloads
     fun selectTokens(
         requiredAmount: Amount<TokenType>,
         lockId: UUID,
-        queryBy: TokenQueryBy = TokenQueryBy()
+        queryBy: TokenQueryBy
     ): List<StateAndRef<FungibleToken>> {
         return selectTokens(Holder.TokenOnly(), lockId, requiredAmount, queryBy)
+    }
+
+    @Suspendable
+    fun selectTokens(
+        requiredAmount: Amount<TokenType>,
+        lockId: UUID,
+    ): List<StateAndRef<FungibleToken>> {
+        return selectTokens(requiredAmount, lockId, TokenQueryBy())
     }
 
     /**
@@ -62,14 +69,22 @@ abstract class Selector {
      */
     // From external id
     @Suspendable
-    @JvmOverloads
     fun selectTokens(
         externalId: UUID,
         requiredAmount: Amount<TokenType>,
         lockId: UUID,
-        queryBy: TokenQueryBy = TokenQueryBy()
+        queryBy: TokenQueryBy
     ): List<StateAndRef<FungibleToken>> {
         return selectTokens(Holder.fromUUID(externalId), lockId, requiredAmount, queryBy)
+    }
+
+    @Suspendable
+    fun selectTokens(
+        externalId: UUID,
+        requiredAmount: Amount<TokenType>,
+        lockId: UUID,
+    ): List<StateAndRef<FungibleToken>> {
+        return selectTokens(externalId, requiredAmount, lockId, TokenQueryBy())
     }
 
     /**
@@ -87,7 +102,6 @@ abstract class Selector {
      */
     // From a given key
     @Suspendable
-    @JvmOverloads
     fun selectTokens(
         holdingKey: PublicKey,
         requiredAmount: Amount<TokenType>,
@@ -95,6 +109,15 @@ abstract class Selector {
         queryBy: TokenQueryBy = TokenQueryBy()
     ): List<StateAndRef<FungibleToken>> {
         return selectTokens(Holder.KeyIdentity(holdingKey), lockId, requiredAmount, queryBy)
+    }
+
+    @Suspendable
+    fun selectTokens(
+        holdingKey: PublicKey,
+        requiredAmount: Amount<TokenType>,
+        lockId: UUID,
+    ): List<StateAndRef<FungibleToken>> {
+        return selectTokens(holdingKey, requiredAmount, lockId, TokenQueryBy())
     }
 
     /**
@@ -107,16 +130,26 @@ abstract class Selector {
      */
     // Token only
     @Suspendable
-    @JvmOverloads
     fun generateMove(
         identityService: IdentityService,
         memberInfo: MemberInfo,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         lockId: UUID,
-        queryBy: TokenQueryBy = TokenQueryBy()
+        queryBy: TokenQueryBy
     ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
         return generateMove(identityService, memberInfo, Holder.TokenOnly(), lockId, partiesAndAmounts, changeHolder, queryBy)
+    }
+
+    @Suspendable
+    fun generateMove(
+        identityService: IdentityService,
+        memberInfo: MemberInfo,
+        partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
+        changeHolder: AbstractParty,
+        lockId: UUID,
+    ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
+        return generateMove(identityService, memberInfo, partiesAndAmounts, changeHolder, lockId, TokenQueryBy())
     }
 
     /**
@@ -129,7 +162,6 @@ abstract class Selector {
      */
     // External id
     @Suspendable
-    @JvmOverloads
     fun generateMove(
         identityService: IdentityService,
         memberInfo: MemberInfo,
@@ -137,9 +169,21 @@ abstract class Selector {
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         lockId: UUID,
-        queryBy: TokenQueryBy = TokenQueryBy()
+        queryBy: TokenQueryBy
     ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
         return generateMove(identityService, memberInfo, Holder.fromUUID(externalId), lockId, partiesAndAmounts, changeHolder, queryBy)
+    }
+
+    @Suspendable
+    fun generateMove(
+        identityService: IdentityService,
+        memberInfo: MemberInfo,
+        externalId: UUID,
+        partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
+        changeHolder: AbstractParty,
+        lockId: UUID,
+    ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
+        return generateMove(identityService, memberInfo, externalId, partiesAndAmounts, changeHolder, lockId, TokenQueryBy())
     }
 
     /**
@@ -152,7 +196,6 @@ abstract class Selector {
      */
     // From public key
     @Suspendable
-    @JvmOverloads
     fun generateMove(
         identityService: IdentityService,
         memberInfo: MemberInfo,
@@ -160,9 +203,21 @@ abstract class Selector {
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         lockId: UUID,
-        queryBy: TokenQueryBy = TokenQueryBy()
+        queryBy: TokenQueryBy
     ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
         return generateMove(identityService, memberInfo, Holder.KeyIdentity(holdingKey), lockId, partiesAndAmounts, changeHolder, queryBy)
+    }
+
+    @Suspendable
+    fun generateMove(
+        identityService: IdentityService,
+        memberInfo: MemberInfo,
+        holdingKey: PublicKey,
+        partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
+        changeHolder: AbstractParty,
+        lockId: UUID,
+    ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
+        return generateMove(identityService, memberInfo, holdingKey, partiesAndAmounts, changeHolder, lockId, TokenQueryBy())
     }
 
     @Suspendable

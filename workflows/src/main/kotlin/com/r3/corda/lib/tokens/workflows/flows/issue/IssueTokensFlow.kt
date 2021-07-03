@@ -47,13 +47,16 @@ import net.corda.v5.ledger.transactions.TransactionBuilderFactory
  * @property participantSessions a list of flow participantSessions for the transaction participants.
  * @property observerSessions a list of flow participantSessions for the transaction observers.
  */
-class IssueTokensFlow
-@JvmOverloads
-constructor(
+class IssueTokensFlow (
     val tokensToIssue: List<AbstractToken>,
     val participantSessions: List<FlowSession>,
-    val observerSessions: List<FlowSession> = emptyList()
+    val observerSessions: List<FlowSession>
 ) : Flow<SignedTransaction> {
+
+    constructor(
+        tokensToIssue: List<AbstractToken>,
+        participantSessions: List<FlowSession>,
+    ) : this(tokensToIssue, participantSessions, emptyList())
 
     @CordaInject
     lateinit var transactionBuilderFactory: TransactionBuilderFactory
@@ -68,23 +71,31 @@ constructor(
     lateinit var cordappProvider: CordappProvider
 
     /** Issue a single [FungibleToken]. */
-    @JvmOverloads
     constructor(
         token: FungibleToken,
         participantSessions: List<FlowSession>,
-        observerSessions: List<FlowSession> = emptyList()
+        observerSessions: List<FlowSession>
     ) : this(listOf(token), participantSessions, observerSessions)
+
+    constructor(
+        token: FungibleToken,
+        participantSessions: List<FlowSession>,
+    ) : this(listOf(token), participantSessions, emptyList())
 
     /** Issue a single [FungibleToken] to self with no observers. */
     constructor(token: FungibleToken) : this(listOf(token), emptyList(), emptyList())
 
     /** Issue a single [NonFungibleToken]. */
-    @JvmOverloads
     constructor(
         token: NonFungibleToken,
         participantSessions: List<FlowSession>,
-        observerSessions: List<FlowSession> = emptyList()
+        observerSessions: List<FlowSession>
     ) : this(listOf(token), participantSessions, observerSessions)
+
+    constructor(
+        token: NonFungibleToken,
+        participantSessions: List<FlowSession>,
+    ) : this(listOf(token), participantSessions, emptyList())
 
     /** Issue a single [NonFungibleToken] to self with no observers. */
     constructor(token: NonFungibleToken) : this(listOf(token), emptyList(), emptyList())
