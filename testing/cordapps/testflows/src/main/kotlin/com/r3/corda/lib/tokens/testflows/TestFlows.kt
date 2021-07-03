@@ -219,7 +219,7 @@ class SelectAndLockFlow(val amount: Amount<TokenType>, val delay: Duration = 1.s
     @Suspendable
     override fun call() {
         val selector = LocalTokenSelector(vaultWatcherService)
-        selector.selectTokens(amount)
+        selector.selectTokens(amount, flowEngine.runId.uuid)
         flowEngine.sleep(delay)
     }
 }
@@ -248,13 +248,13 @@ class JustLocalSelect(
         var selectionAttempts = 0
         while (selectionAttempts < maxSelectAttempts) {
             try {
-                return selector.selectTokens(amount)
+                return selector.selectTokens(amount, flowEngine.runId.uuid)
             } catch (e: InsufficientBalanceException) {
                 logger.error("failed to select", e)
                 flowEngine.sleep(timeBetweenSelects)
                 selectionAttempts++
             }
         }
-        throw InsufficientBalanceException("Could not select: ${amount}")
+        throw InsufficientBalanceException("Could not select: $amount")
     }
 }

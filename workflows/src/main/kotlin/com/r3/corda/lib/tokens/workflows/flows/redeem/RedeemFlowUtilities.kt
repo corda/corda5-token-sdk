@@ -112,7 +112,7 @@ fun addFungibleTokensToRedeem(
     // TODO For now default to database query, but switch this line on after we can change API in 2.0
     val selector = DatabaseTokenSelection(persistenceService, identityService, flowEngine)
     val fungibleStates =
-        selector.selectTokens(amount, TokenQueryBy(issuer = issuer), transactionBuilder.lockId)
+        selector.selectTokens(amount, transactionBuilder.lockId, TokenQueryBy(issuer = issuer))
     checkSameNotary(fungibleStates)
     check(fungibleStates.isNotEmpty()) {
         "Received empty list of states to redeem."

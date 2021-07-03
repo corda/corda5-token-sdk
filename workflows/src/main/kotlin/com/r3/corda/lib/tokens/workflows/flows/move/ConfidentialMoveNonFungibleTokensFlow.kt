@@ -3,7 +3,7 @@ package com.r3.corda.lib.tokens.workflows.flows.move
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.workflows.flows.confidential.ConfidentialTokensFlow
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.TransactionRole
-import com.r3.corda.lib.tokens.workflows.internal.selection.generateMoveNonFungible1
+import com.r3.corda.lib.tokens.workflows.internal.selection.generateMoveNonFungible
 import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
@@ -40,7 +40,7 @@ constructor(
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val (input, output) = generateMoveNonFungible1(partyAndToken, persistenceService)
+        val (input, output) = generateMoveNonFungible(partyAndToken, persistenceService)
         // TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role
         participantSessions.forEach { it.send(TransactionRole.PARTICIPANT) }
         observerSessions.forEach { it.send(TransactionRole.OBSERVER) }

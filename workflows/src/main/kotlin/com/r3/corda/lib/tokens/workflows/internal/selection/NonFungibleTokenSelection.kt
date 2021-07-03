@@ -16,7 +16,7 @@ import net.corda.v5.ledger.services.vault.IdentityStateAndRefPostProcessor
 import net.corda.v5.ledger.transactions.TransactionBuilder
 
 @Suspendable
-fun generateMoveNonFungible1(
+fun generateMoveNonFungible(
     partyAndToken: PartyAndToken,
     persistenceService: PersistenceService,
 ): InputOutputStates<NonFungibleToken> {
@@ -49,7 +49,7 @@ fun generateMoveNonFungible(
     partyAndToken: PartyAndToken,
     persistenceService: PersistenceService,
 ): TransactionBuilder {
-    val (input, output) = generateMoveNonFungible1(partyAndToken, persistenceService)
+    val (input, output) = generateMoveNonFungible(partyAndToken, persistenceService)
     val notary = input.state.notary
     addTokenTypeJar(listOf(input.state.data, output), transactionBuilder)
     addNotaryWithCheck(transactionBuilder, notary)

@@ -47,13 +47,13 @@ fun addMoveTokens(
         // Add a notary to the transaction.
         // TODO: Deal with notary change.
         setNotary(inputs.map { it.state.notary }.toSet().single())
-        outputGroups.forEach { issuedTokenType: IssuedTokenType, outputStates: List<AbstractToken> ->
+        outputGroups.forEach { (issuedTokenType: IssuedTokenType, outputStates: List<AbstractToken>) ->
             val inputGroup = inputGroups[issuedTokenType]
                 ?: throw IllegalArgumentException("No corresponding inputs for the outputs issued token type: $issuedTokenType")
             val keys = inputGroup.map { it.state.data.holder.owningKey }
 
-            var inputStartingIdx = inputStates.size
-            var outputStartingIdx = outputStates.size
+            var inputStartingIdx = this@apply.inputStates.size
+            var outputStartingIdx = this@apply.outputStates.size
 
             val inputIdx = inputGroup.map {
                 addInputState(it)
@@ -111,8 +111,8 @@ fun addMoveFungibleTokens(
             memberInfo,
             partiesAndAmounts.toPairs(),
             changeHolder,
-            TokenQueryBy(),
-            transactionBuilder.lockId
+            transactionBuilder.lockId,
+            TokenQueryBy()
         )
     return addMoveTokens(transactionBuilder = transactionBuilder, inputs = inputs, outputs = outputs)
 }

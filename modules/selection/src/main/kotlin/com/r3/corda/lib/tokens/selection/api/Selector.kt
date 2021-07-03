@@ -30,7 +30,8 @@ abstract class Selector {
      * Set [TokenQueryBy.issuer] to specify issuer.
      * Calling selectTokens multiple time with the same lockId will return next unlocked states.
      *
-     * @param lockId id used to lock the states for spend
+     * @param lockId id used to lock the states for spend. Should be the state machine run ID. Can be provided by [FlowEngine]
+     *      or [TransactionBuilder]
      * @param requiredAmount amount that should be spent
      * @param queryBy narrows down tokens to spend, see [TokenQueryBy]
      * @return List of [FungibleToken]s that satisfy the amount to spend, empty list if none found.
@@ -40,8 +41,8 @@ abstract class Selector {
     @JvmOverloads
     fun selectTokens(
         requiredAmount: Amount<TokenType>,
-        queryBy: TokenQueryBy = TokenQueryBy(),
-        lockId: UUID = UUID.randomUUID()
+        lockId: UUID,
+        queryBy: TokenQueryBy = TokenQueryBy()
     ): List<StateAndRef<FungibleToken>> {
         return selectTokens(Holder.TokenOnly(), lockId, requiredAmount, queryBy)
     }
@@ -65,8 +66,8 @@ abstract class Selector {
     fun selectTokens(
         externalId: UUID,
         requiredAmount: Amount<TokenType>,
-        queryBy: TokenQueryBy = TokenQueryBy(),
-        lockId: UUID = UUID.randomUUID()
+        lockId: UUID,
+        queryBy: TokenQueryBy = TokenQueryBy()
     ): List<StateAndRef<FungibleToken>> {
         return selectTokens(Holder.fromUUID(externalId), lockId, requiredAmount, queryBy)
     }
@@ -90,8 +91,8 @@ abstract class Selector {
     fun selectTokens(
         holdingKey: PublicKey,
         requiredAmount: Amount<TokenType>,
-        queryBy: TokenQueryBy = TokenQueryBy(),
-        lockId: UUID = UUID.randomUUID()
+        lockId: UUID,
+        queryBy: TokenQueryBy = TokenQueryBy()
     ): List<StateAndRef<FungibleToken>> {
         return selectTokens(Holder.KeyIdentity(holdingKey), lockId, requiredAmount, queryBy)
     }
@@ -112,8 +113,8 @@ abstract class Selector {
         memberInfo: MemberInfo,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
-        queryBy: TokenQueryBy = TokenQueryBy(),
-        lockId: UUID = UUID.randomUUID()
+        lockId: UUID,
+        queryBy: TokenQueryBy = TokenQueryBy()
     ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
         return generateMove(identityService, memberInfo, Holder.TokenOnly(), lockId, partiesAndAmounts, changeHolder, queryBy)
     }
@@ -135,8 +136,8 @@ abstract class Selector {
         externalId: UUID,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
-        queryBy: TokenQueryBy = TokenQueryBy(),
-        lockId: UUID = UUID.randomUUID()
+        lockId: UUID,
+        queryBy: TokenQueryBy = TokenQueryBy()
     ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
         return generateMove(identityService, memberInfo, Holder.fromUUID(externalId), lockId, partiesAndAmounts, changeHolder, queryBy)
     }
@@ -158,8 +159,8 @@ abstract class Selector {
         holdingKey: PublicKey,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
-        queryBy: TokenQueryBy = TokenQueryBy(),
-        lockId: UUID = UUID.randomUUID()
+        lockId: UUID,
+        queryBy: TokenQueryBy = TokenQueryBy()
     ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
         return generateMove(identityService, memberInfo, Holder.KeyIdentity(holdingKey), lockId, partiesAndAmounts, changeHolder, queryBy)
     }
@@ -177,7 +178,7 @@ abstract class Selector {
         identityService: IdentityService,
         memberInfo: MemberInfo,
         holder: Holder,
-        lockId: UUID = UUID.randomUUID(),
+        lockId: UUID,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         queryBy: TokenQueryBy = TokenQueryBy()

@@ -22,6 +22,7 @@ import net.corda.v5.base.util.millis
 import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.services.vault.IdentityStateAndRefPostProcessor
 import java.util.*
 
 /**
@@ -55,6 +56,7 @@ class DatabaseTokenSelection @JvmOverloads constructor(
      *
      * @return the amount of claimed tokens (effectively the sum of values of the states in [stateAndRefs]
      * */
+    @Suspendable
     private fun executeQuery(
         requiredAmount: Amount<TokenType>,
         namedQuery: String,
@@ -68,7 +70,11 @@ class DatabaseTokenSelection @JvmOverloads constructor(
 
         var claimedAmount = 0L
 
-        val cursor = persistenceService.query<StateAndRef<FungibleToken>>(namedQuery, queryParams)
+        val cursor = persistenceService.query<StateAndRef<FungibleToken>>(
+            namedQuery,
+            queryParams,
+            IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME
+        )
         do {
             val tokens = cursor.poll(pageSize, 10.seconds)
             for (state in tokens.values) {
@@ -91,6 +97,7 @@ class DatabaseTokenSelection @JvmOverloads constructor(
      * Queries for held token amounts with the specified token to the specified requiredAmount
      * AND tries to soft lock the selected tokens.
      */
+    @Suspendable
     private fun executeQueryAndReserve(
         requiredAmount: Amount<TokenType>,
         namedQueryString: String,

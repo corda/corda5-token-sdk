@@ -22,6 +22,7 @@ import net.corda.v5.base.util.seconds
 import net.corda.v5.base.util.uncheckedCast
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.services.vault.IdentityStateAndRefPostProcessor
 import net.corda.v5.ledger.services.vault.VaultEventType
 import net.corda.v5.ledger.services.vault.events.VaultStateEvent
 import net.corda.v5.ledger.services.vault.events.VaultStateEventService
@@ -137,7 +138,11 @@ class VaultWatcherService : CordaService {
                 LOG.info("Starting async token loading from vault")
                 UPDATER.submit {
                     try {
-                        val cursor = persistenceService.query<StateAndRef<FungibleToken>>("FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumed", emptyMap())
+                        val cursor = persistenceService.query<StateAndRef<FungibleToken>>(
+                            "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumed",
+                            emptyMap(),
+                            IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME
+                        )
                         do {
                             val newlyLoadedStates = cursor.poll(pageSize, 10.seconds)
                             LOG.info("publishing ${newlyLoadedStates.values.size} to async state loading callback")
