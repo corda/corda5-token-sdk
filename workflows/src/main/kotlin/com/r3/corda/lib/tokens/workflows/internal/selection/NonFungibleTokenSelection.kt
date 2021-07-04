@@ -2,6 +2,7 @@ package com.r3.corda.lib.tokens.workflows.internal.selection
 
 import com.r3.corda.lib.tokens.contracts.commands.MoveTokenCommand
 import com.r3.corda.lib.tokens.contracts.commands.RedeemTokenCommand
+import com.r3.corda.lib.tokens.contracts.datatypes.InputOutputStates
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.utilities.withNotary
 import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
@@ -49,7 +50,9 @@ fun generateMoveNonFungible(
     partyAndToken: PartyAndToken,
     persistenceService: PersistenceService,
 ): TransactionBuilder {
-    val (input, output) = generateMoveNonFungible(partyAndToken, persistenceService)
+    val (inputs, outputs) = generateMoveNonFungible(partyAndToken, persistenceService)
+    val input = inputs.single()
+    val output = outputs.single()
     val notary = input.state.notary
     addTokenTypeJar(listOf(input.state.data, output), transactionBuilder)
     addNotaryWithCheck(transactionBuilder, notary)

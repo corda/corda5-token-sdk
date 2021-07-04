@@ -1,5 +1,6 @@
 package com.r3.corda.lib.tokens.selection.api
 
+import com.r3.corda.lib.tokens.contracts.datatypes.InputOutputStates
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.heldBy
@@ -137,8 +138,16 @@ abstract class Selector {
         changeHolder: AbstractParty,
         lockId: UUID,
         queryBy: TokenQueryBy
-    ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
-        return generateMove(identityService, memberInfo, Holder.TokenOnly(), lockId, partiesAndAmounts, changeHolder, queryBy)
+    ): InputOutputStates<FungibleToken> {
+        return generateMove(
+            identityService,
+            memberInfo,
+            Holder.TokenOnly(),
+            lockId,
+            partiesAndAmounts,
+            changeHolder,
+            queryBy
+        )
     }
 
     @Suspendable
@@ -148,7 +157,7 @@ abstract class Selector {
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         lockId: UUID,
-    ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
+    ): InputOutputStates<FungibleToken> {
         return generateMove(identityService, memberInfo, partiesAndAmounts, changeHolder, lockId, TokenQueryBy())
     }
 
@@ -170,8 +179,16 @@ abstract class Selector {
         changeHolder: AbstractParty,
         lockId: UUID,
         queryBy: TokenQueryBy
-    ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
-        return generateMove(identityService, memberInfo, Holder.fromUUID(externalId), lockId, partiesAndAmounts, changeHolder, queryBy)
+    ): InputOutputStates<FungibleToken> {
+        return generateMove(
+            identityService,
+            memberInfo,
+            Holder.fromUUID(externalId),
+            lockId,
+            partiesAndAmounts,
+            changeHolder,
+            queryBy
+        )
     }
 
     @Suspendable
@@ -182,8 +199,16 @@ abstract class Selector {
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         lockId: UUID,
-    ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
-        return generateMove(identityService, memberInfo, externalId, partiesAndAmounts, changeHolder, lockId, TokenQueryBy())
+    ): InputOutputStates<FungibleToken> {
+        return generateMove(
+            identityService,
+            memberInfo,
+            externalId,
+            partiesAndAmounts,
+            changeHolder,
+            lockId,
+            TokenQueryBy()
+        )
     }
 
     /**
@@ -204,8 +229,16 @@ abstract class Selector {
         changeHolder: AbstractParty,
         lockId: UUID,
         queryBy: TokenQueryBy
-    ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
-        return generateMove(identityService, memberInfo, Holder.KeyIdentity(holdingKey), lockId, partiesAndAmounts, changeHolder, queryBy)
+    ): InputOutputStates<FungibleToken> {
+        return generateMove(
+            identityService,
+            memberInfo,
+            Holder.KeyIdentity(holdingKey),
+            lockId,
+            partiesAndAmounts,
+            changeHolder,
+            queryBy
+        )
     }
 
     @Suspendable
@@ -216,8 +249,16 @@ abstract class Selector {
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         lockId: UUID,
-    ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
-        return generateMove(identityService, memberInfo, holdingKey, partiesAndAmounts, changeHolder, lockId, TokenQueryBy())
+    ): InputOutputStates<FungibleToken> {
+        return generateMove(
+            identityService,
+            memberInfo,
+            holdingKey,
+            partiesAndAmounts,
+            changeHolder,
+            lockId,
+            TokenQueryBy()
+        )
     }
 
     @Suspendable
@@ -237,7 +278,7 @@ abstract class Selector {
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         queryBy: TokenQueryBy = TokenQueryBy()
-    ): Pair<List<StateAndRef<FungibleToken>>, List<FungibleToken>> {
+    ): InputOutputStates<FungibleToken> {
         // Grab some tokens from the vault and soft-lock.
         // Only supports moves of the same token instance currently.
         // TODO Support spends for different token types, different instances of the same type.
@@ -280,7 +321,8 @@ abstract class Selector {
                     delta > 0 -> {
                         // The states from the current issuer more than covers this payment.
                         outputStates += FungibleToken(Amount(remainingToPay, token), party)
-                        remainingTokensFromEachIssuer[remainingTokensFromEachIssuer.lastIndex] = Pair(token, Amount(delta, token))
+                        remainingTokensFromEachIssuer[remainingTokensFromEachIssuer.lastIndex] =
+                            Pair(token, Amount(delta, token))
                         remainingToPay = 0
                     }
                     delta == 0L -> {
@@ -305,7 +347,7 @@ abstract class Selector {
             outputStates += FungibleToken(amount, changeHolder)
         }
 
-        return Pair(acceptableStates, outputStates)
+        return InputOutputStates(acceptableStates, outputStates)
     }
 
     /**
@@ -319,7 +361,7 @@ abstract class Selector {
         exitStates: List<StateAndRef<FungibleToken>>,
         amount: Amount<TokenType>,
         changeHolder: AbstractParty
-    ): Pair<List<StateAndRef<FungibleToken>>, FungibleToken?> {
+    ): InputOutputStates<FungibleToken> {
         check(exitStates.isNotEmpty()) {
             "Exiting empty list of states"
         }
@@ -329,7 +371,7 @@ abstract class Selector {
         }
         // Choose states to cover amount - return ones used, and change output
         val changeOutput = change(exitStates, amount, changeHolder)
-        return Pair(exitStates, changeOutput)
+        return InputOutputStates(exitStates, changeOutput?.let { listOf(it) } ?: emptyList())
     }
 
     private fun change(

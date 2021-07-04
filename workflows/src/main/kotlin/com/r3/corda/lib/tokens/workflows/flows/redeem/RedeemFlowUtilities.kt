@@ -130,6 +130,6 @@ fun addFungibleTokensToRedeem(
         changeHolder = changeHolder
     )
 
-    addTokensToRedeem(transactionBuilder, exitStates, change)
+    addTokensToRedeem(transactionBuilder, exitStates, change.singleOrNull())
     return transactionBuilder
 }

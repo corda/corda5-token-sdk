@@ -46,12 +46,6 @@
     <ID>MaxLineLength:SelectionUtilities.kt$fun</ID>
     <ID>MaxLineLength:Selector.kt$Selector$"States selected have different notaries. For now we don't support notary change, it should be performed beforehand."</ID>
     <ID>MaxLineLength:Selector.kt$Selector$*</ID>
-    <ID>MaxLineLength:Selector.kt$Selector$remainingTokensFromEachIssuer[remainingTokensFromEachIssuer.lastIndex] = Pair(token, Amount(delta, token))</ID>
-    <ID>MaxLineLength:Selector.kt$Selector$return generateMove(identityService, memberInfo, Holder.KeyIdentity(holdingKey), lockId, partiesAndAmounts, changeHolder, queryBy)</ID>
-    <ID>MaxLineLength:Selector.kt$Selector$return generateMove(identityService, memberInfo, Holder.TokenOnly(), lockId, partiesAndAmounts, changeHolder, queryBy)</ID>
-    <ID>MaxLineLength:Selector.kt$Selector$return generateMove(identityService, memberInfo, Holder.fromUUID(externalId), lockId, partiesAndAmounts, changeHolder, queryBy)</ID>
-    <ID>MaxLineLength:Selector.kt$Selector$return generateMove(identityService, memberInfo, externalId, partiesAndAmounts, changeHolder, lockId, TokenQueryBy())</ID>
-    <ID>MaxLineLength:Selector.kt$Selector$return generateMove(identityService, memberInfo, holdingKey, partiesAndAmounts, changeHolder, lockId, TokenQueryBy())</ID>
     <ID>MaxLineLength:StateSelectionConfig.kt$ConfigSelection$*</ID>
     <ID>MaxLineLength:StateSelectionConfig.kt$ConfigSelection$else -&gt; throw IllegalArgumentException("Provide correct state-selection type string in the config, see kdocs for ConfigSelection.")</ID>
     <ID>MaxLineLength:VaultMigratorService.kt$VaultMigratorService$//TODO - we should attempt to migrate the old vault contents. This must be done a service because we cannot guarantee</ID>

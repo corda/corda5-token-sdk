@@ -43,7 +43,9 @@ class ConfidentialMoveNonFungibleTokensFlow (
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val (input, output) = generateMoveNonFungible(partyAndToken, persistenceService)
+        val (inputs, outputs) = generateMoveNonFungible(partyAndToken, persistenceService)
+        val input = inputs.single()
+        val output = outputs.single()
         // TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role
         participantSessions.forEach { it.send(TransactionRole.PARTICIPANT) }
         observerSessions.forEach { it.send(TransactionRole.OBSERVER) }
