@@ -55,7 +55,6 @@ dependencies {
 
     // Corda dependencies.
     cordaProvided("$corda_release_group:corda-application:$corda_release_version") { changing = true }
-    cordaProvided("$corda_release_group:corda-base:$corda_release_version") { changing = true }
     cordaProvided("$corda_release_group:corda-node-api:$corda_release_version") { changing = true }
     cordaProvided("$corda_release_group:corda-ledger:$corda_release_version") { changing = true}
     cordaProvided("$corda_release_group:corda-flows:$corda_release_version") { changing = true}
@@ -69,7 +68,7 @@ dependencies {
     // CorDapp dependencies.
     cordapp project(":contracts")
 
-    compile(files(selectionProject.jar.archivePath))
+    cordapp project(":modules:selection")
 
     //CI for confidential tokens
     cordapp "$confidential_id_release_group:ci-workflows:$confidential_id_release_version"

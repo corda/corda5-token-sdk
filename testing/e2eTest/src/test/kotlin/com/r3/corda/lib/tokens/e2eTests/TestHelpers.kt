@@ -28,7 +28,7 @@ internal fun FlowStarterRPCOps.runFlow(flowClass: KClass<*>, parameters: Map<Any
 	)
 
 	assertThat(response.clientId).isEqualTo(clientId)
-	assertThat(response.stateMachineRunId).isNotNull
+	assertThat(response.flowId).isNotNull
 
 	return response
 }
@@ -36,7 +36,7 @@ internal fun FlowStarterRPCOps.runFlow(flowClass: KClass<*>, parameters: Map<Any
 internal fun FlowStarterRPCOps.getFlowOutcome(response: RpcStartFlowResponse): RpcFlowOutcomeResponse {
 	var result: RpcFlowOutcomeResponse
 	do {
-		result = getFlowOutcome(response.stateMachineRunId.uuid.toString())
+		result = getFlowOutcome(response.flowId.uuid.toString())
 	} while (result.status == RpcFlowStatus.RUNNING)
 
 	assertThat(RpcFlowStatus.COMPLETED).isEqualTo(result.status)

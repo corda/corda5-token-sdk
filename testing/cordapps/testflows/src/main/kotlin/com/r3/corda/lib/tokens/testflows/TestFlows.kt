@@ -141,7 +141,7 @@ class DvPFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
             DatabaseTokenSelection(persistenceService, identityService, flowEngine).generateMove(
                 identityService,
                 memberInfo,
-                lockId = flowEngine.runId.uuid,
+                lockId = flowEngine.flowId.uuid,
                 partiesAndAmounts = listOf(Pair(otherSession.counterparty, dvPNotification.amount)),
                 changeHolder = changeHolder
             )
@@ -219,7 +219,7 @@ class SelectAndLockFlow(val amount: Amount<TokenType>, val delay: Duration = 1.s
     @Suspendable
     override fun call() {
         val selector = LocalTokenSelector(vaultWatcherService)
-        selector.selectTokens(amount, flowEngine.runId.uuid)
+        selector.selectTokens(amount, flowEngine.flowId.uuid)
         flowEngine.sleep(delay)
     }
 }
@@ -248,7 +248,7 @@ class JustLocalSelect(
         var selectionAttempts = 0
         while (selectionAttempts < maxSelectAttempts) {
             try {
-                return selector.selectTokens(amount, flowEngine.runId.uuid)
+                return selector.selectTokens(amount, flowEngine.flowId.uuid)
             } catch (e: InsufficientBalanceException) {
                 logger.error("failed to select", e)
                 flowEngine.sleep(timeBetweenSelects)

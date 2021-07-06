@@ -16,7 +16,6 @@ import net.corda.v5.application.flows.receive
 import net.corda.v5.application.flows.unwrap
 import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.node.MemberInfo
-import net.corda.v5.application.node.MemberInfo.Companion.hasParty
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.transactions.SignedTransaction
 

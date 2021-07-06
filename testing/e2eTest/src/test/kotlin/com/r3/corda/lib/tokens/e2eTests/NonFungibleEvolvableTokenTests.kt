@@ -29,10 +29,10 @@ class NonFungibleEvolvableTokenTests {
 					.map { hasNode(it) }
 					.forEach {
 						it.withFlow<CreateHouseToken>()
-						it.withFlow<GetHouseInfoFlow>()
-						it.withFlow<MoveHouseTokenFlow>()
-						it.withFlow<RedeemHouseTokenFlow>()
-						it.withFlow<UpdateHouseValuation>()
+							.withFlow<GetHouseInfoFlow>()
+							.withFlow<MoveHouseTokenFlow>()
+							.withFlow<RedeemHouseTokenFlow>()
+							.withFlow<UpdateHouseValuation>()
 					}
 			}
 		}

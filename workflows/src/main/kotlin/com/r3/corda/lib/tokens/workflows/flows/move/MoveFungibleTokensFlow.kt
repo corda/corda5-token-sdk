@@ -25,7 +25,7 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * @param changeHolder optional holder of the change outputs, it can be confidential identity, if not specified it
  *                     defaults to caller's legal identity
  */
-class MoveFungibleTokensFlow (
+class MoveFungibleTokensFlow(
     val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
     override val participantSessions: List<FlowSession>,
     override val observerSessions: List<FlowSession>,
@@ -48,18 +48,6 @@ class MoveFungibleTokensFlow (
         participantSessions: List<FlowSession>,
         changeHolder: AbstractParty?
     ) : this(partiesAndAmounts, participantSessions, emptyList(), changeHolder)
-
-    @CordaInject
-    lateinit var flowIdentity: FlowIdentity
-
-    @CordaInject
-    lateinit var persistenceService: PersistenceService
-
-    @CordaInject
-    lateinit var identityService: IdentityService
-
-    @CordaInject
-    lateinit var memberInfo: MemberInfo
 
     constructor(
         partyAndAmount: PartyAndAmount<TokenType>,
@@ -84,6 +72,18 @@ class MoveFungibleTokensFlow (
         participantSessions: List<FlowSession>,
         changeHolder: AbstractParty?
     ) : this(listOf(partyAndAmount), participantSessions, emptyList(), changeHolder)
+
+    @CordaInject
+    lateinit var flowIdentity: FlowIdentity
+
+    @CordaInject
+    lateinit var persistenceService: PersistenceService
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
+    @CordaInject
+    lateinit var memberInfo: MemberInfo
 
     @Suspendable
     override fun addMove(transactionBuilder: TransactionBuilder) {

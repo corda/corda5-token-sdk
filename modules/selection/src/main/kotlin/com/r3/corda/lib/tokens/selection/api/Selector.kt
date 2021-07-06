@@ -10,7 +10,6 @@ import com.r3.corda.lib.tokens.selection.TokenQueryBy
 import com.r3.corda.lib.tokens.selection.memory.internal.Holder
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.node.MemberInfo
-import net.corda.v5.application.node.MemberInfo.Companion.hasParty
 import net.corda.v5.application.services.IdentityService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount

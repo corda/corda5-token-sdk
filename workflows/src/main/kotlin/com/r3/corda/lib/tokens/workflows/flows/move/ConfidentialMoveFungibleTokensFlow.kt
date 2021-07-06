@@ -75,7 +75,7 @@ class ConfidentialMoveFungibleTokensFlow (
         val (inputs, outputs) = tokenSelection.generateMove(
             identityService,
             memberInfo,
-            lockId = flowEngine.runId.uuid,
+            lockId = flowEngine.flowId.uuid,
             partiesAndAmounts = partiesAndAmounts.toPairs(),
             changeHolder = changeHolder,
             queryBy = TokenQueryBy()
