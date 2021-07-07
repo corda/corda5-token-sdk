@@ -1,8 +1,8 @@
 package com.r3.corda.lib.tokens.workflows.internal.schemas
 
 import net.corda.v5.application.identity.Party
-import net.corda.v5.application.services.persistence.MappedSchema
 import net.corda.v5.base.annotations.CordaSerializable
+import net.corda.v5.persistence.MappedSchema
 import org.hibernate.annotations.Type
 import java.util.UUID
 import javax.persistence.Entity

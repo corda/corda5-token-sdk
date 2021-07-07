@@ -29,6 +29,7 @@ plugins {
     id 'jacoco'
     id "com.jfrog.artifactory" version "$jfrogArtifactoryPluginVersion"
     id 'io.gitlab.arturbosch.detekt' version "$detektVersion"
+    id 'net.corda.cordapp.cordapp-configuration' version "$corda_release_version"
 }
 
 allprojects {

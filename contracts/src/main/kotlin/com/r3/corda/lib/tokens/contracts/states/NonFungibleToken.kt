@@ -10,14 +10,13 @@ import com.r3.corda.lib.tokens.contracts.utilities.getAttachmentIdForGenericPara
 import com.r3.corda.lib.tokens.contracts.utilities.holderString
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
-import net.corda.v5.application.services.persistence.MappedSchema
-import net.corda.v5.application.utilities.JsonRepresentable
 import net.corda.v5.crypto.SecureHash
 import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.BelongsToContract
 import net.corda.v5.ledger.contracts.LinearState
 import net.corda.v5.ledger.schemas.PersistentState
 import net.corda.v5.ledger.schemas.QueryableState
+import net.corda.v5.persistence.MappedSchema
 
 /**
  * This class is for handling the issuer and holder relationship for non-fungible token types. Non-fungible tokens

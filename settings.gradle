@@ -1,3 +1,29 @@
+pluginManagement {
+    ext {
+        cordaArtifactoryUsername = System.getenv('CORDA_ARTIFACTORY_USERNAME') ?: System.getProperty('corda.artifactory.username')
+        cordaArtifactoryPassword = System.getenv('CORDA_ARTIFACTORY_PASSWORD') ?: System.getProperty('corda.artifactory.password')
+    }
+
+    repositories {
+        gradlePluginPortal()
+        maven {
+            url "$artifactoryContextUrl/corda-releases"
+        }
+        maven {
+            url "$artifactoryContextUrl/corda-os-maven"
+            credentials {
+                username = cordaArtifactoryUsername
+                password = cordaArtifactoryPassword
+            }
+        }
+    }
+
+    plugins {
+        id 'net.corda.plugins.cordapp-cpk' version corda_gradle_plugins_version
+        id 'net.corda.cordapp.cordapp-configuration' version corda_release_version
+    }
+}
+
 include 'contracts'
 include 'workflows'
 include 'modules:contracts-for-testing'

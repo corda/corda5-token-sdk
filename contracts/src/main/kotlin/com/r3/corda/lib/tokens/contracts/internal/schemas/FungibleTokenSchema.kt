@@ -2,9 +2,9 @@ package com.r3.corda.lib.tokens.contracts.internal.schemas
 
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
-import net.corda.v5.application.services.persistence.MappedSchema
 import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.ledger.schemas.PersistentState
+import net.corda.v5.persistence.MappedSchema
 import javax.persistence.Column
 import javax.persistence.Convert
 import javax.persistence.Entity

@@ -7,6 +7,7 @@ dependencies {
     cordaProvided "$corda_release_group:corda-application:$corda_release_version"
     cordaProvided "$corda_release_group:corda-base:$corda_release_version"
     cordaProvided "$corda_release_group:corda-ledger:$corda_release_version"
+    cordaProvided "$corda_release_group:corda-persistence:$corda_release_version"
 
     cordapp project(":workflows")
     cordapp project(":modules:selection")
