@@ -114,7 +114,8 @@ subprojects {
 // Don't publish an empty "modules" JAR.
 def publishProjects = [
         project(":contracts"),
-        project(":workflows")
+        project(":workflows"),
+        project(":modules:selection")
 ]
 
 configure(publishProjects) { subproject ->
