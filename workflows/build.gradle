@@ -57,6 +57,8 @@ dependencies {
     cordaProvided("$corda_release_group:corda-application:$corda_release_version") { changing = true }
     cordaProvided("$corda_release_group:corda-node-api:$corda_release_version") { changing = true }
     cordaProvided("$corda_release_group:corda-ledger:$corda_release_version") { changing = true}
+    cordaProvided("$corda_release_group:corda-crypto-api:$corda_release_version") { changing = true}
+    cordaProvided("$corda_release_group:corda-persistence:$corda_release_version") { changing = true}
     cordaProvided("$corda_release_group:corda-flows:$corda_release_version") { changing = true}
 
     // Logging.
