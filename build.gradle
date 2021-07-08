@@ -139,9 +139,15 @@ configure(publishProjects) { subproject ->
                 from components.java
 
                 groupId subproject.group
+                version tasks.jar.archiveVersion.get()
                 artifactId "tokens-${subproject.name}"
                 artifact tasks.sourceJar
                 artifact tasks.javadocJar
+
+                def cpk = tasks.findByName("cpk")
+                if(cpk) {
+                    artifact cpk
+                }
 
                 pom {
                     description = subproject.description
