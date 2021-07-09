@@ -37,4 +37,4 @@ include 'testing:cordapps:sample'
 include 'testing:cordapps:sample:sample-contracts'
 include 'testing:cordapps:sample:sample-flows'
 
-include 'testing:e2eTest'
+include 'testing:e2e'

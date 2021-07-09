@@ -10,14 +10,12 @@ import net.corda.test.dev.network.withFlow
 import net.corda.v5.application.identity.CordaX500Name
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 /**
  * This test class is used to verify the confidential identities flows can run successfully by
  * calling them via sample flows.
  */
-@Disabled("Disabled so that it is not run as part of the build since it depends on a running e2e test network")
 class NonFungibleEvolvableTokenTests {
 
 	companion object {
