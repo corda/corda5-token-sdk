@@ -17,6 +17,7 @@ import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.LinearState
 import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.services.vault.IdentityStateAndRefPostProcessor
 import net.corda.v5.ledger.services.vault.StateStatus
 
 // TODO Revisit this API and add documentation.
@@ -150,13 +151,13 @@ fun cursorToAmount(token: TokenType, cursor: Cursor<StateAndRef<FungibleToken>>)
 // Get all held token amounts for a specific token, ignoring the issuer.
 fun PersistenceService.tokenAmountsByToken(token: TokenType): Cursor<StateAndRef<FungibleToken>> {
     val (namedQuery, params) = namedQueryForFungibleTokenClassAndIdentifier(token)
-    return query(namedQuery, params)
+    return query(namedQuery, params, IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME)
 }
 
 // Get all held tokens for a specific token, ignoring the issuer.
 fun PersistenceService.heldTokensByToken(token: TokenType): Cursor<NonFungibleToken> {
     val (namedQuery, params) = namedQueryForNonfungibleTokenClassAndIdentifier(token)
-    return query(namedQuery, params)
+    return query(namedQuery, params, IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME)
 }
 
 /** TokenType balances. */
@@ -164,14 +165,14 @@ fun PersistenceService.heldTokensByToken(token: TokenType): Cursor<NonFungibleTo
 // We need to group the sum by the token class and token identifier.
 fun PersistenceService.tokenBalance(token: TokenType): Amount<TokenType> {
     val (namedQuery, params) = namedQueryForSumFungibleTokenAmountClassAndIdentifier(token)
-    val result = query<StateAndRef<FungibleToken>>(namedQuery, params)
+    val result = query<StateAndRef<FungibleToken>>(namedQuery, params, IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME)
     return cursorToAmount(token, result)
 }
 
 // We need to group the sum by the token class and token identifier takes issuer into consideration.
 fun PersistenceService.tokenBalanceForIssuer(token: TokenType, issuer: Party): Amount<TokenType> {
     val (namedQuery, params) = sumTokenAmountWithIssuerCriteria(token, issuer)
-    val result = query<StateAndRef<FungibleToken>>(namedQuery, params)
+    val result = query<StateAndRef<FungibleToken>>(namedQuery, params, IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME)
     return cursorToAmount(token, result)
 }
 
@@ -182,5 +183,5 @@ fun PersistenceService.tokenBalanceForIssuer(token: TokenType, issuer: Party): A
 // Get NonFungibleToken with issuer.
 fun PersistenceService.heldTokensByTokenIssuer(token: TokenType, issuer: Party): Cursor<StateAndRef<NonFungibleToken>> {
     val (namedQuery, params) = namedQueryForNonfungibleTokenClassIdentifierAndIssuer(token, issuer)
-    return query(namedQuery, params)
+    return query(namedQuery, params, IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME)
 }
