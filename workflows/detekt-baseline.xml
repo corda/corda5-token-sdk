@@ -10,7 +10,7 @@
     <ID>ForbiddenComment:QueryUtilities.kt$// TODO: Allow discrimination by issuer or a set of issuers.</ID>
     <ID>ForbiddenComment:RequestAdditionToDistributionList.kt$RequestAdditionToDistributionList.Initiator$// TODO: Try each maintainer.</ID>
     <ID>ForbiddenComment:UpdateDistributionListFlow.kt$UpdateDistributionListFlow$// TODO: Handle updates of the distribution list for observers.</ID>
-    <ID>FunctionNaming:TokenUtilities.kt$private infix fun IssuedTokenType._heldBy(owner: AbstractParty): NonFungibleToken</ID>
+    <ID>FunctionNaming:TokenUtilities.kt$private fun IssuedTokenType._heldBy(owner: AbstractParty, hashingService: HashingService): NonFungibleToken</ID>
     <ID>FunctionNaming:Utilities.kt$fun AUD(amount: Double): Amount&lt;TokenType&gt;</ID>
     <ID>FunctionNaming:Utilities.kt$fun AUD(amount: Int): Amount&lt;TokenType&gt;</ID>
     <ID>FunctionNaming:Utilities.kt$fun AUD(amount: Long): Amount&lt;TokenType&gt;</ID>
@@ -41,9 +41,9 @@
     <ID>FunctionNaming:Utilities.kt$fun XRP(amount: Double): Amount&lt;TokenType&gt;</ID>
     <ID>FunctionNaming:Utilities.kt$fun XRP(amount: Int): Amount&lt;TokenType&gt;</ID>
     <ID>FunctionNaming:Utilities.kt$fun XRP(amount: Long): Amount&lt;TokenType&gt;</ID>
-    <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, flowEngine: FlowEngine, memberInfo: MemberInfo, amount: Amount&lt;TokenType&gt;, holder: AbstractParty, changeHolder: AbstractParty, )</ID>
-    <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, flowEngine: FlowEngine, memberInfo: MemberInfo, partiesAndAmounts: List&lt;PartyAndAmount&lt;TokenType&gt;&gt;, changeHolder: AbstractParty, )</ID>
-    <ID>LongParameterList:RedeemFlowUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, flowEngine: FlowEngine, amount: Amount&lt;TokenType&gt;, issuer: Party, changeHolder: AbstractParty, )</ID>
+    <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, hashingService: HashingService, flowEngine: FlowEngine, memberInfo: MemberInfo, amount: Amount&lt;TokenType&gt;, holder: AbstractParty, changeHolder: AbstractParty, )</ID>
+    <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, hashingService: HashingService, flowEngine: FlowEngine, memberInfo: MemberInfo, partiesAndAmounts: List&lt;PartyAndAmount&lt;TokenType&gt;&gt;, changeHolder: AbstractParty, )</ID>
+    <ID>LongParameterList:RedeemFlowUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, hashingService: HashingService, flowEngine: FlowEngine, amount: Amount&lt;TokenType&gt;, issuer: Party, changeHolder: AbstractParty, )</ID>
     <ID>MagicNumber:DistributionUtilities.kt$50</ID>
     <ID>MagicNumber:NonFungibleTokenSelection.kt$50</ID>
     <ID>MagicNumber:QueryUtilities.kt$10</ID>
@@ -86,6 +86,7 @@
     <ID>MaxLineLength:RedeemTokensFlowHandler.kt$RedeemTokensFlowHandler$// There is edge case where issuer redeems with themselves, then we need to be careful not to call handler for</ID>
     <ID>MaxLineLength:RequestAdditionToDistributionList.kt$RequestAdditionToDistributionList$*</ID>
     <ID>MaxLineLength:RequestAdditionToDistributionList.kt$RequestAdditionToDistributionList.Responder$logger.info("Receiving request from ${otherSession.counterparty} to be added to the distribution list for $linearId.")</ID>
+    <ID>MaxLineLength:TokenUtilities.kt$fun</ID>
     <ID>MaxLineLength:UpdateDistributionListFlow.kt$UpdateDistributionListFlow$val issueTypes: List&lt;TokenPointer&lt;*&gt;&gt; = issueCmds.map { it.token.tokenType }.mapNotNull { it as? TokenPointer&lt;*&gt; }</ID>
     <ID>MaxLineLength:UpdateEvolvableTokenFlow.kt$UpdateEvolvableTokenFlow$return (evolvableTokens.participants() + subscribers).minus(evolvableTokens.maintainers()).minus(flowIdentity.ourIdentity)</ID>
     <ID>MaxLineLength:UpdateEvolvableTokenFlowHandler.kt$UpdateEvolvableTokenFlowHandler.&lt;no name provided&gt;$val ledgerTransaction = transactionMappingService.toLedgerTransaction(stx, checkSufficientSignatures = false)</ID>
@@ -122,6 +123,7 @@
     <ID>SwallowedException:NotaryUtilities.kt$catch (e: CordappConfigException) { "" }</ID>
     <ID>TooGenericExceptionCaught:MoveTokens.kt$ConfidentialMoveFungibleTokens$e: Exception</ID>
     <ID>TooManyFunctions:FlowUtilities.kt$com.r3.corda.lib.tokens.workflows.utilities.FlowUtilities.kt</ID>
+    <ID>TooManyFunctions:FungibleTokenBuilder.kt$FungibleTokenBuilder</ID>
     <ID>TooManyFunctions:QueryUtilities.kt$com.r3.corda.lib.tokens.workflows.utilities.QueryUtilities.kt</ID>
     <ID>TooManyFunctions:Utilities.kt$com.r3.corda.lib.tokens.money.Utilities.kt</ID>
     <ID>UtilityClassWithPublicConstructor:DigitalCurrency.kt$DigitalCurrency</ID>

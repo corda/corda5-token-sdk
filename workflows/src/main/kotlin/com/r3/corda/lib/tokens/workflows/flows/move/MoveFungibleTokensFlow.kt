@@ -6,8 +6,9 @@ import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.identity.AbstractParty
-import net.corda.v5.application.node.MemberInfo
 import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.MemberLookupService
+import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.transactions.TransactionBuilder
@@ -83,7 +84,10 @@ class MoveFungibleTokensFlow(
     lateinit var identityService: IdentityService
 
     @CordaInject
-    lateinit var memberInfo: MemberInfo
+    lateinit var memberLookupService: MemberLookupService
+
+    @CordaInject
+    lateinit var hashingService: HashingService
 
     @Suspendable
     override fun addMove(transactionBuilder: TransactionBuilder) {
@@ -91,8 +95,9 @@ class MoveFungibleTokensFlow(
             transactionBuilder = transactionBuilder,
             persistenceService,
             identityService,
+            hashingService,
             flowEngine,
-            memberInfo,
+            memberLookupService.myInfo(),
             partiesAndAmounts = partiesAndAmounts,
             changeHolder = changeHolder ?: flowIdentity.ourIdentity,
         )

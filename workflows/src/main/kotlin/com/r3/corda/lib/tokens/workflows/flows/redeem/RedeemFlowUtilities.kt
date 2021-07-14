@@ -16,11 +16,11 @@ import com.r3.corda.lib.tokens.workflows.internal.selection.generateExitNonFungi
 import com.r3.corda.lib.tokens.workflows.utilities.addNotaryWithCheck
 import com.r3.corda.lib.tokens.workflows.utilities.addTokenTypeJar
 import com.r3.corda.lib.tokens.workflows.utilities.heldTokensByTokenIssuer
-import com.r3.corda.lib.tokens.workflows.utilities.tokenAmountWithIssuerCriteria
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.util.seconds
@@ -109,6 +109,7 @@ fun addFungibleTokensToRedeem(
     transactionBuilder: TransactionBuilder,
     persistenceService: PersistenceService,
     identityService: IdentityService,
+    hashingService: HashingService,
     flowEngine: FlowEngine,
     amount: Amount<TokenType>,
     issuer: Party,
@@ -127,7 +128,8 @@ fun addFungibleTokensToRedeem(
     val (exitStates, change) = selector.generateExit(
         exitStates = fungibleStates,
         amount = amount,
-        changeHolder = changeHolder
+        changeHolder = changeHolder,
+        hashingService = hashingService
     )
 
     addTokensToRedeem(transactionBuilder, exitStates, change.singleOrNull())

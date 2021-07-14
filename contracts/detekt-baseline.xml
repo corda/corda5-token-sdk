@@ -4,9 +4,9 @@
   <CurrentIssues>
     <ID>FunctionNaming:AmountUtilities.kt$internal infix fun Amount&lt;TokenType&gt;._issuedBy(issuer: Party): Amount&lt;IssuedTokenType&gt;</ID>
     <ID>FunctionNaming:AmountUtilities.kt$internal infix fun TokenType._issuedBy(issuer: Party): IssuedTokenType</ID>
+    <ID>FunctionNaming:TokenUtilities.kt$internal fun Amount&lt;IssuedTokenType&gt;._heldBy(owner: AbstractParty, hashingService: HashingService): FungibleToken</ID>
     <ID>FunctionNaming:TokenUtilities.kt$internal infix fun &lt;T : AbstractToken&gt; T._withNotary(notary: Party): TransactionState&lt;T&gt;</ID>
     <ID>FunctionNaming:TokenUtilities.kt$internal infix fun &lt;T : EvolvableTokenType&gt; T._withNotary(notary: Party): TransactionState&lt;T&gt;</ID>
-    <ID>FunctionNaming:TokenUtilities.kt$internal infix fun Amount&lt;IssuedTokenType&gt;._heldBy(owner: AbstractParty): FungibleToken</ID>
     <ID>MagicNumber:TokenUtilities.kt$16</ID>
     <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$"Extended TokenType: ${tokenTypes.single().javaClass} has been used, whilst no jarHash has been provided to pin the providing jar"</ID>
     <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$"There must be exactly one Jar (Hash) providing extended TokenType: ${outputs.first().tokenType.tokenIdentifier} / ${outputs.first().tokenType.javaClass}"</ID>
@@ -35,6 +35,7 @@
     <ID>MaxLineLength:TokenCommand.kt$MoveTokenCommand$class</ID>
     <ID>MaxLineLength:TokenCommand.kt$RedeemTokenCommand$class</ID>
     <ID>MaxLineLength:TokenType.kt$TokenType$*</ID>
+    <ID>MaxLineLength:TokenUtilities.kt$fun</ID>
     <ID>MaxLineLength:TransactionUtilities.kt$* If the [TokenType] is not a [TokenPointer] this function discovers the JAR which implements the receiving [TokenType].</ID>
     <ID>NewLineAtEndOfFile:AbstractToken.kt$com.r3.corda.lib.tokens.contracts.states.AbstractToken.kt</ID>
     <ID>NewLineAtEndOfFile:AbstractTokenContract.kt$com.r3.corda.lib.tokens.contracts.AbstractTokenContract.kt</ID>

@@ -10,6 +10,7 @@ import com.r3.corda.lib.tokens.contracts.utilities.getAttachmentIdForGenericPara
 import com.r3.corda.lib.tokens.contracts.utilities.holderString
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.crypto.SecureHash
 import net.corda.v5.crypto.toStringShort
 import net.corda.v5.ledger.contracts.Amount
@@ -42,7 +43,8 @@ open class FungibleToken (
     constructor(
         amount: Amount<IssuedTokenType>,
         holder: AbstractParty,
-    ) : this(amount, holder, amount.token.tokenType.getAttachmentIdForGenericParam())
+        hashingService: HashingService
+    ) : this(amount, holder, amount.token.tokenType.getAttachmentIdForGenericParam(hashingService))
 
     override val tokenType: TokenType get() = amount.token.tokenType
 

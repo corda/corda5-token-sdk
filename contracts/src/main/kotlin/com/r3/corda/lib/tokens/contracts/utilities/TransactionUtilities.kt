@@ -5,8 +5,9 @@ import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.crypto.HashingService
+import net.corda.v5.crypto.DigestAlgorithmName
 import net.corda.v5.crypto.SecureHash
-import net.corda.v5.crypto.sha256
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.ContractState
 import net.corda.v5.ledger.contracts.StateAndRef
@@ -78,12 +79,13 @@ fun Iterable<StateAndRef<FungibleToken>>.filterTokenStateAndRefsByIssuer(
 // Utilities for ensuring that the JAR which implements the specified TokenType is added to the transaction.
 
 internal val attachmentCache = HashMap<Class<*>, SecureHash>()
-internal val NULL_SECURE_HASH = SecureHash.zeroHash
 
 /**
  * If the [TokenType] is not a [TokenPointer] this function discovers the JAR which implements the receiving [TokenType].
  */
-fun TokenType.getAttachmentIdForGenericParam(): SecureHash? {
+fun TokenType.getAttachmentIdForGenericParam(
+    hashingService: HashingService
+): SecureHash? {
     val computedValue = synchronized(attachmentCache) {
         val startingPoint = if (this is IssuedTokenType) {
             this.tokenType.javaClass
@@ -97,15 +99,17 @@ fun TokenType.getAttachmentIdForGenericParam(): SecureHash? {
             }
             if (classToSearch.protectionDomain.codeSource.location
                     == TokenType::class.java.protectionDomain.codeSource.location) {
-                NULL_SECURE_HASH
+                hashingService.zeroHash(DigestAlgorithmName.SHA2_256)
             } else {
-                val hash = classToSearch.protectionDomain.codeSource
-                    .location.readBytes().sha256()
+                val hash = hashingService.hash(
+                    classToSearch.protectionDomain.codeSource.location.readBytes(),
+                    DigestAlgorithmName.SHA2_256
+                )
                 hash
             }
         }
     }
-    return if (computedValue == NULL_SECURE_HASH) {
+    return if (computedValue == hashingService.zeroHash(DigestAlgorithmName.SHA2_256)) {
         null
     } else {
         computedValue

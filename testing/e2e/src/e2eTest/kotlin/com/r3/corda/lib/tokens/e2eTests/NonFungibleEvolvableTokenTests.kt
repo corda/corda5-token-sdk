@@ -13,8 +13,8 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 
 /**
- * This test class is used to verify the confidential identities flows can run successfully by
- * calling them via sample flows.
+ * This test class is used to verify the token sdk flows can run successfully by
+ * calling them via test flows.
  */
 class NonFungibleEvolvableTokenTests {
 

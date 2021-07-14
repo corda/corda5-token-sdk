@@ -17,6 +17,7 @@ import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.node.MemberInfo
 import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount
@@ -97,6 +98,7 @@ fun addMoveFungibleTokens(
     transactionBuilder: TransactionBuilder,
     persistenceService: PersistenceService,
     identityService: IdentityService,
+    hashingService: HashingService,
     flowEngine: FlowEngine,
     memberInfo: MemberInfo,
     partiesAndAmounts: List<PartyAndAmount<TokenType>>,
@@ -112,6 +114,7 @@ fun addMoveFungibleTokens(
             partiesAndAmounts.toPairs(),
             changeHolder,
             transactionBuilder.lockId,
+            hashingService,
             TokenQueryBy()
         )
     return addMoveTokens(transactionBuilder = transactionBuilder, inputs = inputs, outputs = outputs)
@@ -128,6 +131,7 @@ fun addMoveFungibleTokens(
     transactionBuilder: TransactionBuilder,
     persistenceService: PersistenceService,
     identityService: IdentityService,
+    hashingService: HashingService,
     flowEngine: FlowEngine,
     memberInfo: MemberInfo,
     amount: Amount<TokenType>,
@@ -142,6 +146,7 @@ fun addMoveFungibleTokens(
         memberInfo = memberInfo,
         partiesAndAmounts = listOf(PartyAndAmount(holder, amount)),
         changeHolder = changeHolder,
+        hashingService = hashingService
     )
 }
 

@@ -6,6 +6,7 @@ import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.transactions.TransactionBuilder
@@ -49,12 +50,16 @@ class RedeemFungibleTokensFlow (
     @CordaInject
     lateinit var flowIdentity: FlowIdentity
 
+    @CordaInject
+    lateinit var hashingService: HashingService
+
     @Suspendable
     override fun generateExit(transactionBuilder: TransactionBuilder) {
         addFungibleTokensToRedeem(
             transactionBuilder = transactionBuilder,
             persistenceService = persistenceService,
             identityService = identityService,
+            hashingService = hashingService,
             flowEngine = flowEngine,
             amount = amount,
             issuer = issuerSession.counterparty,

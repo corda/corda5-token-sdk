@@ -7,14 +7,14 @@ import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.receive
 import net.corda.v5.application.flows.unwrap
 import net.corda.v5.application.injection.CordaInject
-import net.corda.v5.application.node.MemberInfo
+import net.corda.v5.application.services.MemberLookupService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.services.StatesToRecord
 import net.corda.v5.ledger.transactions.SignedTransaction
 
 class ObserverAwareFinalityFlowHandler(val otherSession: FlowSession) : Flow<SignedTransaction?> {
     @CordaInject
-    lateinit var memberInfo: MemberInfo
+    lateinit var memberLookupService: MemberLookupService
 
     @CordaInject
     lateinit var flowEngine: FlowEngine
@@ -27,7 +27,7 @@ class ObserverAwareFinalityFlowHandler(val otherSession: FlowSession) : Flow<Sig
             TransactionRole.OBSERVER -> StatesToRecord.ALL_VISIBLE
         }
         // If states are issued to self, then ReceiveFinalityFlow does not need to be invoked.
-        return if (!memberInfo.hasParty(otherSession.counterparty)) {
+        return if (otherSession.counterparty.owningKey !in memberLookupService.myInfo().identityKeys) {
             flowEngine.subFlow(ReceiveFinalityFlow(otherSideSession = otherSession, statesToRecord = statesToRecord))
         } else null
     }

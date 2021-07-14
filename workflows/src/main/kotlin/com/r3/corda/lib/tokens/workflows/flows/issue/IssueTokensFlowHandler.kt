@@ -5,7 +5,7 @@ import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.injection.CordaInject
-import net.corda.v5.application.node.MemberInfo
+import net.corda.v5.application.services.MemberLookupService
 import net.corda.v5.base.annotations.Suspendable
 
 /**
@@ -13,14 +13,14 @@ import net.corda.v5.base.annotations.Suspendable
  */
 class IssueTokensFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
     @CordaInject
-    lateinit var memberInfo: MemberInfo
+    lateinit var memberLookupService: MemberLookupService
 
     @CordaInject
     lateinit var flowEngine: FlowEngine
 
     @Suspendable
     override fun call() {
-        if (!memberInfo.hasParty(otherSession.counterparty)) {
+        if (otherSession.counterparty.owningKey !in memberLookupService.myInfo().identityKeys) {
             flowEngine.subFlow(ObserverAwareFinalityFlowHandler(otherSession))
         }
     }

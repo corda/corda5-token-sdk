@@ -9,6 +9,7 @@ import com.r3.corda.lib.tokens.selection.InsufficientNotLockedBalanceException
 import com.r3.corda.lib.tokens.selection.memory.config.InMemorySelectionConfig
 import com.r3.corda.lib.tokens.selection.memory.internal.Holder
 import com.r3.corda.lib.tokens.selection.memory.internal.lookupExternalIdFromKey
+import com.r3.corda.lib.tokens.selection.memory.services.VaultWatcherService.IndexingType
 import net.corda.v5.application.cordapp.CordappProvider
 import net.corda.v5.application.injection.CordaInjectPreStart
 import net.corda.v5.application.services.CordaService
@@ -43,16 +44,7 @@ val EMPTY_BUCKET = TokenBucket()
 
 const val PLACE_HOLDER: String = "THIS_IS_A_PLACE_HOLDER"
 
-class VaultWatcherService : CordaService {
-
-    private lateinit var tokenObserver: TokenObserver
-    private lateinit var providedConfig: InMemorySelectionConfig
-
-    private val __backingMap: ConcurrentMap<StateAndRef<FungibleToken>, String> = ConcurrentHashMap()
-    private lateinit var __indexed: ConcurrentMap<Class<out Holder>, ConcurrentMap<TokenIndex, TokenBucket>>
-
-    private val indexViewCreationLock: ReentrantReadWriteLock = ReentrantReadWriteLock()
-
+interface VaultWatcherService : CordaService {
     enum class IndexingType(val ownerType: Class<out Holder>) {
 
         EXTERNAL_ID(Holder.MappedIdentity::class.java),
@@ -68,6 +60,36 @@ class VaultWatcherService : CordaService {
             }
         }
     }
+
+    fun selectTokens(
+        owner: Holder,
+        requiredAmount: Amount<TokenType>,
+        predicate: ((StateAndRef<FungibleToken>) -> Boolean) = { true },
+        allowShortfall: Boolean = false,
+        autoUnlockDelay: Duration = Duration.ofMinutes(5),
+        selectionId: String
+    ): List<StateAndRef<FungibleToken>>
+
+    fun lockTokensExternal(
+        list: List<StateAndRef<FungibleToken>>,
+        knownSelectionId: String
+    )
+
+    fun unlockToken(
+        it: StateAndRef<FungibleToken>,
+        selectionId: String
+    )
+}
+
+class VaultWatcherServiceImpl : VaultWatcherService {
+
+    private lateinit var tokenObserver: TokenObserver
+    private lateinit var providedConfig: InMemorySelectionConfig
+
+    private val __backingMap: ConcurrentMap<StateAndRef<FungibleToken>, String> = ConcurrentHashMap()
+    private lateinit var __indexed: ConcurrentMap<Class<out Holder>, ConcurrentMap<TokenIndex, TokenBucket>>
+
+    private val indexViewCreationLock: ReentrantReadWriteLock = ReentrantReadWriteLock()
 
     @CordaInjectPreStart
     lateinit var cordappProvider: CordappProvider
@@ -247,18 +269,18 @@ class VaultWatcherService : CordaService {
         return indexedViewForHolder
     }
 
-    fun lockTokensExternal(list: List<StateAndRef<FungibleToken>>, knownSelectionId: String) {
+    override fun lockTokensExternal(list: List<StateAndRef<FungibleToken>>, knownSelectionId: String) {
         list.forEach {
             __backingMap.replace(it, PLACE_HOLDER, knownSelectionId)
         }
     }
 
-    fun selectTokens(
+    override fun selectTokens(
         owner: Holder,
         requiredAmount: Amount<TokenType>,
-        predicate: ((StateAndRef<FungibleToken>) -> Boolean) = { true },
-        allowShortfall: Boolean = false,
-        autoUnlockDelay: Duration = Duration.ofMinutes(5),
+        predicate: ((StateAndRef<FungibleToken>) -> Boolean),
+        allowShortfall: Boolean,
+        autoUnlockDelay: Duration,
         selectionId: String
     ): List<StateAndRef<FungibleToken>> {
         //we have to handle both cases
@@ -336,7 +358,7 @@ class VaultWatcherService : CordaService {
         return uncheckedCast(lockedTokens)
     }
 
-    fun unlockToken(it: StateAndRef<FungibleToken>, selectionId: String) {
+    override fun unlockToken(it: StateAndRef<FungibleToken>, selectionId: String) {
         __backingMap.replace(it, selectionId, PLACE_HOLDER)
     }
 
@@ -352,7 +374,7 @@ class VaultWatcherService : CordaService {
 
 class TokenObserver(
     val initialValues: List<StateAndRef<FungibleToken>>,
-    val ownerProvider: ((StateAndRef<FungibleToken>, VaultWatcherService.IndexingType) -> Holder),
+    val ownerProvider: ((StateAndRef<FungibleToken>, IndexingType) -> Holder),
     inline val asyncLoader: ((VaultStateEvent<FungibleToken>) -> Unit) -> Unit = { _ -> }
 ) {
 

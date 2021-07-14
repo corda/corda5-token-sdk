@@ -38,8 +38,9 @@ import net.corda.v5.application.flows.receive
 import net.corda.v5.application.flows.unwrap
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.injection.CordaInject
-import net.corda.v5.application.node.MemberInfo
 import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.MemberLookupService
+import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.application.services.crypto.KeyManagementService
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.CordaSerializable
@@ -124,10 +125,13 @@ class DvPFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
     lateinit var identityService: IdentityService
 
     @CordaInject
-    lateinit var memberInfo: MemberInfo
+    lateinit var memberLookupService: MemberLookupService
 
     @CordaInject
     lateinit var flowIdentity: FlowIdentity
+
+    @CordaInject
+    lateinit var hashingService: HashingService
 
     @Suspendable
     override fun call() {
@@ -140,10 +144,11 @@ class DvPFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
         val (inputs, outputs) =
             DatabaseTokenSelection(persistenceService, identityService, flowEngine).generateMove(
                 identityService,
-                memberInfo,
+                memberLookupService.myInfo(),
                 lockId = flowEngine.flowId.uuid,
                 partiesAndAmounts = listOf(Pair(otherSession.counterparty, dvPNotification.amount)),
-                changeHolder = changeHolder
+                changeHolder = changeHolder,
+                hashingService = hashingService
             )
         flowEngine.subFlow(SendStateAndRefFlow(otherSession, inputs))
         otherSession.send(outputs)

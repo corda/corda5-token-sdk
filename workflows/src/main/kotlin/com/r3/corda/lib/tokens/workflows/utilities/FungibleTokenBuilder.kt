@@ -9,6 +9,8 @@ import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
 import com.r3.corda.lib.tokens.contracts.utilities.of
 import com.r3.corda.lib.tokens.workflows.TokenBuilderException
 import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.crypto.HashingService
+import net.corda.v5.crypto.BasicHashingService
 import net.corda.v5.ledger.contracts.Amount
 import java.math.BigDecimal
 
@@ -25,6 +27,7 @@ class FungibleTokenBuilder {
     private lateinit var tokenType: TokenType
     private lateinit var issuer: Party
     private lateinit var holder: Party
+    private lateinit var hashingService: HashingService
 
     /**
      * Set the [amount] member property of the builder using a provided [Long].
@@ -83,6 +86,13 @@ class FungibleTokenBuilder {
     }
 
     /**
+     * Adds the necessary hashing service required for building the fungible token.
+     */
+    fun withHashingService(hashingService: HashingService): FungibleTokenBuilder  = this.apply {
+        this.hashingService = hashingService
+    }
+
+    /**
      * Builds an [Amount] of a [TokenType]. This function will throw a [TokenBuilderException]
      * exception if the appropriate builder methods have not been called: [withAmount], [ofTokenType].
      */
@@ -122,8 +132,11 @@ class FungibleTokenBuilder {
         !::holder.isInitialized -> {
             throw TokenBuilderException("A token holder has not been provided to the builder.")
         }
+        !::hashingService.isInitialized -> {
+            throw TokenBuilderException("A HashingService has not been provided to the builder.")
+        }
         else -> {
-            buildAmountIssuedTokenType() heldBy holder
+            buildAmountIssuedTokenType().heldBy(holder, hashingService)
         }
     }
 }

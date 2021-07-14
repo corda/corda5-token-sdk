@@ -2,23 +2,24 @@
 <SmellBaseline>
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
-    <ID>ComplexMethod:VaultWatcherService.kt$VaultWatcherService$fun selectTokens( owner: Holder, requiredAmount: Amount&lt;TokenType&gt;, predicate: ((StateAndRef&lt;FungibleToken&gt;) -&gt; Boolean) = { true }, allowShortfall: Boolean = false, autoUnlockDelay: Duration = Duration.ofMinutes(5), selectionId: String ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
+    <ID>ComplexMethod:VaultWatcherService.kt$VaultWatcherServiceImpl$override fun selectTokens( owner: Holder, requiredAmount: Amount&lt;TokenType&gt;, predicate: ((StateAndRef&lt;FungibleToken&gt;) -&gt; Boolean), allowShortfall: Boolean, autoUnlockDelay: Duration, selectionId: String ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
     <ID>ForbiddenComment:DatabaseTokenSelection.kt$DatabaseTokenSelection$// TODO: Need to specify exactly why it fails. Locked states or literally _no_ states!</ID>
     <ID>ForbiddenComment:DatabaseTokenSelection.kt$DatabaseTokenSelection$// TODO: revisit the back off strategy for contended spending.</ID>
     <ID>ForbiddenComment:Selector.kt$Selector$// TODO: This assumes there is only ever ONE notary. In the future we need to deal with notary change.</ID>
     <ID>ForbiddenComment:TokenQueryBy.kt$TokenQueryBy$//TODO: After 2.0 we should get rid of queryCriteria, because it was a mistake to expose it in the</ID>
-    <ID>LongMethod:VaultWatcherService.kt$VaultWatcherService$fun selectTokens( owner: Holder, requiredAmount: Amount&lt;TokenType&gt;, predicate: ((StateAndRef&lt;FungibleToken&gt;) -&gt; Boolean) = { true }, allowShortfall: Boolean = false, autoUnlockDelay: Duration = Duration.ofMinutes(5), selectionId: String ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
+    <ID>LongMethod:VaultWatcherService.kt$VaultWatcherServiceImpl$override fun selectTokens( owner: Holder, requiredAmount: Amount&lt;TokenType&gt;, predicate: ((StateAndRef&lt;FungibleToken&gt;) -&gt; Boolean), allowShortfall: Boolean, autoUnlockDelay: Duration, selectionId: String ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
     <ID>LongParameterList:DatabaseTokenSelection.kt$DatabaseTokenSelection$( private val persistenceService: PersistenceService, private val identityService: IdentityService, private val flowEngine: FlowEngine, private val maxRetries: Int, private val retrySleep: Int, private val retryCap: Int, private val pageSize: Int )</ID>
-    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, externalId: UUID, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, lockId: UUID, )</ID>
-    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, externalId: UUID, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, lockId: UUID, queryBy: TokenQueryBy )</ID>
-    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, holder: Holder, lockId: UUID, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, queryBy: TokenQueryBy = TokenQueryBy() )</ID>
-    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, holdingKey: PublicKey, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, lockId: UUID, )</ID>
-    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, holdingKey: PublicKey, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, lockId: UUID, queryBy: TokenQueryBy )</ID>
-    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, lockId: UUID, queryBy: TokenQueryBy )</ID>
+    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, externalId: UUID, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, lockId: UUID, hashingService: HashingService )</ID>
+    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, externalId: UUID, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, lockId: UUID, hashingService: HashingService, queryBy: TokenQueryBy )</ID>
+    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, holder: Holder, lockId: UUID, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, hashingService: HashingService, queryBy: TokenQueryBy = TokenQueryBy() )</ID>
+    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, holdingKey: PublicKey, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, lockId: UUID, hashingService: HashingService )</ID>
+    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, holdingKey: PublicKey, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, lockId: UUID, hashingService: HashingService, queryBy: TokenQueryBy )</ID>
+    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, lockId: UUID, hashingService: HashingService )</ID>
+    <ID>LongParameterList:Selector.kt$Selector$( identityService: IdentityService, memberInfo: MemberInfo, partiesAndAmounts: List&lt;Pair&lt;AbstractParty, Amount&lt;TokenType&gt;&gt;&gt;, changeHolder: AbstractParty, lockId: UUID, hashingService: HashingService, queryBy: TokenQueryBy )</ID>
     <ID>LongParameterList:VaultWatcherService.kt$VaultWatcherService$( owner: Holder, requiredAmount: Amount&lt;TokenType&gt;, predicate: ((StateAndRef&lt;FungibleToken&gt;) -&gt; Boolean) = { true }, allowShortfall: Boolean = false, autoUnlockDelay: Duration = Duration.ofMinutes(5), selectionId: String )</ID>
     <ID>MagicNumber:LocalTokenSelector.kt$LocalTokenSelector$5</ID>
-    <ID>MagicNumber:VaultWatcherService.kt$VaultWatcherService$1000</ID>
     <ID>MagicNumber:VaultWatcherService.kt$VaultWatcherService$5</ID>
+    <ID>MagicNumber:VaultWatcherService.kt$VaultWatcherServiceImpl$1000</ID>
     <ID>MatchingDeclarationName:ExternalIdIndexUtils.kt$Holder</ID>
     <ID>MaxLineLength:DatabaseSelectionConfig.kt$DatabaseSelectionConfig$return DatabaseTokenSelection(persistenceService, identityService, flowEngine, maxRetries, retrySleep, retryCap, pageSize)</ID>
     <ID>MaxLineLength:DatabaseSelectionConfig.kt$DatabaseSelectionConfig.Companion$ConfigSelection.logger.info("Found database token selection configuration with values maxRetries: $maxRetries, retrySleep: $retrySleep, retryCap: $retryCap, pageSize: $pageSize")</ID>
@@ -46,22 +47,23 @@
     <ID>MaxLineLength:SelectionUtilities.kt$fun</ID>
     <ID>MaxLineLength:Selector.kt$Selector$"States selected have different notaries. For now we don't support notary change, it should be performed beforehand."</ID>
     <ID>MaxLineLength:Selector.kt$Selector$*</ID>
+    <ID>MaxLineLength:Selector.kt$Selector$return generateMove(identityService, memberInfo, partiesAndAmounts, changeHolder, lockId, hashingService, TokenQueryBy())</ID>
     <ID>MaxLineLength:StateSelectionConfig.kt$ConfigSelection$*</ID>
     <ID>MaxLineLength:StateSelectionConfig.kt$ConfigSelection$else -&gt; throw IllegalArgumentException("Provide correct state-selection type string in the config, see kdocs for ConfigSelection.")</ID>
-    <ID>MaxLineLength:VaultMigratorService.kt$VaultMigratorService$//TODO - we should attempt to migrate the old vault contents. This must be done a service because we cannot guarantee</ID>
+    <ID>MaxLineLength:VaultMigratorService.kt$VaultMigratorServiceImpl$//TODO - we should attempt to migrate the old vault contents. This must be done a service because we cannot guarantee</ID>
     <ID>MaxLineLength:VaultWatcherService.kt$TokenBucket$class</ID>
-    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService$// 2 because all updates to the cache (addition / removal) are also done via UPDATER, this means that until we have finished loading all updates are buffered preventing out of order updates</ID>
-    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService$//1 when passed a raw TokenType - it's likely that the selecting entity does not care about the issuer and so we cannot constrain all selections to using IssuedTokenType</ID>
-    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService$//2 when passed an IssuedTokenType - it's likely that the selecting entity does care about the issuer, and so we must filter all tokens which do not match the issuer.</ID>
-    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService$//so instead of relying on an indexed view, we can create a predicate on the fly which will constrain the selection to the correct token type</ID>
-    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService$//why do we do this? It doesn't really make sense to index on token type, as it's very likely that there will be very few types of tokens in a given vault</ID>
-    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService$?:</ID>
-    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService$LOG.warn("Attempted to overwrite existing token ${stateAndRef.ref}, this suggests incorrect vault behaviours")</ID>
-    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService$private</ID>
-    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService$private fun addTokensToCache(stateAndRefs: Collection&lt;StateAndRef&lt;FungibleToken&gt;&gt;)</ID>
-    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherService$throw InsufficientNotLockedBalanceException("Insufficient not-locked spendable states identified for $requiredAmount.")</ID>
+    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherServiceImpl$// 2 because all updates to the cache (addition / removal) are also done via UPDATER, this means that until we have finished loading all updates are buffered preventing out of order updates</ID>
+    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherServiceImpl$//1 when passed a raw TokenType - it's likely that the selecting entity does not care about the issuer and so we cannot constrain all selections to using IssuedTokenType</ID>
+    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherServiceImpl$//2 when passed an IssuedTokenType - it's likely that the selecting entity does care about the issuer, and so we must filter all tokens which do not match the issuer.</ID>
+    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherServiceImpl$//so instead of relying on an indexed view, we can create a predicate on the fly which will constrain the selection to the correct token type</ID>
+    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherServiceImpl$//why do we do this? It doesn't really make sense to index on token type, as it's very likely that there will be very few types of tokens in a given vault</ID>
+    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherServiceImpl$?:</ID>
+    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherServiceImpl$LOG.warn("Attempted to overwrite existing token ${stateAndRef.ref}, this suggests incorrect vault behaviours")</ID>
+    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherServiceImpl$private</ID>
+    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherServiceImpl$private fun addTokensToCache(stateAndRefs: Collection&lt;StateAndRef&lt;FungibleToken&gt;&gt;)</ID>
+    <ID>MaxLineLength:VaultWatcherService.kt$VaultWatcherServiceImpl$throw InsufficientNotLockedBalanceException("Insufficient not-locked spendable states identified for $requiredAmount.")</ID>
     <ID>NestedBlockDepth:DatabaseTokenSelection.kt$DatabaseTokenSelection$@Suspendable override fun selectTokens( holder: Holder, lockId: UUID, requiredAmount: Amount&lt;TokenType&gt;, queryBy: TokenQueryBy ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
-    <ID>NestedBlockDepth:VaultWatcherService.kt$VaultWatcherService$fun selectTokens( owner: Holder, requiredAmount: Amount&lt;TokenType&gt;, predicate: ((StateAndRef&lt;FungibleToken&gt;) -&gt; Boolean) = { true }, allowShortfall: Boolean = false, autoUnlockDelay: Duration = Duration.ofMinutes(5), selectionId: String ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
+    <ID>NestedBlockDepth:VaultWatcherService.kt$VaultWatcherServiceImpl$override fun selectTokens( owner: Holder, requiredAmount: Amount&lt;TokenType&gt;, predicate: ((StateAndRef&lt;FungibleToken&gt;) -&gt; Boolean), allowShortfall: Boolean, autoUnlockDelay: Duration, selectionId: String ): List&lt;StateAndRef&lt;FungibleToken&gt;&gt;</ID>
     <ID>NewLineAtEndOfFile:SelectionUtilities.kt$com.r3.corda.lib.tokens.selection.SelectionUtilities.kt</ID>
     <ID>NewLineAtEndOfFile:Selector.kt$com.r3.corda.lib.tokens.selection.api.Selector.kt</ID>
     <ID>NewLineAtEndOfFile:StateSelectionConfig.kt$com.r3.corda.lib.tokens.selection.api.StateSelectionConfig.kt</ID>
@@ -71,12 +73,12 @@
     <ID>SwallowedException:InMemorySelectionConfig.kt$InMemorySelectionConfig.Companion$catch (e: ClassCastException) { logger.warn("No indexing method specified. Indexes will be created at run-time for each invocation of selectTokens") emptyList() }</ID>
     <ID>SwallowedException:InMemorySelectionConfig.kt$InMemorySelectionConfig.Companion$catch (e: CordappConfigException) { logger.warn("No indexing method specified. Indexes will be created at run-time for each invocation of selectTokens") emptyList() }</ID>
     <ID>SwallowedException:InMemorySelectionConfig.kt$catch (e: CordappConfigException) { if (exists(path)) { throw IllegalArgumentException("Provide correct database selection configuration for config path: $path") } else { null } }</ID>
-    <ID>TooGenericExceptionCaught:VaultWatcherService.kt$VaultWatcherService$t: Throwable</ID>
-    <ID>TooGenericExceptionCaught:VaultWatcherService.kt$VaultWatcherService.&lt;no name provided&gt;$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:VaultWatcherService.kt$VaultWatcherServiceImpl$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:VaultWatcherService.kt$VaultWatcherServiceImpl.&lt;no name provided&gt;$t: Throwable</ID>
     <ID>TooManyFunctions:Selector.kt$Selector</ID>
-    <ID>TooManyFunctions:VaultWatcherService.kt$VaultWatcherService : CordaService</ID>
-    <ID>VariableNaming:VaultWatcherService.kt$VaultWatcherService$private lateinit var __indexed: ConcurrentMap&lt;Class&lt;out Holder&gt;, ConcurrentMap&lt;TokenIndex, TokenBucket&gt;&gt;</ID>
-    <ID>VariableNaming:VaultWatcherService.kt$VaultWatcherService$private val __backingMap: ConcurrentMap&lt;StateAndRef&lt;FungibleToken&gt;, String&gt; = ConcurrentHashMap()</ID>
+    <ID>TooManyFunctions:VaultWatcherService.kt$VaultWatcherServiceImpl : VaultWatcherService</ID>
+    <ID>VariableNaming:VaultWatcherService.kt$VaultWatcherServiceImpl$private lateinit var __indexed: ConcurrentMap&lt;Class&lt;out Holder&gt;, ConcurrentMap&lt;TokenIndex, TokenBucket&gt;&gt;</ID>
+    <ID>VariableNaming:VaultWatcherService.kt$VaultWatcherServiceImpl$private val __backingMap: ConcurrentMap&lt;StateAndRef&lt;FungibleToken&gt;, String&gt; = ConcurrentHashMap()</ID>
     <ID>WildcardImport:DatabaseTokenSelection.kt$import com.r3.corda.lib.tokens.selection.*</ID>
   </CurrentIssues>
 </SmellBaseline>

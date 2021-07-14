@@ -14,6 +14,7 @@ import net.corda.v5.application.flows.StartableByRPC
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.application.services.json.JsonMarshallingService
 import net.corda.v5.application.services.json.parseJson
 import net.corda.v5.base.annotations.Suspendable
@@ -38,6 +39,9 @@ class CreateHouseToken @JsonConstructor constructor(
     @CordaInject
     lateinit var jsonMarshallingService: JsonMarshallingService
 
+    @CordaInject
+    lateinit var hashingService: HashingService
+
     @Suspendable
     override fun call(): JsonRepresentableHouseNFT {
         val params: Map<String, String> = jsonMarshallingService.parseJson(inputParams.parametersInJson)
@@ -60,6 +64,7 @@ class CreateHouseToken @JsonConstructor constructor(
             .ofTokenType(house.toPointer<HouseToken>())
             .issuedBy(flowIdentity.ourIdentity)
             .heldBy(flowIdentity.ourIdentity)
+            .withHashingService(hashingService)
             .buildNonFungibleToken()
 
         flowEngine.subFlow(IssueTokens(listOf(houseToken)))

@@ -11,6 +11,7 @@ import com.r3.corda.lib.tokens.selection.memory.internal.Holder
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.node.MemberInfo
 import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.Amount.Companion.sumOrThrow
@@ -136,6 +137,7 @@ abstract class Selector {
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         lockId: UUID,
+        hashingService: HashingService,
         queryBy: TokenQueryBy
     ): InputOutputStates<FungibleToken> {
         return generateMove(
@@ -145,6 +147,7 @@ abstract class Selector {
             lockId,
             partiesAndAmounts,
             changeHolder,
+            hashingService,
             queryBy
         )
     }
@@ -156,8 +159,9 @@ abstract class Selector {
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         lockId: UUID,
+        hashingService: HashingService
     ): InputOutputStates<FungibleToken> {
-        return generateMove(identityService, memberInfo, partiesAndAmounts, changeHolder, lockId, TokenQueryBy())
+        return generateMove(identityService, memberInfo, partiesAndAmounts, changeHolder, lockId, hashingService, TokenQueryBy())
     }
 
     /**
@@ -177,6 +181,7 @@ abstract class Selector {
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         lockId: UUID,
+        hashingService: HashingService,
         queryBy: TokenQueryBy
     ): InputOutputStates<FungibleToken> {
         return generateMove(
@@ -186,6 +191,7 @@ abstract class Selector {
             lockId,
             partiesAndAmounts,
             changeHolder,
+            hashingService,
             queryBy
         )
     }
@@ -198,6 +204,7 @@ abstract class Selector {
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         lockId: UUID,
+        hashingService: HashingService
     ): InputOutputStates<FungibleToken> {
         return generateMove(
             identityService,
@@ -206,6 +213,7 @@ abstract class Selector {
             partiesAndAmounts,
             changeHolder,
             lockId,
+            hashingService,
             TokenQueryBy()
         )
     }
@@ -227,6 +235,7 @@ abstract class Selector {
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         lockId: UUID,
+        hashingService: HashingService,
         queryBy: TokenQueryBy
     ): InputOutputStates<FungibleToken> {
         return generateMove(
@@ -236,6 +245,7 @@ abstract class Selector {
             lockId,
             partiesAndAmounts,
             changeHolder,
+            hashingService,
             queryBy
         )
     }
@@ -248,6 +258,7 @@ abstract class Selector {
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
         lockId: UUID,
+        hashingService: HashingService
     ): InputOutputStates<FungibleToken> {
         return generateMove(
             identityService,
@@ -256,6 +267,7 @@ abstract class Selector {
             partiesAndAmounts,
             changeHolder,
             lockId,
+            hashingService,
             TokenQueryBy()
         )
     }
@@ -276,6 +288,7 @@ abstract class Selector {
         lockId: UUID,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
+        hashingService: HashingService,
         queryBy: TokenQueryBy = TokenQueryBy()
     ): InputOutputStates<FungibleToken> {
         // Grab some tokens from the vault and soft-lock.
@@ -291,7 +304,7 @@ abstract class Selector {
 
         // Check that the change identity belongs to the node that called generateMove.
         val ownerId = identityService.partyFromAnonymous(changeHolder)
-        check(ownerId != null && memberInfo.hasParty(ownerId)) {
+        check(ownerId != null && ownerId.owningKey in memberInfo.identityKeys) {
             "Owner of the change: $changeHolder is not the identity that belongs to the node."
         }
 
@@ -319,21 +332,21 @@ abstract class Selector {
                 when {
                     delta > 0 -> {
                         // The states from the current issuer more than covers this payment.
-                        outputStates += FungibleToken(Amount(remainingToPay, token), party)
+                        outputStates += FungibleToken(Amount(remainingToPay, token), party, hashingService)
                         remainingTokensFromEachIssuer[remainingTokensFromEachIssuer.lastIndex] =
                             Pair(token, Amount(delta, token))
                         remainingToPay = 0
                     }
                     delta == 0L -> {
                         // The states from the current issuer exactly covers this payment.
-                        outputStates += FungibleToken(Amount(remainingToPay, token), party)
+                        outputStates += FungibleToken(Amount(remainingToPay, token), party, hashingService)
                         remainingTokensFromEachIssuer.removeAt(remainingTokensFromEachIssuer.lastIndex)
                         remainingToPay = 0
                     }
                     delta < 0 -> {
                         // The states from the current issuer don't cover this payment, so we'll have to use >1 output
                         // state to cover this payment.
-                        outputStates += FungibleToken(remainingFromCurrentIssuer, party)
+                        outputStates += FungibleToken(remainingFromCurrentIssuer, party, hashingService)
                         remainingTokensFromEachIssuer.removeAt(remainingTokensFromEachIssuer.lastIndex)
                         remainingToPay -= remainingFromCurrentIssuer.quantity
                     }
@@ -343,7 +356,7 @@ abstract class Selector {
 
         // Generate the change states.
         remainingTokensFromEachIssuer.forEach { (_, amount) ->
-            outputStates += FungibleToken(amount, changeHolder)
+            outputStates += FungibleToken(amount, changeHolder, hashingService)
         }
 
         return InputOutputStates(acceptableStates, outputStates)
@@ -359,7 +372,8 @@ abstract class Selector {
     fun generateExit(
         exitStates: List<StateAndRef<FungibleToken>>,
         amount: Amount<TokenType>,
-        changeHolder: AbstractParty
+        changeHolder: AbstractParty,
+        hashingService: HashingService
     ): InputOutputStates<FungibleToken> {
         check(exitStates.isNotEmpty()) {
             "Exiting empty list of states"
@@ -369,14 +383,15 @@ abstract class Selector {
             "Tokens with different issuers."
         }
         // Choose states to cover amount - return ones used, and change output
-        val changeOutput = change(exitStates, amount, changeHolder)
+        val changeOutput = change(exitStates, amount, changeHolder, hashingService)
         return InputOutputStates(exitStates, changeOutput?.let { listOf(it) } ?: emptyList())
     }
 
     private fun change(
         exitStates: List<StateAndRef<FungibleToken>>,
         amount: Amount<TokenType>,
-        changeOwner: AbstractParty
+        changeOwner: AbstractParty,
+        hashingService: HashingService
     ): FungibleToken? {
         val assetsSum = exitStates.sumTokenStateAndRefs()
         val difference = assetsSum - amount.issuedBy(exitStates.first().state.data.amount.token.issuer)
@@ -386,7 +401,7 @@ abstract class Selector {
         return if (difference.quantity == 0L) {
             null
         } else {
-            difference heldBy changeOwner
+            difference.heldBy(changeOwner, hashingService)
         }
     }
 }

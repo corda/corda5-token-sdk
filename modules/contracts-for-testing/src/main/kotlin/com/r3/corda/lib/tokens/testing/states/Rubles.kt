@@ -7,6 +7,7 @@ import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.BelongsToContract
 import net.corda.v5.ledger.contracts.Contract
@@ -44,8 +45,9 @@ data class Appartment(val id: String = "Foo") : TokenType(id, 0)
 @BelongsToContract(DodgeTokenContract::class)
 open class DodgeToken(
     amount: Amount<IssuedTokenType>,
-    holder: AbstractParty
-) : FungibleToken(amount, holder)
+    holder: AbstractParty,
+    hashingService: HashingService
+) : FungibleToken(amount, holder, hashingService)
 
 open class DodgeTokenContract : Contract {
     override fun verify(tx: LedgerTransaction) {
@@ -58,5 +60,6 @@ open class DodgeTokenContract : Contract {
 @BelongsToContract(FungibleTokenContract::class)
 open class RubleToken(
     amount: Amount<IssuedTokenType>,
-    holder: AbstractParty
-) : FungibleToken(amount, holder)
+    holder: AbstractParty,
+    hashingService: HashingService
+) : FungibleToken(amount, holder, hashingService)

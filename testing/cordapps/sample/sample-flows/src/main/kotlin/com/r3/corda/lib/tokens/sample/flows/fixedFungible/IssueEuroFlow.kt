@@ -10,6 +10,7 @@ import net.corda.v5.application.flows.StartableByRPC
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.application.services.json.JsonMarshallingService
 import net.corda.v5.application.services.json.parseJson
 import net.corda.v5.base.annotations.Suspendable
@@ -28,6 +29,9 @@ class IssueEuroFlow @JsonConstructor constructor(
 	@CordaInject
 	lateinit var flowEngine: FlowEngine
 
+	@CordaInject
+	lateinit var hashingService: HashingService
+
 	@Suspendable
 	override fun call() {
 		val params: Map<String, String> = jsonMarshallingService.parseJson(inputJson.parametersInJson)
@@ -38,6 +42,7 @@ class IssueEuroFlow @JsonConstructor constructor(
 			.issuedBy(flowIdentity.ourIdentity)
 			.heldBy(flowIdentity.ourIdentity)
 			.withAmount(amount)
+			.withHashingService(hashingService)
 			.buildFungibleToken()
 
 		flowEngine.subFlow(IssueTokensFlow(fungibleToken))

@@ -10,6 +10,7 @@ import com.r3.corda.lib.tokens.contracts.utilities.getAttachmentIdForGenericPara
 import com.r3.corda.lib.tokens.contracts.utilities.holderString
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.crypto.SecureHash
 import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.BelongsToContract
@@ -47,7 +48,8 @@ open class NonFungibleToken (
         token: IssuedTokenType,
         holder: AbstractParty,
         linearId: UniqueIdentifier,
-    ) : this(token, holder, linearId, token.tokenType.getAttachmentIdForGenericParam())
+        hashingService: HashingService
+    ) : this(token, holder, linearId, token.tokenType.getAttachmentIdForGenericParam(hashingService))
 
     override val issuedTokenType: IssuedTokenType get() = token
 

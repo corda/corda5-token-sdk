@@ -6,6 +6,7 @@ import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.crypto.toStringShort
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.TransactionState
@@ -20,10 +21,10 @@ class TokenUtilities
  * Creates a [FungibleToken] from an an amount of [IssuedTokenType].
  * E.g. Amount<IssuedTokenType<TokenType>> -> FungibleToken<TokenType>.
  */
-infix fun Amount<IssuedTokenType>.heldBy(owner: AbstractParty): FungibleToken = _heldBy(owner)
+fun Amount<IssuedTokenType>.heldBy(owner: AbstractParty, hashingService: HashingService): FungibleToken = _heldBy(owner, hashingService)
 
-internal infix fun Amount<IssuedTokenType>._heldBy(owner: AbstractParty): FungibleToken {
-    return FungibleToken(this, owner)
+internal fun Amount<IssuedTokenType>._heldBy(owner: AbstractParty, hashingService: HashingService): FungibleToken {
+    return FungibleToken(this, owner, hashingService)
 }
 
 // --------------------------

@@ -12,8 +12,9 @@ import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.identity.AbstractParty
-import net.corda.v5.application.node.MemberInfo
 import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.MemberLookupService
+import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.transactions.SignedTransaction
@@ -53,7 +54,10 @@ class ConfidentialMoveFungibleTokensFlow (
     lateinit var identityService: IdentityService
 
     @CordaInject
-    lateinit var memberInfo: MemberInfo
+    lateinit var memberLookupService: MemberLookupService
+
+    @CordaInject
+    lateinit var hashingService: HashingService
 
     constructor(
         partyAndAmount: PartyAndAmount<TokenType>,
@@ -74,10 +78,11 @@ class ConfidentialMoveFungibleTokensFlow (
         val tokenSelection = DatabaseTokenSelection(persistenceService, identityService, flowEngine)
         val (inputs, outputs) = tokenSelection.generateMove(
             identityService,
-            memberInfo,
+            memberLookupService.myInfo(),
             lockId = flowEngine.flowId.uuid,
             partiesAndAmounts = partiesAndAmounts.toPairs(),
             changeHolder = changeHolder,
+            hashingService = hashingService,
             queryBy = TokenQueryBy()
         )
         // TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role
