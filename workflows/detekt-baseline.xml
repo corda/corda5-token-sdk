@@ -79,6 +79,7 @@
     <ID>MaxLineLength:ObserverAwareFinalityFlow.kt$ObserverAwareFinalityFlow$val wellKnownParticipantsAndIssuers: Set&lt;Party&gt; = participants.toWellKnownParties(identityService).toSet() + issuers</ID>
     <ID>MaxLineLength:QueryUtilities.kt$fun</ID>
     <ID>MaxLineLength:QueryUtilities.kt$inline</ID>
+    <ID>MaxLineLength:QueryUtilities.kt$val result = query&lt;StateAndRef&lt;FungibleToken&gt;&gt;(namedQuery, params, IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME)</ID>
     <ID>MaxLineLength:RedeemFlowUtilities.kt$* Redeem amount of certain type of the token issued by [issuer]. Pay possible change to the [changeHolder] - it can be confidential identity.</ID>
     <ID>MaxLineLength:RedeemTokensFlow.kt$RedeemTokensFlow$*</ID>
     <ID>MaxLineLength:RedeemTokensFlowHandler.kt$RedeemTokensFlowHandler$// Synchronise all confidential identities, issuer isn't involved in move transactions, so states holders may</ID>
