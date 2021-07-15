@@ -168,7 +168,7 @@ artifactory {
     publish {
         contextUrl = artifactoryContextUrl
         repository {
-            repoKey = 'corda-lib-dev'
+            repoKey = System.getenv('CORDA_PUBLISH_REPOSITORY_KEY') ?: 'corda-lib-dev'
             username = cordaArtifactoryUsername
             password = cordaArtifactoryPassword
             maven = true
