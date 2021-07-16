@@ -62,7 +62,7 @@ subprojects {
         maven { url "https://repo.gradle.org/gradle/libs-releases-local/" }
         //needed for C5 binaries
         maven {
-            url = "$artifactoryContextUrl/corda-os-maven-unstable"
+            url = "$artifactoryContextUrl/corda-os-maven-stable-local"
             credentials {
                 username = cordaArtifactoryUsername
                 password = cordaArtifactoryPassword
