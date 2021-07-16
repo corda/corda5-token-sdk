@@ -33,7 +33,12 @@ plugins {
 }
 
 allprojects {
-    version "$tokens_release_version"
+    if (System.getenv("RELEASE_VERSION")?.trim()) {
+        version = System.getenv("RELEASE_VERSION")
+    } else {
+        def versionSuffix = System.getenv('VERSION_SUFFIX') ?: "0-SNAPSHOT"
+        version = "$tokens_release_version-$versionSuffix"
+    }
     group "$tokens_release_group"
 
     configurations.all {
@@ -163,7 +168,7 @@ artifactory {
     publish {
         contextUrl = artifactoryContextUrl
         repository {
-            repoKey = 'corda-lib-dev'
+            repoKey = System.getenv('CORDA_PUBLISH_REPOSITORY_KEY') ?: 'corda-lib-dev'
             username = cordaArtifactoryUsername
             password = cordaArtifactoryPassword
             maven = true
