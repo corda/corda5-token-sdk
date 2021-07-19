@@ -74,6 +74,13 @@ subprojects {
             }
         }
         maven {
+            url = "$artifactoryContextUrl/corda-os-maven-unstable"
+            credentials {
+                username = cordaArtifactoryUsername
+                password = cordaArtifactoryPassword
+            }
+        }
+        maven {
             url = "$artifactoryContextUrl/corda-dependencies"
         }
     }
