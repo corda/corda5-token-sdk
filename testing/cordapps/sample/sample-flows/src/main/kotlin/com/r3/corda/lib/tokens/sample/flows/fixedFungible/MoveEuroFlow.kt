@@ -1,6 +1,7 @@
 package com.r3.corda.lib.tokens.sample.flows.fixedFungible
 
 import com.r3.corda.lib.tokens.money.EUR
+import com.r3.corda.lib.tokens.workflows.flows.rpc.ConfidentialMoveFungibleTokens
 import com.r3.corda.lib.tokens.workflows.flows.rpc.MoveFungibleTokens
 import com.r3.corda.lib.tokens.workflows.types.PartyAndAmount
 import net.corda.v5.application.flows.*
@@ -30,16 +31,29 @@ class MoveEuroFlow @JsonConstructor constructor(
 	override fun call() {
 		val params: Map<String, String> = jsonMarshallingService.parseJson(inputJson.parametersInJson)
 		val amount = params["amount"]!!.toDouble()
+		val confidential = params["confidential"]!!.toBoolean()
 		val recipient = CordaX500Name.parse(params["recipient"]!!)
 		val recipientParty = identityService.partyFromName(recipient)!!
 
-		flowEngine.subFlow(
-			MoveFungibleTokens(
-				PartyAndAmount(
-					recipientParty,
-					EUR(amount)
+		if(confidential) {
+			flowEngine.subFlow(
+				ConfidentialMoveFungibleTokens(
+					PartyAndAmount(
+						recipientParty,
+						EUR(amount)
+					),
+					emptyList()
 				)
 			)
-		)
+		} else {
+			flowEngine.subFlow(
+				MoveFungibleTokens(
+					PartyAndAmount(
+						recipientParty,
+						EUR(amount)
+					)
+				)
+			)
+		}
 	}
 }
