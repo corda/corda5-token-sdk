@@ -40,7 +40,7 @@ dependencies {
 
 cordapp {
     targetPlatformVersion corda_platform_version.toInteger()
-    minimumPlatformVersion 11
+    minimumPlatformVersion corda_platform_version as Integer
     contract {
         name "Token SDK Contracts"
         vendor "R3"

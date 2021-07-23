@@ -8,7 +8,7 @@ def selectionProject = project(":modules:selection")
 
 cordapp {
     targetPlatformVersion corda_platform_version.toInteger()
-    minimumPlatformVersion 11
+    minimumPlatformVersion corda_platform_version as Integer
     workflow {
         name "Token SDK Workflows"
         vendor "R3"
