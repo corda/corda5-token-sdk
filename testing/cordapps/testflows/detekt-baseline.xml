@@ -4,8 +4,6 @@
   <CurrentIssues>
     <ID>EmptyFunctionBlock:TestFlows.kt$DvPFlowHandler.&lt;no name provided&gt;${}</ID>
     <ID>MagicNumber:TestFlows.kt$JustLocalSelect$10</ID>
-    <ID>MaxLineLength:TestFlows.kt$DvPFlow$transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction()).ourSigningKeys(keyManagementService)</ID>
-    <ID>MaxLineLength:TestFlows.kt$DvPFlow$val txBuilder = transactionBuilderFactory.create().setNotary(getPreferredNotary(notaryLookupService, cordappProvider.appConfig))</ID>
     <ID>MaxLineLength:TestFlows.kt$DvPFlowHandler$// TODO This is API pain, we assumed that we could just modify TransactionBuilder, but... it cannot be sent over the wire, because non-serializable</ID>
     <ID>MaxLineLength:TestFlows.kt$RedeemNonFungibleHouse$// TODO This is hack that will be removed after fix in Corda 5. startFlowDynamic doesn't handle type parameters properly.</ID>
     <ID>NewLineAtEndOfFile:TestFlows.kt$com.r3.corda.lib.tokens.testflows.TestFlows.kt</ID>

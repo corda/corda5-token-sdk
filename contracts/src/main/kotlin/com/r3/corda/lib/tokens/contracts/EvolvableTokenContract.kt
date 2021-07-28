@@ -10,6 +10,7 @@ import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.ledger.contracts.Contract
 import net.corda.v5.ledger.contracts.requireSingleCommand
 import net.corda.v5.ledger.transactions.LedgerTransaction
+import net.corda.v5.ledger.transactions.commandsOfType
 
 /**
  * When developers implement contracts for their own token types, they should sub-class this abstract class. It contains
@@ -19,7 +20,7 @@ abstract class EvolvableTokenContract : Contract {
 
     override fun verify(tx: LedgerTransaction) {
         // Only allow a single command.
-        require(tx.commandsOfType(EvolvableTokenTypeCommand::class.java).size == 1) {
+        require(tx.commandsOfType<EvolvableTokenTypeCommand>().size == 1) {
             "Evolvable token transactions support exactly one command only."
         }
         // Dispatch based on command.

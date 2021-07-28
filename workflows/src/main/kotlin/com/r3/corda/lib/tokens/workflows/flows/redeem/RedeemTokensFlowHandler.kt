@@ -18,6 +18,7 @@ import net.corda.v5.application.injection.CordaInject
 import net.corda.v5.application.services.MemberLookupService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.transactions.SignedTransaction
+import net.corda.v5.ledger.transactions.inRefsOfType
 
 /**
  * Inlined responder flow called on the issuer side, should be used with: [RedeemFungibleTokensFlow],
@@ -50,7 +51,7 @@ class RedeemTokensFlowHandler(val otherSession: FlowSession) : Flow<SignedTransa
                     override fun checkTransaction(stx: SignedTransaction) {
                         val stateAndRefsToRedeem =
                             transactionMappingService.toLedgerTransaction(stx, false)
-                                .inRefsOfType(AbstractToken::class.java)
+                                .inRefsOfType<AbstractToken>()
                         checkSameIssuer(stateAndRefsToRedeem, flowIdentity.ourIdentity)
                         checkSameNotary(stateAndRefsToRedeem)
                         checkOwner(identityService, stateAndRefsToRedeem, otherSession.counterparty)

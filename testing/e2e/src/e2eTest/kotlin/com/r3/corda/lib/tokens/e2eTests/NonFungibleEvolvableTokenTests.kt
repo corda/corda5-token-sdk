@@ -1,7 +1,11 @@
 package com.r3.corda.lib.tokens.e2eTests
 
 import com.google.gson.JsonParser
-import com.r3.corda.lib.tokens.sample.flows.evolvableNft.*
+import com.r3.corda.lib.tokens.sample.flows.evolvableNft.CreateHouseToken
+import com.r3.corda.lib.tokens.sample.flows.evolvableNft.GetHouseInfoFlow
+import com.r3.corda.lib.tokens.sample.flows.evolvableNft.MoveHouseTokenFlow
+import com.r3.corda.lib.tokens.sample.flows.evolvableNft.RedeemHouseTokenFlow
+import com.r3.corda.lib.tokens.sample.flows.evolvableNft.UpdateHouseValuation
 import com.r3.corda.lib.tokens.testing.states.House
 import net.corda.client.rpc.flow.FlowStarterRPCOps
 import net.corda.test.dev.network.Node
@@ -18,142 +22,142 @@ import org.junit.jupiter.api.Test
  */
 class NonFungibleEvolvableTokenTests {
 
-	companion object {
-		@JvmStatic
-		@BeforeAll
-		fun verifySetup() {
-			e2eTestNetwork.verify {
-				listOf("alice", "bob", "caroline")
-					.map { hasNode(it) }
-					.forEach {
-						it.withFlow<CreateHouseToken>()
-							.withFlow<GetHouseInfoFlow>()
-							.withFlow<MoveHouseTokenFlow>()
-							.withFlow<RedeemHouseTokenFlow>()
-							.withFlow<UpdateHouseValuation>()
-					}
-			}
-		}
-	}
+    companion object {
+        @JvmStatic
+        @BeforeAll
+        fun verifySetup() {
+            e2eTestNetwork.verify {
+                listOf("alice", "bob", "caroline")
+                    .map { hasNode(it) }
+                    .forEach {
+                        it.withFlow<CreateHouseToken>()
+                            .withFlow<GetHouseInfoFlow>()
+                            .withFlow<MoveHouseTokenFlow>()
+                            .withFlow<RedeemHouseTokenFlow>()
+                            .withFlow<UpdateHouseValuation>()
+                    }
+            }
+        }
+    }
 
-	@Test
-	fun runSampleFlowsForEvolvableNonFungibleToken() {
-		e2eTestNetwork.use {
-			/**
-			 * Issue [House] state
-			 */
-			var houseValue = 400000.0
-			val currencyCode = "EUR"
-			val address = "1 Fake Street"
+    @Test
+    fun runSampleFlowsForEvolvableNonFungibleToken() {
+        e2eTestNetwork.use {
+            /**
+             * Issue [House] state
+             */
+            var houseValue = 400000.0
+            val currencyCode = "EUR"
+            val address = "1 Fake Street"
 
-			// Alice issues a state to be exchanged
-			val (nftLinearId, houseLinearId) = alice().createHouseToken(address, currencyCode, houseValue)
-			alice().assertHouseStateProperties(houseLinearId, address, houseValue, currencyCode)
+            // Alice issues a state to be exchanged
+            val (nftLinearId, houseLinearId) = alice().createHouseToken(address, currencyCode, houseValue)
+            alice().assertHouseStateProperties(houseLinearId, address, houseValue, currencyCode)
 
-			houseValue += 50000.0
+            houseValue += 50000.0
 
-			alice().updateHouseValuation(houseLinearId, houseValue, currencyCode)
-			alice().assertHouseStateProperties(houseLinearId, address, houseValue, currencyCode)
+            alice().updateHouseValuation(houseLinearId, houseValue, currencyCode)
+            alice().assertHouseStateProperties(houseLinearId, address, houseValue, currencyCode)
 
-			alice().moveHouseToken(nftLinearId, bob().getX500Name())
-			alice().assertHouseStateProperties(houseLinearId, address, houseValue, currencyCode)
-			bob().assertHouseStateProperties(houseLinearId, address, houseValue, currencyCode)
+            alice().moveHouseToken(nftLinearId, bob().getX500Name())
+            alice().assertHouseStateProperties(houseLinearId, address, houseValue, currencyCode)
+            bob().assertHouseStateProperties(houseLinearId, address, houseValue, currencyCode)
 
-			bob().redeemHouseToken(nftLinearId)
-		}
-	}
+            bob().redeemHouseToken(nftLinearId)
+        }
+    }
 
-	private fun Node.createHouseToken(
-		address: String,
-		currencyCode: String,
-		initialHouseValue: Double
-	): Pair<String, String> {
-		return httpRpcClient<FlowStarterRPCOps, Pair<String, String>> {
-			val result = getFlowOutcome(
-				runFlow(
-					CreateHouseToken::class,
-					mapOf(
-						"address" to address,
-						"currencyCode" to currencyCode,
-						"value" to initialHouseValue.toString(),
-					)
-				)
-			)
+    private fun Node.createHouseToken(
+        address: String,
+        currencyCode: String,
+        initialHouseValue: Double
+    ): Pair<String, String> {
+        return httpRpcClient<FlowStarterRPCOps, Pair<String, String>> {
+            val result = getFlowOutcome(
+                runFlow(
+                    CreateHouseToken::class,
+                    mapOf(
+                        "address" to address,
+                        "currencyCode" to currencyCode,
+                        "value" to initialHouseValue.toString(),
+                    )
+                )
+            )
 
-			val resultJson = JsonParser.parseString(result.resultJson).asJsonObject
-			val nftLinearId = resultJson["linearId"].asString
-			assertThat(nftLinearId).isNotBlank
+            val resultJson = JsonParser.parseString(result.resultJson).asJsonObject
+            val nftLinearId = resultJson["linearId"].asString
+            assertThat(nftLinearId).isNotBlank
 
-			val houseTokenLinearId = resultJson["token"].asJsonObject["linearId"].asString
-			assertThat(houseTokenLinearId).isNotBlank
+            val houseTokenLinearId = resultJson["token"].asJsonObject["linearId"].asString
+            assertThat(houseTokenLinearId).isNotBlank
 
-			nftLinearId to houseTokenLinearId
-		}
-	}
+            nftLinearId to houseTokenLinearId
+        }
+    }
 
-	private fun Node.updateHouseValuation(linearId: String, newValuation: Double, currencyCode: String) {
-		httpRpcClient<FlowStarterRPCOps, Unit> {
-			getFlowOutcome(
-				runFlow(
-					UpdateHouseValuation::class,
-					mapOf(
-						"linearId" to linearId,
-						"newValuation" to newValuation.toString(),
-						"currencyCode" to currencyCode,
-					)
-				)
-			)
-		}
-	}
+    private fun Node.updateHouseValuation(linearId: String, newValuation: Double, currencyCode: String) {
+        httpRpcClient<FlowStarterRPCOps, Unit> {
+            getFlowOutcome(
+                runFlow(
+                    UpdateHouseValuation::class,
+                    mapOf(
+                        "linearId" to linearId,
+                        "newValuation" to newValuation.toString(),
+                        "currencyCode" to currencyCode,
+                    )
+                )
+            )
+        }
+    }
 
-	private fun Node.assertHouseStateProperties(
-		linearId: String,
-		address: String,
-		value: Double,
-		valueCurrency: String
-	) {
-		httpRpcClient<FlowStarterRPCOps, Unit> {
-			val result = getFlowOutcome(
-				runFlow(
-					GetHouseInfoFlow::class,
-					mapOf("linearId" to linearId)
-				)
-			)
+    private fun Node.assertHouseStateProperties(
+        linearId: String,
+        address: String,
+        value: Double,
+        valueCurrency: String
+    ) {
+        httpRpcClient<FlowStarterRPCOps, Unit> {
+            val result = getFlowOutcome(
+                runFlow(
+                    GetHouseInfoFlow::class,
+                    mapOf("linearId" to linearId)
+                )
+            )
 
-			val resultJson = JsonParser.parseString(result.resultJson).asJsonObject
-			assertThat(resultJson["linearId"].asString).isEqualTo(linearId)
-			assertThat(resultJson["address"].asString).isEqualTo(address)
-			assertThat(resultJson["valuation"].asJsonObject["amount"].asDouble).isEqualTo(value)
-			assertThat(resultJson["valuation"].asJsonObject["type"].asString).isEqualTo(valueCurrency)
-		}
-	}
+            val resultJson = JsonParser.parseString(result.resultJson).asJsonObject
+            assertThat(resultJson["linearId"].asString).isEqualTo(linearId)
+            assertThat(resultJson["address"].asString).isEqualTo(address)
+            assertThat(resultJson["valuation"].asJsonObject["amount"].asDouble).isEqualTo(value)
+            assertThat(resultJson["valuation"].asJsonObject["type"].asString).isEqualTo(valueCurrency)
+        }
+    }
 
-	private fun Node.moveHouseToken(linearId: String, recipient: CordaX500Name) {
-		httpRpcClient<FlowStarterRPCOps, Unit> {
-			getFlowOutcome(
-				runFlow(
-					MoveHouseTokenFlow::class,
-					mapOf(
-						"linearId" to linearId,
-						"recipient" to recipient.toString()
-					)
-				)
-			)
+    private fun Node.moveHouseToken(linearId: String, recipient: CordaX500Name) {
+        httpRpcClient<FlowStarterRPCOps, Unit> {
+            getFlowOutcome(
+                runFlow(
+                    MoveHouseTokenFlow::class,
+                    mapOf(
+                        "linearId" to linearId,
+                        "recipient" to recipient.toString()
+                    )
+                )
+            )
 
-		}
-	}
+        }
+    }
 
-	private fun Node.redeemHouseToken(linearId: String) {
-		httpRpcClient<FlowStarterRPCOps, Unit> {
-			getFlowOutcome(
-				runFlow(
-					RedeemHouseTokenFlow::class,
-					mapOf(
-						"linearId" to linearId,
-					)
-				)
-			)
+    private fun Node.redeemHouseToken(linearId: String) {
+        httpRpcClient<FlowStarterRPCOps, Unit> {
+            getFlowOutcome(
+                runFlow(
+                    RedeemHouseTokenFlow::class,
+                    mapOf(
+                        "linearId" to linearId,
+                    )
+                )
+            )
 
-		}
-	}
+        }
+    }
 }

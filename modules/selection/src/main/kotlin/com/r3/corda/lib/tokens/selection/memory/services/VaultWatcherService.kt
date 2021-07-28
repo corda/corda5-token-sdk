@@ -39,8 +39,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 import kotlin.concurrent.read
 import kotlin.concurrent.write
 
-val UPDATER: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
-val EMPTY_BUCKET = TokenBucket()
+private val UPDATER: ScheduledExecutorService = Executors.newSingleThreadScheduledExecutor()
+private val EMPTY_BUCKET = TokenBucket()
 
 const val PLACE_HOLDER: String = "THIS_IS_A_PLACE_HOLDER"
 
@@ -51,6 +51,8 @@ interface VaultWatcherService : CordaService {
         PUBLIC_KEY(Holder.KeyIdentity::class.java);
 
         companion object {
+            inline fun <reified T : Holder> fromHolder(): IndexingType = fromHolder(T::class.java)
+
             fun fromHolder(holder: Class<out Holder>): IndexingType {
                 return when (holder) {
                     Holder.MappedIdentity::class.java -> EXTERNAL_ID
@@ -82,6 +84,10 @@ interface VaultWatcherService : CordaService {
 }
 
 class VaultWatcherServiceImpl : VaultWatcherService {
+
+    private companion object {
+        val LOG = contextLogger()
+    }
 
     private lateinit var tokenObserver: TokenObserver
     private lateinit var providedConfig: InMemorySelectionConfig
@@ -117,10 +123,6 @@ class VaultWatcherServiceImpl : VaultWatcherService {
             addTokensToCache(tokenObserver.initialValues)
             tokenObserver.startLoading(::onVaultUpdate)
         }
-    }
-
-    companion object {
-        val LOG = contextLogger()
     }
 
     private fun getObservableFromAppConfig(): TokenObserver {
@@ -167,7 +169,7 @@ class VaultWatcherServiceImpl : VaultWatcherService {
                         )
                         do {
                             val newlyLoadedStates = cursor.poll(pageSize, 10.seconds)
-                            LOG.info("publishing ${newlyLoadedStates.values.size} to async state loading callback")
+                            LOG.info("Publishing ${newlyLoadedStates.values.size} to async state loading callback")
                             newlyLoadedStates.values.forEach {
                                 callback(
                                     object : VaultStateEvent<FungibleToken> {
@@ -178,7 +180,7 @@ class VaultWatcherServiceImpl : VaultWatcherService {
                                 )
                             }
                         } while (!newlyLoadedStates.isLastResult)
-                        LOG.info("finished token loading")
+                        LOG.info("Finished token loading")
                     } catch (t: Throwable) {
                         LOG.error("Token Loading Failed due to: ", t)
                     }
@@ -199,16 +201,15 @@ class VaultWatcherServiceImpl : VaultWatcherService {
         try {
             when(t.eventType) {
                 VaultEventType.CONSUME -> {
-                    LOG.info("received token vault update for consumed state")
+                    LOG.info("Received token vault update for consumed state")
                     removeTokenFromCache(t.stateAndRef)
                 }
                 VaultEventType.PRODUCE -> {
-                    LOG.info("received token vault update for produced state")
+                    LOG.info("Received token vault update for produced state")
                     addTokenToCache(t.stateAndRef)
                 }
             }
         } catch (t: Throwable) {
-            //we DO NOT want to kill the observable - as a single exception will terminate the feed
             LOG.error("Failure during token cache update", t)
         }
     }
@@ -222,7 +223,7 @@ class VaultWatcherServiceImpl : VaultWatcherService {
                 val index = processToken(stateAndRef, IndexingType.fromHolder(key))
                 val indexedViewForHolder = __indexed[key]
                 indexedViewForHolder
-                    ?: LOG.warn("tried to obtain an indexed view for holder type: $key but was not found in set of indexed views")
+                    ?: LOG.warn("Tried to obtain an indexed view for holder type: $key but was not found in set of indexed views")
 
                 val bucketForIndex: TokenBucket? = indexedViewForHolder?.get(index)
                 bucketForIndex?.remove(stateAndRef)

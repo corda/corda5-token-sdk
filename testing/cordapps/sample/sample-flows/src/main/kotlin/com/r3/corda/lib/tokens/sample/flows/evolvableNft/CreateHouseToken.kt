@@ -64,8 +64,7 @@ class CreateHouseToken @JsonConstructor constructor(
             .ofTokenType(house.toPointer<HouseToken>())
             .issuedBy(flowIdentity.ourIdentity)
             .heldBy(flowIdentity.ourIdentity)
-            .withHashingService(hashingService)
-            .buildNonFungibleToken()
+            .buildNonFungibleToken(hashingService)
 
         flowEngine.subFlow(IssueTokens(listOf(houseToken)))
 

@@ -21,7 +21,6 @@ class NonFungibleTokenBuilder {
     private lateinit var tokenType: TokenType
     private lateinit var issuer: Party
     private lateinit var holder: Party
-    private lateinit var hashingService: HashingService
 
     /**
      * Replicates the Kotlin DSL [ofTokenType] infix function. Supplies a [TokenType] to the builder
@@ -48,13 +47,6 @@ class NonFungibleTokenBuilder {
     fun heldBy(party: Party): NonFungibleTokenBuilder = this.apply { this.holder = party }
 
     /**
-     * Adds the necessary hashing service required for building the non fungible token.
-     */
-    fun withHashingService(hashingService: HashingService): NonFungibleTokenBuilder  = this.apply {
-        this.hashingService = hashingService
-    }
-
-    /**
      * Builds an [IssuedTokenType]. This function will throw a [TokenBuilderException] if the appropriate
      * builder methods have not been called: [ofTokenType], [issuedBy].
      */
@@ -76,12 +68,9 @@ class NonFungibleTokenBuilder {
      * builder methods have not been called: [ofTokenType], [issuedBy], [heldBy].
      */
     @Throws(TokenBuilderException::class)
-    fun buildNonFungibleToken(): NonFungibleToken = when {
+    fun buildNonFungibleToken(hashingService: HashingService): NonFungibleToken = when {
         !::holder.isInitialized -> {
             throw TokenBuilderException("A token holder has not been provided to the builder.")
-        }
-        !::hashingService.isInitialized -> {
-            throw TokenBuilderException("A HashingService has not been provided to the builder.")
         }
         else -> {
             buildIssuedTokenType().heldBy(holder, hashingService)

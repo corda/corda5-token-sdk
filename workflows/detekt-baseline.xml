@@ -58,7 +58,6 @@
     <ID>MaxLineLength:ConfidentialMoveNonFungibleTokensFlow.kt$ConfidentialMoveNonFungibleTokensFlow$// TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role</ID>
     <ID>MaxLineLength:ConfidentialMoveNonFungibleTokensFlow.kt$ConfidentialMoveNonFungibleTokensFlow$val confidentialOutput = flowEngine.subFlow(ConfidentialTokensFlow(listOf(output), participantSessions)).single()</ID>
     <ID>MaxLineLength:DistributionRecord.kt$DistributionRecordSchemaV1.DistributionRecord$query</ID>
-    <ID>MaxLineLength:DistributionUtilities.kt$fun</ID>
     <ID>MaxLineLength:EvolvableTokenUtilities.kt$*</ID>
     <ID>MaxLineLength:EvolvableTokenUtilities.kt$internal fun Iterable&lt;EvolvableTokenType&gt;.maintainers(): Set&lt;Party&gt;</ID>
     <ID>MaxLineLength:EvolvableTokens.kt$CreateEvolvableTokens$val observers = evolvableTokens.participants().minus(evolvableTokens.maintainers()).minus(flowIdentity.ourIdentity)</ID>
@@ -75,6 +74,7 @@
     <ID>MaxLineLength:NonFungibleTokenSelection.kt$require(nonFungibleTokens.size == 1) { "Your query wasn't specific enough and returned multiple non-fungible tokens." }</ID>
     <ID>MaxLineLength:NotaryUtilities.kt$"Notary passed to transaction builder (${txb.notary}) should be the same as the one used by input states ($notary)."</ID>
     <ID>MaxLineLength:NotaryUtilities.kt$/** Adds a notary to a new [TransactionBuilder]. If the notary is already set then it get overwritten by preferred notary */</ID>
+    <ID>MaxLineLength:NotaryUtilities.kt$/** Adds a notary to the [TransactionBuilder]. If the notary is already set then it get overwritten by preferred notary */</ID>
     <ID>MaxLineLength:NotaryUtilities.kt$fun</ID>
     <ID>MaxLineLength:ObserverAwareFinalityFlow.kt$ObserverAwareFinalityFlow$val wellKnownParticipantsAndIssuers: Set&lt;Party&gt; = participants.toWellKnownParties(identityService).toSet() + issuers</ID>
     <ID>MaxLineLength:QueryUtilities.kt$fun</ID>
@@ -123,7 +123,6 @@
     <ID>SwallowedException:NotaryUtilities.kt$catch (e: CordappConfigException) { "" }</ID>
     <ID>TooGenericExceptionCaught:MoveTokens.kt$ConfidentialMoveFungibleTokens$e: Exception</ID>
     <ID>TooManyFunctions:FlowUtilities.kt$com.r3.corda.lib.tokens.workflows.utilities.FlowUtilities.kt</ID>
-    <ID>TooManyFunctions:FungibleTokenBuilder.kt$FungibleTokenBuilder</ID>
     <ID>TooManyFunctions:QueryUtilities.kt$com.r3.corda.lib.tokens.workflows.utilities.QueryUtilities.kt</ID>
     <ID>TooManyFunctions:Utilities.kt$com.r3.corda.lib.tokens.money.Utilities.kt</ID>
     <ID>UtilityClassWithPublicConstructor:DigitalCurrency.kt$DigitalCurrency</ID>

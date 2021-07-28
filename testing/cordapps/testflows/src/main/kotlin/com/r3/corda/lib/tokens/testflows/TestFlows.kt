@@ -91,7 +91,8 @@ class DvPFlow(val house: House, val newOwner: Party) : Flow<SignedTransaction> {
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val txBuilder = transactionBuilderFactory.create().setNotary(getPreferredNotary(notaryLookupService, cordappProvider.appConfig))
+        val txBuilder = transactionBuilderFactory.create()
+            .setNotary(getPreferredNotary(notaryLookupService, cordappProvider.appConfig))
         addMoveNonFungibleTokens(txBuilder, persistenceService, house.toPointer<House>(), newOwner)
         val session = flowMessaging.initiateFlow(newOwner)
         // Ask for input stateAndRefs - send notification with the amount to exchange.
@@ -104,7 +105,8 @@ class DvPFlow(val house: House, val newOwner: Party) : Flow<SignedTransaction> {
         // Synchronise any confidential identities
         flowEngine.subFlow(SyncKeyMappingFlow(session, txBuilder.toWireTransaction()))
         val ourSigningKeys =
-            transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction()).ourSigningKeys(keyManagementService)
+            transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction())
+                .ourSigningKeys(keyManagementService)
         val initialStx = txBuilder.sign(signingPubKeys = ourSigningKeys)
         val stx = flowEngine.subFlow(CollectSignaturesFlow(initialStx, listOf(session), ourSigningKeys))
         // Update distribution list.
@@ -153,9 +155,10 @@ class DvPFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
         flowEngine.subFlow(SendStateAndRefFlow(otherSession, inputs))
         otherSession.send(outputs)
         flowEngine.subFlow(SyncKeyMappingFlowHandler(otherSession))
-        flowEngine.subFlow(object : SignTransactionFlow(otherSession) {
-            override fun checkTransaction(stx: SignedTransaction) {}
-        }
+        flowEngine.subFlow(
+            object : SignTransactionFlow(otherSession) {
+                override fun checkTransaction(stx: SignedTransaction) {}
+            }
         )
         flowEngine.subFlow(ObserverAwareFinalityFlowHandler(otherSession))
     }

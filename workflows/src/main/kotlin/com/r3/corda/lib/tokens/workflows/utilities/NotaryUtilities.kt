@@ -49,25 +49,25 @@ fun getPreferredNotary(
 fun getPreferredNotary(
     notaryLookupService: NotaryLookupService,
     cordappConfig: CordappConfig,
-) = getPreferredNotary(notaryLookupService, cordappConfig, firstNotary())
+): Party = getPreferredNotary(notaryLookupService, cordappConfig, firstNotary())
 
 /** Choose the first notary in the list. */
 @Suspendable
-fun firstNotary() = { notaryLookupService: NotaryLookupService ->
+fun firstNotary(): (NotaryLookupService) -> Party = { notaryLookupService: NotaryLookupService ->
     notaryLookupService.notaryIdentities.firstOrNull()
         ?: throw IllegalArgumentException("No available notaries.")
 }
 
 /** Choose a random notary from the list. */
 @Suspendable
-fun randomNotary() = { notaryLookupService: NotaryLookupService ->
+fun randomNotary(): (NotaryLookupService) -> Party = { notaryLookupService: NotaryLookupService ->
     notaryLookupService.notaryIdentities.randomOrNull()
         ?: throw IllegalArgumentException("No available notaries.")
 }
 
 /** Choose a random non validating notary. */
 @Suspendable
-fun randomNonValidatingNotary() = { notaryLookupService: NotaryLookupService ->
+fun randomNonValidatingNotary(): (NotaryLookupService) -> Party? = { notaryLookupService: NotaryLookupService ->
     notaryLookupService.notaryIdentities.filter { notary ->
         notaryLookupService.isValidating(notary).not()
     }.randomOrNull()
@@ -75,7 +75,7 @@ fun randomNonValidatingNotary() = { notaryLookupService: NotaryLookupService ->
 
 /** Choose a random validating notary. */
 @Suspendable
-fun randomValidatingNotary() = { notaryLookupService: NotaryLookupService ->
+fun randomValidatingNotary(): (NotaryLookupService) -> Party? = { notaryLookupService: NotaryLookupService ->
     notaryLookupService.notaryIdentities.filter { notary ->
         notaryLookupService.isValidating(notary)
     }.randomOrNull()
@@ -85,6 +85,12 @@ fun randomValidatingNotary() = { notaryLookupService: NotaryLookupService ->
 @Suspendable
 fun addNotary(notaryLookupService: NotaryLookupService, cordappConfig: CordappConfig, txb: TransactionBuilder): TransactionBuilder {
     return txb.apply { setNotary(getPreferredNotary(notaryLookupService, cordappConfig)) }
+}
+
+/** Adds a notary to the [TransactionBuilder]. If the notary is already set then it get overwritten by preferred notary  */
+@Suspendable
+fun TransactionBuilder.addPreferredNotary(notaryLookupService: NotaryLookupService, cordappConfig: CordappConfig) {
+    setNotary(getPreferredNotary(notaryLookupService, cordappConfig))
 }
 
 /**

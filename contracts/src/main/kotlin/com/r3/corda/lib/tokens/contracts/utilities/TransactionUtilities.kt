@@ -12,12 +12,13 @@ import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.ContractState
 import net.corda.v5.ledger.contracts.StateAndRef
 import net.corda.v5.ledger.transactions.LedgerTransaction
+import net.corda.v5.ledger.transactions.inputsOfType
 import net.corda.v5.ledger.transactions.outputsOfType
 
 // Transaction helpers.
 
 /** Get single input/output from ledger transaction. */
-inline fun <reified T : ContractState> LedgerTransaction.singleInput() = inputsOfType(T::class.java).single()
+inline fun <reified T : ContractState> LedgerTransaction.singleInput() = inputsOfType<T>().single()
 
 inline fun <reified T : ContractState> LedgerTransaction.singleOutput() = outputsOfType<T>().single()
 

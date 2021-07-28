@@ -41,7 +41,7 @@ object RequestAdditionToDistributionList {
     @InitiatingFlow
     class Initiator(val stateAndRef: StateAndRef<EvolvableTokenType>) : Flow<Unit> {
 
-        companion object {
+        private companion object {
             val logger = contextLogger()
         }
 
@@ -67,7 +67,7 @@ object RequestAdditionToDistributionList {
     @InitiatedBy(Initiator::class)
     class Responder(val otherSession: FlowSession) : Flow<Unit> {
 
-        companion object {
+        private companion object {
             val logger = contextLogger()
         }
 

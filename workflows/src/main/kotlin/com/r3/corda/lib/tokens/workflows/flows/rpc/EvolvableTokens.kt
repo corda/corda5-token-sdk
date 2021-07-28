@@ -44,6 +44,16 @@ class CreateEvolvableTokens (
         transactionStates: List<TransactionState<EvolvableTokenType>>,
     ) : this(transactionStates, emptyList())
 
+    constructor(
+        transactionState: TransactionState<EvolvableTokenType>,
+        observers: List<Party>
+    ) : this(listOf(transactionState), observers)
+
+    constructor(
+        transactionState: TransactionState<EvolvableTokenType>,
+    ) : this(listOf(transactionState), emptyList())
+
+
     @CordaInject
     lateinit var flowMessaging: FlowMessaging
 
@@ -55,15 +65,6 @@ class CreateEvolvableTokens (
 
     @CordaInject
     lateinit var identityService: IdentityService
-
-    constructor(
-        transactionState: TransactionState<EvolvableTokenType>,
-        observers: List<Party>
-    ) : this(listOf(transactionState), observers)
-
-    constructor(
-        transactionState: TransactionState<EvolvableTokenType>,
-    ) : this(listOf(transactionState), emptyList())
 
     @Suspendable
     override fun call(): SignedTransaction {

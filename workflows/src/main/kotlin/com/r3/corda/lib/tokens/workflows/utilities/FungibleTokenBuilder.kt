@@ -27,7 +27,6 @@ class FungibleTokenBuilder {
     private lateinit var tokenType: TokenType
     private lateinit var issuer: Party
     private lateinit var holder: Party
-    private lateinit var hashingService: HashingService
 
     /**
      * Set the [amount] member property of the builder using a provided [Long].
@@ -86,13 +85,6 @@ class FungibleTokenBuilder {
     }
 
     /**
-     * Adds the necessary hashing service required for building the fungible token.
-     */
-    fun withHashingService(hashingService: HashingService): FungibleTokenBuilder  = this.apply {
-        this.hashingService = hashingService
-    }
-
-    /**
      * Builds an [Amount] of a [TokenType]. This function will throw a [TokenBuilderException]
      * exception if the appropriate builder methods have not been called: [withAmount], [ofTokenType].
      */
@@ -128,12 +120,9 @@ class FungibleTokenBuilder {
      * if the appropriate builder methods have not been called: [withAmount], [ofTokenType], [issuedBy], [heldBy].
      */
     @Throws(TokenBuilderException::class)
-    fun buildFungibleToken() = when {
+    fun buildFungibleToken(hashingService: HashingService) = when {
         !::holder.isInitialized -> {
             throw TokenBuilderException("A token holder has not been provided to the builder.")
-        }
-        !::hashingService.isInitialized -> {
-            throw TokenBuilderException("A HashingService has not been provided to the builder.")
         }
         else -> {
             buildAmountIssuedTokenType().heldBy(holder, hashingService)

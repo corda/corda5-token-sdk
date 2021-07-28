@@ -26,6 +26,12 @@ import net.corda.v5.ledger.services.vault.StateStatus
 // Grabs the latest version of a linear state for a specified linear ID.
 @Suspendable
 inline fun <reified T : LinearState> PersistenceService.getLinearStateById(linearId: UniqueIdentifier): StateAndRef<T>? {
+    return getLinearStateById(linearId, T::class.java)
+}
+
+@Suspendable
+@Suppress("UNUSED_PARAMETER")
+fun <T : LinearState> PersistenceService.getLinearStateById(linearId: UniqueIdentifier, clazz: Class<T>): StateAndRef<T>? {
     return query<StateAndRef<T>>(
         "LinearState.findByUuidAndStateStatus",
         mapOf(
@@ -132,7 +138,7 @@ fun namedQueryForNonfungibleTokenClassIdentifierAndIssuer(token: TokenType, issu
 }
 
 @Suspendable
-fun cursorToAmount(token: TokenType, cursor: Cursor<StateAndRef<FungibleToken>>): Amount<TokenType> {
+fun sumAmountFromCursor(token: TokenType, cursor: Cursor<StateAndRef<FungibleToken>>): Amount<TokenType> {
     val results = mutableListOf<StateAndRef<FungibleToken>>()
     do {
         val pollResult = cursor.poll(10, 5.seconds)
@@ -166,14 +172,14 @@ fun PersistenceService.heldTokensByToken(token: TokenType): Cursor<NonFungibleTo
 fun PersistenceService.tokenBalance(token: TokenType): Amount<TokenType> {
     val (namedQuery, params) = namedQueryForSumFungibleTokenAmountClassAndIdentifier(token)
     val result = query<StateAndRef<FungibleToken>>(namedQuery, params, IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME)
-    return cursorToAmount(token, result)
+    return sumAmountFromCursor(token, result)
 }
 
 // We need to group the sum by the token class and token identifier takes issuer into consideration.
 fun PersistenceService.tokenBalanceForIssuer(token: TokenType, issuer: Party): Amount<TokenType> {
     val (namedQuery, params) = sumTokenAmountWithIssuerCriteria(token, issuer)
     val result = query<StateAndRef<FungibleToken>>(namedQuery, params, IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME)
-    return cursorToAmount(token, result)
+    return sumAmountFromCursor(token, result)
 }
 
 // TODO Add function to return balances grouped by issuers?

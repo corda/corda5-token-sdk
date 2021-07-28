@@ -27,34 +27,38 @@ data class DistributionListUpdate(val sender: Party, val receiver: Party, val li
 // Gets the distribution list for a particular token.
 @Suspendable
 fun getDistributionList(persistenceService: PersistenceService, linearId: UniqueIdentifier): List<DistributionRecord> {
-	val cursor = persistenceService.query<DistributionRecord>(
-		"DistributionRecord.findByLinearId",
-		mapOf("linearId" to linearId.id)
-	)
-	val accumulator = mutableListOf<DistributionRecord>()
-	var poll: Cursor.PollResult<DistributionRecord>?
-	do {
-		poll = cursor.poll(50, 10.seconds)
-		val elements = poll.values
-		accumulator.addAll(elements)
-	} while (poll != null && !poll.isLastResult)
-	return accumulator
+    val cursor = persistenceService.query<DistributionRecord>(
+        "DistributionRecord.findByLinearId",
+        mapOf("linearId" to linearId.id)
+    )
+    val accumulator = mutableListOf<DistributionRecord>()
+    var poll: Cursor.PollResult<DistributionRecord>?
+    do {
+        poll = cursor.poll(50, 10.seconds)
+        val elements = poll.values
+        accumulator.addAll(elements)
+    } while (poll != null && !poll.isLastResult)
+    return accumulator
 }
 
 // Gets the distribution record for a particular token and party.
 @Suspendable
-fun getDistributionRecord(persistenceService: PersistenceService, linearId: UniqueIdentifier, party: Party): DistributionRecord? {
-	return persistenceService.query<DistributionRecord>(
-		"DistributionRecord.findByLinearIdAndParty",
-		mapOf("linearId" to linearId.id, "party" to party)
-	).poll(1, 10.seconds)
-		.values
-		.singleOrNull()
+fun getDistributionRecord(
+    persistenceService: PersistenceService,
+    linearId: UniqueIdentifier,
+    party: Party
+): DistributionRecord? {
+    return persistenceService.query<DistributionRecord>(
+        "DistributionRecord.findByLinearIdAndParty",
+        mapOf("linearId" to linearId.id, "party" to party)
+    ).poll(1, 10.seconds)
+        .values
+        .singleOrNull()
 }
 
 @Suspendable
 fun hasDistributionRecord(persistenceService: PersistenceService, linearId: UniqueIdentifier, party: Party): Boolean {
-	return getDistributionRecord(persistenceService, linearId, party) != null
+    return getDistributionRecord(persistenceService, linearId, party) != null
 }
 
 /**
@@ -63,42 +67,42 @@ fun hasDistributionRecord(persistenceService: PersistenceService, linearId: Uniq
  * TODO: Don't duplicate pairs of linearId and party.
  */
 @Suspendable
-fun PersistenceService.addPartyToDistributionList(party: Party, linearId: UniqueIdentifier) {
-	// Create an persist a new entity.
-	persist(DistributionRecord(linearId.id, party))
+fun addPartyToDistributionList(party: Party, linearId: UniqueIdentifier, persistenceService: PersistenceService) {
+    // Create an persist a new entity.
+    persistenceService.persist(DistributionRecord(linearId.id, party))
 }
 
 @Suspendable
 fun Flow<*>.addToDistributionList(
-	identityService: IdentityService,
-	persistenceService: PersistenceService,
-	tokens: List<AbstractToken>
+    identityService: IdentityService,
+    persistenceService: PersistenceService,
+    tokens: List<AbstractToken>
 ) {
-	tokens.filter { it.tokenType as? TokenPointer<*> != null }.forEach { token ->
-		val tokenType = token.tokenType as TokenPointer<*>
-		val pointer = tokenType.pointer.pointer
-		val holder = token.holder.toParty(identityService)
-		addPartyToDistributionList(persistenceService, holder, pointer)
-	}
+    tokens.filter { it.tokenType as? TokenPointer<*> != null }.forEach { token ->
+        val tokenType = token.tokenType as TokenPointer<*>
+        val pointer = tokenType.pointer.pointer
+        val holder = token.holder.toParty(identityService)
+        addPartyToDistributionList(persistenceService, holder, pointer)
+    }
 }
 
 @Suspendable
 fun updateDistributionList(
-	identityService: IdentityService,
-	stateLoaderService: StateLoaderService,
-	flowMessaging: FlowMessaging,
-	ourIdentity: Party,
-	tokens: List<AbstractToken>
+    identityService: IdentityService,
+    stateLoaderService: StateLoaderService,
+    flowMessaging: FlowMessaging,
+    ourIdentity: Party,
+    tokens: List<AbstractToken>
 ) {
-	tokens.filter { it.tokenType as? TokenPointer<*> != null }.forEach { token ->
-		val tokenPointer = token.tokenType as TokenPointer<*>
-		val holderParty = identityService.requireKnownConfidentialIdentity(token.holder)
-		val evolvableToken = stateLoaderService.load(tokenPointer.pointer).state.data
-		val distributionListUpdate = DistributionListUpdate(ourIdentity, holderParty, evolvableToken.linearId)
-		val maintainers = evolvableToken.maintainers
-		val maintainersSessions = maintainers.map(flowMessaging::initiateFlow)
-		maintainersSessions.forEach {
-			it.send(distributionListUpdate)
-		}
-	}
+    tokens.filter { it.tokenType as? TokenPointer<*> != null }.forEach { token ->
+        val tokenPointer = token.tokenType as TokenPointer<*>
+        val holderParty = identityService.requireKnownConfidentialIdentity(token.holder)
+        val evolvableToken = stateLoaderService.load(tokenPointer.pointer).state.data
+        val distributionListUpdate = DistributionListUpdate(ourIdentity, holderParty, evolvableToken.linearId)
+        val maintainers = evolvableToken.maintainers
+        val maintainersSessions = maintainers.map(flowMessaging::initiateFlow)
+        maintainersSessions.forEach {
+            it.send(distributionListUpdate)
+        }
+    }
 }
