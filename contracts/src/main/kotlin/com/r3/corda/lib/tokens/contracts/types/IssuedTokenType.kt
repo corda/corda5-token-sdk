@@ -1,7 +1,6 @@
 package com.r3.corda.lib.tokens.contracts.types
 
 import net.corda.v5.application.identity.Party
-import net.corda.v5.application.utilities.JsonRepresentable
 import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.ledger.contracts.Amount
 import java.math.BigDecimal
