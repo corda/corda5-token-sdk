@@ -7,6 +7,7 @@ import com.r3.corda.lib.tokens.workflows.internal.checkSameIssuer
 import com.r3.corda.lib.tokens.workflows.internal.checkSameNotary
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFinalityFlowHandler
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.TransactionRole
+import com.r3.corda.lib.tokens.workflows.utilities.isOurIdentity
 import net.corda.systemflows.SignTransactionFlow
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
@@ -41,7 +42,7 @@ class RedeemTokensFlowHandler(val otherSession: FlowSession) : Flow<SignedTransa
             flowEngine.subFlow(SyncKeyMappingFlowHandler(otherSession))
             // There is edge case where issuer redeems with themselves, then we need to be careful not to call handler for
             // collect signatures for already fully signed transaction - it causes session messages mismatch.
-            if (otherSession.counterparty.owningKey !in memberLookupService.myInfo().identityKeys) {
+            if (!memberLookupService.isOurIdentity(otherSession.counterparty)) {
                 // Perform all the checks to sign the transaction.
                 flowEngine.subFlow(object : SignTransactionFlow(otherSession) {
                     @CordaInject
@@ -59,7 +60,7 @@ class RedeemTokensFlowHandler(val otherSession: FlowSession) : Flow<SignedTransa
                 })
             }
         }
-        return if (otherSession.counterparty.owningKey !in memberLookupService.myInfo().identityKeys) {
+        return if (!memberLookupService.isOurIdentity(otherSession.counterparty)) {
             // Call observer aware finality flow handler.
             flowEngine.subFlow(ObserverAwareFinalityFlowHandler(otherSession))
         } else null

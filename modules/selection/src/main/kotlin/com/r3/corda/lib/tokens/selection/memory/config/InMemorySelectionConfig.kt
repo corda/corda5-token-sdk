@@ -3,7 +3,7 @@ package com.r3.corda.lib.tokens.selection.memory.config
 import com.r3.corda.lib.tokens.selection.api.StateSelectionConfig
 import com.r3.corda.lib.tokens.selection.memory.selector.LocalTokenSelector
 import com.r3.corda.lib.tokens.selection.memory.services.VaultWatcherService
-import com.r3.corda.lib.tokens.selection.memory.services.IndexingType
+import com.r3.corda.lib.tokens.selection.memory.services.VaultWatcherService.IndexingType
 import net.corda.v5.application.cordapp.CordappConfig
 import net.corda.v5.application.cordapp.CordappConfigException
 import net.corda.v5.application.flows.flowservices.FlowEngine

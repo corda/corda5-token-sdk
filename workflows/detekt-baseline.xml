@@ -108,6 +108,7 @@
     <ID>NewLineAtEndOfFile:EvolvableTokenUtilities.kt$com.r3.corda.lib.tokens.workflows.flows.evolvable.EvolvableTokenUtilities.kt</ID>
     <ID>NewLineAtEndOfFile:Exceptions.kt$com.r3.corda.lib.tokens.workflows.Exceptions.kt</ID>
     <ID>NewLineAtEndOfFile:FinalityUtilities.kt$com.r3.corda.lib.tokens.workflows.internal.flows.finality.FinalityUtilities.kt</ID>
+    <ID>NewLineAtEndOfFile:IdentityUtilities.kt$com.r3.corda.lib.tokens.workflows.utilities.IdentityUtilities.kt</ID>
     <ID>NewLineAtEndOfFile:IssueTokens.kt$com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens.kt</ID>
     <ID>NewLineAtEndOfFile:IssueTokensFlowHandler.kt$com.r3.corda.lib.tokens.workflows.flows.issue.IssueTokensFlowHandler.kt</ID>
     <ID>NewLineAtEndOfFile:IssueTokensUtilities.kt$com.r3.corda.lib.tokens.workflows.flows.issue.IssueTokensUtilities.kt</ID>

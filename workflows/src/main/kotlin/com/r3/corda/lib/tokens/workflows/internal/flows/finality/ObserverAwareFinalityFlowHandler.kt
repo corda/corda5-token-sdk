@@ -1,5 +1,6 @@
 package com.r3.corda.lib.tokens.workflows.internal.flows.finality
 
+import com.r3.corda.lib.tokens.workflows.utilities.isOurIdentity
 import net.corda.systemflows.ReceiveFinalityFlow
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
@@ -27,7 +28,7 @@ class ObserverAwareFinalityFlowHandler(val otherSession: FlowSession) : Flow<Sig
             TransactionRole.OBSERVER -> StatesToRecord.ALL_VISIBLE
         }
         // If states are issued to self, then ReceiveFinalityFlow does not need to be invoked.
-        return if (otherSession.counterparty.owningKey !in memberLookupService.myInfo().identityKeys) {
+        return if (!memberLookupService.isOurIdentity(otherSession.counterparty)) {
             flowEngine.subFlow(ReceiveFinalityFlow(otherSideSession = otherSession, statesToRecord = statesToRecord))
         } else null
     }

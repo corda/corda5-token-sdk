@@ -1,6 +1,7 @@
 package com.r3.corda.lib.tokens.workflows.flows.move
 
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFinalityFlowHandler
+import com.r3.corda.lib.tokens.workflows.utilities.isOurIdentity
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowEngine
@@ -21,7 +22,7 @@ class MoveTokensFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
     @Suspendable
     override fun call() {
         // Resolve the move transaction.
-        if (otherSession.counterparty.owningKey !in memberLookupService.myInfo().identityKeys) {
+        if (!memberLookupService.isOurIdentity(otherSession.counterparty)) {
             flowEngine.subFlow(ObserverAwareFinalityFlowHandler(otherSession))
         }
     }
