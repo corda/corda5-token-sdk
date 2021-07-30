@@ -23,28 +23,28 @@ import java.util.concurrent.atomic.AtomicReference
  * To use it, you need to have `VaultWatcherService` installed as a `CordaService` on node startup. Indexing
  * strategy could be specified via cordapp configuration, see [ConfigSelection]. You can index either by PublicKey or by ExternalId if using accounts feature.
  *
- * @property vaultObserver corda service that watches and caches new states
+ * @property vaultWatcherService corda service that watches and caches new states
  * @property autoUnlockDelay Time after which the tokens that are not spent will be automatically released. Defaults to Duration.ofMinutes(5).
  */
 class LocalTokenSelector (
-    private val vaultObserver: VaultWatcherService,
+    private val vaultWatcherService: VaultWatcherService,
     private val autoUnlockDelay: Duration,
     state: Pair<List<StateAndRef<FungibleToken>>, String>? // Used for deserializing
 ) : SerializeAsToken, Selector() {
 
     constructor(
-        vaultObserver: VaultWatcherService,
-    ) : this(vaultObserver, Duration.ofMinutes(5), null)
+        vaultWatcherService: VaultWatcherService,
+    ) : this(vaultWatcherService, Duration.ofMinutes(5), null)
 
     constructor(
-        vaultObserver: VaultWatcherService,
+        vaultWatcherService: VaultWatcherService,
         autoUnlockDelay: Duration,
-    ) : this(vaultObserver, autoUnlockDelay, null)
+    ) : this(vaultWatcherService, autoUnlockDelay, null)
 
     constructor(
-        vaultObserver: VaultWatcherService,
+        vaultWatcherService: VaultWatcherService,
         state: Pair<List<StateAndRef<FungibleToken>>, String>?,
-    ) : this(vaultObserver, Duration.ofMinutes(5), state)
+    ) : this(vaultWatcherService, Duration.ofMinutes(5), state)
 
     private val mostRecentlyLocked = AtomicReference<Pair<List<StateAndRef<FungibleToken>>, String>>(state)
 
@@ -57,7 +57,7 @@ class LocalTokenSelector (
         synchronized(mostRecentlyLocked) {
             if (mostRecentlyLocked.get() == null) {
                 val additionalPredicate = queryBy.issuerAndPredicate()
-                return vaultObserver.selectTokens(
+                return vaultWatcherService.selectTokens(
                     holder, requiredAmount, additionalPredicate, false, autoUnlockDelay, lockId.toString()
                 ).also { mostRecentlyLocked.set(it to lockId.toString()) }
             } else {
@@ -70,26 +70,26 @@ class LocalTokenSelector (
     fun rollback() {
         val lockedStates = mostRecentlyLocked.get()
         lockedStates?.first?.forEach {
-            vaultObserver.unlockToken(it, lockedStates.second)
+            vaultWatcherService.unlockToken(it, lockedStates.second)
         }
         mostRecentlyLocked.set(null)
     }
 
     override fun toToken(context: SerializeAsTokenContext): SerializationToken {
         val lockedStateAndRefs = mostRecentlyLocked.get() ?: listOf<StateAndRef<FungibleToken>>() to ""
-        return SerialToken(vaultObserver, lockedStateAndRefs.first, lockedStateAndRefs.second, autoUnlockDelay)
+        return SerialToken(vaultWatcherService, lockedStateAndRefs.first, lockedStateAndRefs.second, autoUnlockDelay)
     }
 
     private class SerialToken(
-        val vaultObserver: VaultWatcherService,
+        val vaultWatcherService: VaultWatcherService,
         val lockedStateAndRefs: List<StateAndRef<FungibleToken>>,
         val selectionId: String,
         val autoUnlockDelay: Duration
     ) : SerializationToken {
         override fun fromToken(context: SerializeAsTokenContext): LocalTokenSelector {
-            vaultObserver.lockTokensExternal(lockedStateAndRefs, knownSelectionId = selectionId)
+            vaultWatcherService.lockTokensExternal(lockedStateAndRefs, knownSelectionId = selectionId)
             return LocalTokenSelector(
-                vaultObserver,
+                vaultWatcherService,
                 state = lockedStateAndRefs to selectionId,
                 autoUnlockDelay = autoUnlockDelay
             )

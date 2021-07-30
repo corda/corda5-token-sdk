@@ -32,7 +32,6 @@ internal fun checkSameIssuer(
 
 // Check if owner of the states is well known. Check if states come from the same owner.
 // Should be called after synchronising identities step.
-@Suspendable
 internal fun checkOwner(
     identityService: IdentityService,
     stateAndRefs: List<StateAndRef<AbstractToken>>,

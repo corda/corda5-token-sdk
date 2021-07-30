@@ -21,7 +21,6 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * @param backupSelector a function which selects a notary when the notary property is not set in the CorDapp config.
  * @return the selected notary [Party] object.
  */
-@Suspendable
 fun getPreferredNotary(
     notaryLookupService: NotaryLookupService,
     cordappConfig: CordappConfig,
@@ -45,28 +44,24 @@ fun getPreferredNotary(
     }
 }
 
-@Suspendable
 fun getPreferredNotary(
     notaryLookupService: NotaryLookupService,
     cordappConfig: CordappConfig,
 ): Party = getPreferredNotary(notaryLookupService, cordappConfig, firstNotary())
 
 /** Choose the first notary in the list. */
-@Suspendable
 fun firstNotary(): (NotaryLookupService) -> Party = { notaryLookupService: NotaryLookupService ->
     notaryLookupService.notaryIdentities.firstOrNull()
         ?: throw IllegalArgumentException("No available notaries.")
 }
 
 /** Choose a random notary from the list. */
-@Suspendable
 fun randomNotary(): (NotaryLookupService) -> Party = { notaryLookupService: NotaryLookupService ->
     notaryLookupService.notaryIdentities.randomOrNull()
         ?: throw IllegalArgumentException("No available notaries.")
 }
 
 /** Choose a random non validating notary. */
-@Suspendable
 fun randomNonValidatingNotary(): (NotaryLookupService) -> Party? = { notaryLookupService: NotaryLookupService ->
     notaryLookupService.notaryIdentities.filter { notary ->
         notaryLookupService.isValidating(notary).not()
@@ -74,7 +69,6 @@ fun randomNonValidatingNotary(): (NotaryLookupService) -> Party? = { notaryLooku
 }
 
 /** Choose a random validating notary. */
-@Suspendable
 fun randomValidatingNotary(): (NotaryLookupService) -> Party? = { notaryLookupService: NotaryLookupService ->
     notaryLookupService.notaryIdentities.filter { notary ->
         notaryLookupService.isValidating(notary)
@@ -82,13 +76,11 @@ fun randomValidatingNotary(): (NotaryLookupService) -> Party? = { notaryLookupSe
 }
 
 /** Adds a notary to a new [TransactionBuilder]. If the notary is already set then it get overwritten by preferred notary  */
-@Suspendable
 fun addNotary(notaryLookupService: NotaryLookupService, cordappConfig: CordappConfig, txb: TransactionBuilder): TransactionBuilder {
     return txb.apply { setNotary(getPreferredNotary(notaryLookupService, cordappConfig)) }
 }
 
 /** Adds a notary to the [TransactionBuilder]. If the notary is already set then it get overwritten by preferred notary  */
-@Suspendable
 fun TransactionBuilder.addPreferredNotary(notaryLookupService: NotaryLookupService, cordappConfig: CordappConfig) {
     setNotary(getPreferredNotary(notaryLookupService, cordappConfig))
 }
@@ -97,7 +89,6 @@ fun TransactionBuilder.addPreferredNotary(notaryLookupService: NotaryLookupServi
  * Adds notary if not set. Otherwise checks if it's the same as the one in TransactionBuilder.
  */
 // TODO Internal, because for now useful only when selecting tokens and passing builder around.
-@Suspendable
 internal fun addNotaryWithCheck(txb: TransactionBuilder, notary: Party): TransactionBuilder {
     if (txb.notary == null) {
         txb.setNotary(notary)

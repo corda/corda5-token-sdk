@@ -3,6 +3,7 @@ package com.r3.corda.lib.tokens.selection.memory.config
 import com.r3.corda.lib.tokens.selection.api.StateSelectionConfig
 import com.r3.corda.lib.tokens.selection.memory.selector.LocalTokenSelector
 import com.r3.corda.lib.tokens.selection.memory.services.VaultWatcherService
+import com.r3.corda.lib.tokens.selection.memory.services.IndexingType
 import net.corda.v5.application.cordapp.CordappConfig
 import net.corda.v5.application.cordapp.CordappConfigException
 import net.corda.v5.application.flows.flowservices.FlowEngine
@@ -16,14 +17,14 @@ const val CACHE_SIZE_DEFAULT = 1024 // TODO Return good default, for now it's no
 data class InMemorySelectionConfig (
     val vaultWatcherService: VaultWatcherService,
     val enabled: Boolean,
-    val indexingStrategies: List<VaultWatcherService.IndexingType>,
+    val indexingStrategies: List<IndexingType>,
     val cacheSize: Int
 ) : StateSelectionConfig {
 
     constructor(
         vaultWatcherService: VaultWatcherService,
         enabled: Boolean,
-        indexingStrategies: List<VaultWatcherService.IndexingType>
+        indexingStrategies: List<IndexingType>
     ) : this(vaultWatcherService, enabled, indexingStrategies, CACHE_SIZE_DEFAULT)
 
     companion object {
@@ -40,7 +41,7 @@ data class InMemorySelectionConfig (
             val cacheSize = config.getIntOrNull("stateSelection.inMemory.cacheSize")
                 ?: CACHE_SIZE_DEFAULT
             val indexingType = try {
-                (config.get("stateSelection.inMemory.indexingStrategies") as List<*>).map { VaultWatcherService.IndexingType.valueOf(it.toString()) }
+                (config.get("stateSelection.inMemory.indexingStrategies") as List<*>).map { IndexingType.valueOf(it.toString()) }
             } catch (e: CordappConfigException) {
                 logger.warn("No indexing method specified. Indexes will be created at run-time for each invocation of selectTokens")
                 emptyList()

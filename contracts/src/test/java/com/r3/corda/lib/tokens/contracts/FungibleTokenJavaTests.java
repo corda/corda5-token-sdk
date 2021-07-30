@@ -15,6 +15,6 @@ public class FungibleTokenJavaTests {
     public void testFungibleToken() {
         Party alice = Mockito.mock(Party.class);
         IssuedTokenType issuedRubles = new IssuedTokenType(alice, RUB);
-        new FungibleToken(amount(10, issuedRubles), alice, SecureHash.create("SHA-256:0123456789ABCDEE"));
+        new FungibleToken(amount(10, issuedRubles), alice, SecureHash.create("SHA-256:0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF"));
     }
 }

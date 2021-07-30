@@ -25,10 +25,8 @@ import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.StateAndRef
 import net.corda.v5.ledger.services.vault.IdentityStateAndRefPostProcessor
 import net.corda.v5.ledger.services.vault.VaultEventType
-import net.corda.v5.ledger.services.vault.events.VaultStateEvent
 import net.corda.v5.ledger.services.vault.events.VaultStateEventService
 import java.time.Duration
-import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.Executors
@@ -149,16 +147,17 @@ class VaultWatcherServiceImpl : VaultWatcherService {
         val pageSize = 1000
 
         vaultStateEventService.subscribe("Vault Watcher Service") { _, vaultEvent ->
-            if(vaultEvent.stateAndRef.state.data is FungibleToken) {
-                onVaultUpdate(uncheckedCast(vaultEvent))
+            if (vaultEvent.stateAndRef.state.data is FungibleToken) {
+                val eventType = if(vaultEvent.eventType == VaultEventType.PRODUCE) TokenUpdateType.PRODUCE else TokenUpdateType.CONSUME
+                onVaultUpdate(uncheckedCast(TokenUpdate(eventType, uncheckedCast(vaultEvent.stateAndRef))))
             }
         }
 
         // we use the UPDATER thread for two reasons
         // 1 this means we return the service before all states are loaded, and so do not hold up the node startup
         // 2 because all updates to the cache (addition / removal) are also done via UPDATER, this means that until we have finished loading all updates are buffered preventing out of order updates
-        val asyncLoader = object : ((VaultStateEvent<FungibleToken>) -> Unit) -> Unit {
-            override fun invoke(callback: (VaultStateEvent<FungibleToken>) -> Unit) {
+        val asyncLoader = object : ((TokenUpdate) -> Unit) -> Unit {
+            override fun invoke(callback: (TokenUpdate) -> Unit) {
                 LOG.info("Starting async token loading from vault")
                 UPDATER.submit {
                     try {
@@ -171,13 +170,7 @@ class VaultWatcherServiceImpl : VaultWatcherService {
                             val newlyLoadedStates = cursor.poll(pageSize, 10.seconds)
                             LOG.info("Publishing ${newlyLoadedStates.values.size} to async state loading callback")
                             newlyLoadedStates.values.forEach {
-                                callback(
-                                    object : VaultStateEvent<FungibleToken> {
-                                        override val eventType = VaultEventType.PRODUCE
-                                        override val stateAndRef = it
-                                        override val timestamp = Instant.now()
-                                    }
-                                )
+                                callback(TokenUpdate(TokenUpdateType.PRODUCE, it))
                             }
                         } while (!newlyLoadedStates.isLastResult)
                         LOG.info("Finished token loading")
@@ -197,14 +190,14 @@ class VaultWatcherServiceImpl : VaultWatcherService {
         return TokenIndex(owner, type, typeId)
     }
 
-    private fun onVaultUpdate(t: VaultStateEvent<FungibleToken>) {
+    private fun onVaultUpdate(t: TokenUpdate) {
         try {
-            when(t.eventType) {
-                VaultEventType.CONSUME -> {
+            when (t.eventType) {
+                TokenUpdateType.CONSUME -> {
                     LOG.info("Received token vault update for consumed state")
                     removeTokenFromCache(t.stateAndRef)
                 }
-                VaultEventType.PRODUCE -> {
+                TokenUpdateType.PRODUCE -> {
                     LOG.info("Received token vault update for produced state")
                     addTokenToCache(t.stateAndRef)
                 }
@@ -231,7 +224,8 @@ class VaultWatcherServiceImpl : VaultWatcherService {
         }
     }
 
-    private fun addTokensToCache(stateAndRefs: Collection<StateAndRef<FungibleToken>>) = stateAndRefs.forEach(::addTokenToCache)
+    private fun addTokensToCache(stateAndRefs: Collection<StateAndRef<FungibleToken>>) =
+        stateAndRefs.forEach(::addTokenToCache)
 
     private fun addTokenToCache(stateAndRef: StateAndRef<FungibleToken>) {
         indexViewCreationLock.read {
@@ -376,15 +370,29 @@ class VaultWatcherServiceImpl : VaultWatcherService {
 class TokenObserver(
     val initialValues: List<StateAndRef<FungibleToken>>,
     val ownerProvider: ((StateAndRef<FungibleToken>, IndexingType) -> Holder),
-    inline val asyncLoader: ((VaultStateEvent<FungibleToken>) -> Unit) -> Unit = { _ -> }
+    inline val asyncLoader: ((TokenUpdate) -> Unit) -> Unit = { _ -> }
 ) {
 
-    fun startLoading(loadingCallBack: (VaultStateEvent<FungibleToken>) -> Unit) {
+    fun startLoading(loadingCallBack: (TokenUpdate) -> Unit) {
         asyncLoader(loadingCallBack)
     }
 }
 
-class TokenBucket(set: MutableSet<StateAndRef<FungibleToken>> = ConcurrentHashMap<StateAndRef<FungibleToken>, Boolean>().keySet(true)) :
-    MutableSet<StateAndRef<FungibleToken>> by set
+class TokenBucket(
+    set: MutableSet<StateAndRef<FungibleToken>> = ConcurrentHashMap<StateAndRef<FungibleToken>, Boolean>().keySet(true)
+) : MutableSet<StateAndRef<FungibleToken>> by set
 
-data class TokenIndex(val owner: Holder, val tokenClazz: Class<*>, val tokenIdentifier: String)
+data class TokenIndex(
+    val owner: Holder,
+    val tokenClazz: Class<*>,
+    val tokenIdentifier: String
+)
+
+data class TokenUpdate(
+    val eventType: TokenUpdateType,
+    val stateAndRef: StateAndRef<FungibleToken>
+)
+
+enum class TokenUpdateType {
+    PRODUCE, CONSUME
+}

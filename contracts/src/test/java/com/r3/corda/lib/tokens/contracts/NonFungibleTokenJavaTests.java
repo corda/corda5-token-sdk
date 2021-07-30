@@ -15,6 +15,6 @@ public class NonFungibleTokenJavaTests {
     public void testNonFungibleToken() {
         Party alice = Mockito.mock(Party.class);
         IssuedTokenType issuedRubles = new IssuedTokenType(alice, RUB);
-        new NonFungibleToken(issuedRubles, alice, new UniqueIdentifier(), SecureHash.create("SHA-256:0123456789ABCDEE"));
+        new NonFungibleToken(issuedRubles, alice, new UniqueIdentifier(), SecureHash.create("SHA-256:0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF"));
     }
 }

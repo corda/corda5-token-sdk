@@ -71,7 +71,7 @@ fun requireSessionsForParticipants(participants: Collection<Party>, sessions: Li
 }
 
 @Suspendable
-fun Flow<*>.sessionsForParticipants(
+fun sessionsForParticipants(
     identityService: IdentityService,
     flowMessaging: FlowMessaging,
     states: List<ContractState>
@@ -81,7 +81,7 @@ fun Flow<*>.sessionsForParticipants(
 }
 
 @Suspendable
-fun Flow<*>.sessionsForParties(
+fun sessionsForParties(
     identityService: IdentityService,
     flowMessaging: FlowMessaging,
     parties: List<AbstractParty>
@@ -91,7 +91,6 @@ fun Flow<*>.sessionsForParties(
 }
 
 // Extension function that has nicer error message than the default one from [IdentityService::requireWellKnownPartyFromAnonymous].
-@Suspendable
 fun IdentityService.requireKnownConfidentialIdentity(party: AbstractParty): Party {
     return partyFromAnonymous(party)
         ?: throw IllegalArgumentException(
