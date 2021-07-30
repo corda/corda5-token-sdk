@@ -42,8 +42,10 @@
     <ID>FunctionNaming:Utilities.kt$fun XRP(amount: Int): Amount&lt;TokenType&gt;</ID>
     <ID>FunctionNaming:Utilities.kt$fun XRP(amount: Long): Amount&lt;TokenType&gt;</ID>
     <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, hashingService: HashingService, flowEngine: FlowEngine, memberInfo: MemberInfo, amount: Amount&lt;TokenType&gt;, holder: AbstractParty, changeHolder: AbstractParty, )</ID>
+    <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, hashingService: HashingService, flowEngine: FlowEngine, memberInfo: MemberInfo, amount: Amount&lt;TokenType&gt;, holder: AbstractParty, changeHolder: AbstractParty, queryBy: TokenQueryBy )</ID>
     <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, hashingService: HashingService, flowEngine: FlowEngine, memberInfo: MemberInfo, partiesAndAmounts: List&lt;PartyAndAmount&lt;TokenType&gt;&gt;, changeHolder: AbstractParty, )</ID>
-    <ID>LongParameterList:RedeemFlowUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, hashingService: HashingService, flowEngine: FlowEngine, amount: Amount&lt;TokenType&gt;, issuer: Party, changeHolder: AbstractParty, )</ID>
+    <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, hashingService: HashingService, flowEngine: FlowEngine, memberInfo: MemberInfo, partiesAndAmounts: List&lt;PartyAndAmount&lt;TokenType&gt;&gt;, changeHolder: AbstractParty, queryBy: TokenQueryBy )</ID>
+    <ID>LongParameterList:RedeemFlowUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, hashingService: HashingService, flowEngine: FlowEngine, amount: Amount&lt;TokenType&gt;, changeHolder: AbstractParty, tokenQueryBy: TokenQueryBy )</ID>
     <ID>MagicNumber:DistributionUtilities.kt$50</ID>
     <ID>MagicNumber:NonFungibleTokenSelection.kt$50</ID>
     <ID>MagicNumber:QueryUtilities.kt$10</ID>
@@ -56,6 +58,7 @@
     <ID>MaxLineLength:ConfidentialIssueTokensFlow.kt$ConfidentialIssueTokensFlow$// TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role</ID>
     <ID>MaxLineLength:ConfidentialMoveFungibleTokensFlow.kt$ConfidentialMoveFungibleTokensFlow$// TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role</ID>
     <ID>MaxLineLength:ConfidentialMoveNonFungibleTokensFlow.kt$ConfidentialMoveNonFungibleTokensFlow$// TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role</ID>
+    <ID>MaxLineLength:ConfidentialMoveNonFungibleTokensFlow.kt$ConfidentialMoveNonFungibleTokensFlow$val (inputs, outputs) = generateMoveNonFungible(partyAndToken, persistenceService, TokenQueryBy(customPostProcessorName))</ID>
     <ID>MaxLineLength:ConfidentialMoveNonFungibleTokensFlow.kt$ConfidentialMoveNonFungibleTokensFlow$val confidentialOutput = flowEngine.subFlow(ConfidentialTokensFlow(listOf(output), participantSessions)).single()</ID>
     <ID>MaxLineLength:DistributionRecord.kt$DistributionRecordSchemaV1.DistributionRecord$query</ID>
     <ID>MaxLineLength:EvolvableTokenUtilities.kt$*</ID>
@@ -66,6 +69,7 @@
     <ID>MaxLineLength:FlowUtilities.kt$fun</ID>
     <ID>MaxLineLength:IssueTokens.kt$ConfidentialIssueTokens$*</ID>
     <ID>MaxLineLength:IssueTokens.kt$IssueTokens$*</ID>
+    <ID>MaxLineLength:MoveNonFungibleTokensFlow.kt$MoveNonFungibleTokensFlow$addMoveNonFungibleTokens(transactionBuilder, persistenceService, partyAndToken, TokenQueryBy(customPostProcessorName))</ID>
     <ID>MaxLineLength:MoveTokens.kt$ConfidentialMoveFungibleTokens$"Could not register a new key for party: ${flowIdentity.ourIdentity} as the provided public key is already registered "</ID>
     <ID>MaxLineLength:MoveTokens.kt$MoveFungibleTokens$*</ID>
     <ID>MaxLineLength:MoveTokensUtilities.kt$*</ID>
@@ -81,6 +85,7 @@
     <ID>MaxLineLength:QueryUtilities.kt$inline</ID>
     <ID>MaxLineLength:QueryUtilities.kt$val result = query&lt;StateAndRef&lt;FungibleToken&gt;&gt;(namedQuery, params, IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME)</ID>
     <ID>MaxLineLength:RedeemFlowUtilities.kt$* Redeem amount of certain type of the token issued by [issuer]. Pay possible change to the [changeHolder] - it can be confidential identity.</ID>
+    <ID>MaxLineLength:RedeemFungibleTokensFlow.kt$RedeemFungibleTokensFlow$tokenQueryBy = TokenQueryBy(issuer = issuerSession.counterparty, customPostProcessorName = customPostProcessorName)</ID>
     <ID>MaxLineLength:RedeemTokensFlow.kt$RedeemTokensFlow$*</ID>
     <ID>MaxLineLength:RedeemTokensFlowHandler.kt$RedeemTokensFlowHandler$// Synchronise all confidential identities, issuer isn't involved in move transactions, so states holders may</ID>
     <ID>MaxLineLength:RedeemTokensFlowHandler.kt$RedeemTokensFlowHandler$// There is edge case where issuer redeems with themselves, then we need to be careful not to call handler for</ID>
@@ -110,6 +115,7 @@
     <ID>NewLineAtEndOfFile:MoveNonFungibleTokensFlow.kt$com.r3.corda.lib.tokens.workflows.flows.move.MoveNonFungibleTokensFlow.kt</ID>
     <ID>NewLineAtEndOfFile:MoveTokens.kt$com.r3.corda.lib.tokens.workflows.flows.rpc.MoveTokens.kt</ID>
     <ID>NewLineAtEndOfFile:MoveTokensFlowHandler.kt$com.r3.corda.lib.tokens.workflows.flows.move.MoveTokensFlowHandler.kt</ID>
+    <ID>NewLineAtEndOfFile:MoveTokensUtilities.kt$com.r3.corda.lib.tokens.workflows.flows.move.MoveTokensUtilities.kt</ID>
     <ID>NewLineAtEndOfFile:NonFungibleTokenSelection.kt$com.r3.corda.lib.tokens.workflows.internal.selection.NonFungibleTokenSelection.kt</ID>
     <ID>NewLineAtEndOfFile:ObserverAwareFinalityFlow.kt$com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFinalityFlow.kt</ID>
     <ID>NewLineAtEndOfFile:RedeemFungibleTokensFlow.kt$com.r3.corda.lib.tokens.workflows.flows.redeem.RedeemFungibleTokensFlow.kt</ID>

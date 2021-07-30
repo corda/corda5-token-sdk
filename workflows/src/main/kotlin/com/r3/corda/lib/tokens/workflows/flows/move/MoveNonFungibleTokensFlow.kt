@@ -1,6 +1,7 @@
 package com.r3.corda.lib.tokens.workflows.flows.move
 
 import com.r3.corda.lib.tokens.contracts.types.TokenType
+import com.r3.corda.lib.tokens.selection.TokenQueryBy
 import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.injection.CordaInject
@@ -18,23 +19,37 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * @param partyAndToken pairing party - token that is to be moved to that party
  * @param participantSessions sessions with the participants of move transaction
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
+ * @param customPostProcessorName name of custom query post processor for token selection
  */
 class MoveNonFungibleTokensFlow (
     val partyAndToken: PartyAndToken,
     override val participantSessions: List<FlowSession>,
     override val observerSessions: List<FlowSession>,
+    val customPostProcessorName: String?
 ) : AbstractMoveTokensFlow() {
 
     constructor(
         partyAndToken: PartyAndToken,
         participantSessions: List<FlowSession>,
-    ) : this(partyAndToken, participantSessions, emptyList())
+    ) : this(partyAndToken, participantSessions, emptyList(), null)
+
+    constructor(
+        partyAndToken: PartyAndToken,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession>,
+    ) : this(partyAndToken, participantSessions, observerSessions, null)
+
+    constructor(
+        partyAndToken: PartyAndToken,
+        participantSessions: List<FlowSession>,
+        customPostProcessorName: String?
+    ) : this(partyAndToken, participantSessions, emptyList(), customPostProcessorName)
 
     @CordaInject
     lateinit var persistenceService: PersistenceService
 
     @Suspendable
     override fun addMove(transactionBuilder: TransactionBuilder) {
-        addMoveNonFungibleTokens(transactionBuilder, persistenceService, partyAndToken)
+        addMoveNonFungibleTokens(transactionBuilder, persistenceService, partyAndToken, TokenQueryBy(customPostProcessorName))
     }
 }

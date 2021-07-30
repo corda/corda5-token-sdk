@@ -31,25 +31,53 @@ class RedeemFungibleTokens (
     val amount: Amount<TokenType>,
     val issuer: Party,
     val observers: List<Party>,
+    val customPostProcessorName: String?,
     val changeHolder: AbstractParty?
 ) : Flow<SignedTransaction> {
 
     constructor(
         amount: Amount<TokenType>,
         issuer: Party,
-    ) : this(amount, issuer, emptyList(), null)
+    ) : this(amount, issuer, emptyList(), null, null)
 
     constructor(
         amount: Amount<TokenType>,
         issuer: Party,
         observers: List<Party>,
-    ) : this(amount, issuer, observers, null)
+    ) : this(amount, issuer, observers, null, null)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuer: Party,
+        customPostProcessorName: String?,
+    ) : this(amount, issuer, emptyList(), customPostProcessorName, null)
 
     constructor(
         amount: Amount<TokenType>,
         issuer: Party,
         changeHolder: AbstractParty?
-    ) : this(amount, issuer, emptyList(), changeHolder)
+    ) : this(amount, issuer, emptyList(), null, changeHolder)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuer: Party,
+        observers: List<Party>,
+        customPostProcessorName: String?,
+    ) : this(amount, issuer, observers, customPostProcessorName, null)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuer: Party,
+        observers: List<Party>,
+        changeHolder: AbstractParty?
+    ) : this(amount, issuer, observers, null, changeHolder)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuer: Party,
+        customPostProcessorName: String?,
+        changeHolder: AbstractParty?
+    ) : this(amount, issuer, emptyList(), customPostProcessorName, changeHolder)
 
     @CordaInject
     lateinit var flowMessaging: FlowMessaging
@@ -69,8 +97,11 @@ class RedeemFungibleTokens (
         val issuerSession = flowMessaging.initiateFlow(issuer)
         return flowEngine.subFlow(
             RedeemFungibleTokensFlow(
-                amount, issuerSession, changeHolder
-                    ?: flowIdentity.ourIdentity, observerSessions
+                amount,
+                issuerSession,
+                changeHolder ?: flowIdentity.ourIdentity,
+                observerSessions,
+                customPostProcessorName
             )
         )
     }
@@ -140,25 +171,53 @@ class ConfidentialRedeemFungibleTokens (
     val amount: Amount<TokenType>,
     val issuer: Party,
     val observers: List<Party>,
+    val customPostProcessorName: String?,
     val changeHolder: AbstractParty?
 ) : Flow<SignedTransaction> {
 
     constructor(
         amount: Amount<TokenType>,
         issuer: Party,
-    ) : this(amount, issuer, emptyList(), null)
+    ) : this(amount, issuer, emptyList(), null, null)
 
     constructor(
         amount: Amount<TokenType>,
         issuer: Party,
         observers: List<Party>,
-    ) : this(amount, issuer, observers, null)
+    ) : this(amount, issuer, observers, null, null)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuer: Party,
+        customPostProcessorName: String?,
+    ) : this(amount, issuer, emptyList(), customPostProcessorName, null)
 
     constructor(
         amount: Amount<TokenType>,
         issuer: Party,
         changeHolder: AbstractParty?
-    ) : this(amount, issuer, emptyList(), changeHolder)
+    ) : this(amount, issuer, emptyList(), null, changeHolder)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuer: Party,
+        observers: List<Party>,
+        customPostProcessorName: String?,
+    ) : this(amount, issuer, observers, customPostProcessorName, null)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuer: Party,
+        observers: List<Party>,
+        changeHolder: AbstractParty?
+    ) : this(amount, issuer, observers, null, changeHolder)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuer: Party,
+        customPostProcessorName: String?,
+        changeHolder: AbstractParty?
+    ) : this(amount, issuer, emptyList(), customPostProcessorName, changeHolder)
 
     @CordaInject
     lateinit var flowEngine: FlowEngine
@@ -178,7 +237,8 @@ class ConfidentialRedeemFungibleTokens (
                 amount = amount,
                 issuerSession = issuerSession,
                 observerSessions = observerSessions,
-                changeHolder = changeHolder
+                changeHolder = changeHolder,
+                customPostProcessorName = customPostProcessorName
             )
         )
     }

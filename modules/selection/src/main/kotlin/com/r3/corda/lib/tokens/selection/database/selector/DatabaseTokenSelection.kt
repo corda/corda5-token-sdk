@@ -68,6 +68,7 @@ class DatabaseTokenSelection (
         namedQuery: String,
         queryParams: Map<String, Any>,
         stateAndRefs: MutableList<StateAndRef<FungibleToken>>,
+        queryBy: TokenQueryBy
     ): Amount<TokenType> {
         // Didn't need to select any tokens.
         if (requiredAmount.quantity == 0L) {
@@ -79,7 +80,7 @@ class DatabaseTokenSelection (
         val cursor = persistenceService.query<StateAndRef<FungibleToken>>(
             namedQuery,
             queryParams,
-            IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME
+            queryBy.customPostProcessorName ?: IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME
         )
         do {
             val tokens = cursor.poll(pageSize, 10.seconds)
@@ -109,9 +110,10 @@ class DatabaseTokenSelection (
         namedQueryString: String,
         queryParams: Map<String, Any>,
         stateAndRefs: MutableList<StateAndRef<FungibleToken>>,
+        queryBy: TokenQueryBy
     ): Boolean {
         // not including soft locked tokens
-        val claimedAmount = executeQuery(requiredAmount, namedQueryString, queryParams, stateAndRefs)
+        val claimedAmount = executeQuery(requiredAmount, namedQueryString, queryParams, stateAndRefs, queryBy)
         return if (claimedAmount >= requiredAmount) {
             // We picked enough tokensToIssue, continue
             logger.trace("TokenType selection for $requiredAmount retrieved ${stateAndRefs.count()} states totalling $claimedAmount: $stateAndRefs")
@@ -132,7 +134,7 @@ class DatabaseTokenSelection (
         val (namedQuery, queryParams) = getNamedQuery(requiredAmount, holder, queryBy)
         val stateAndRefs = mutableListOf<StateAndRef<FungibleToken>>()
         for (retryCount in 1..maxRetries) {
-            if (!executeQueryAndReserve(requiredAmount, namedQuery, queryParams, stateAndRefs)) {
+            if (!executeQueryAndReserve(requiredAmount, namedQuery, queryParams, stateAndRefs, queryBy)) {
                 // TODO: Need to specify exactly why it fails. Locked states or literally _no_ states!
                 // No point in retrying if there will never be enough...
                 logger.warn("TokenType selection failed on attempt $retryCount.")
@@ -145,7 +147,7 @@ class DatabaseTokenSelection (
                     // if there is enough tokens available to satisfy the amount then we need to throw
                     // [InsufficientNotLockedBalanceException] instead
                     val amount =
-                        executeQuery(requiredAmount, namedQuery, queryParams, mutableListOf())
+                        executeQuery(requiredAmount, namedQuery, queryParams, mutableListOf(), queryBy)
                     if (amount < requiredAmount) {
                         logger.warn("Insufficient spendable states identified for $requiredAmount.")
                         throw InsufficientBalanceException("Insufficient spendable states identified for $requiredAmount.")

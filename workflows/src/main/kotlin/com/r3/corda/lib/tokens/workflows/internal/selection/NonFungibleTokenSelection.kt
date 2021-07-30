@@ -5,6 +5,7 @@ import com.r3.corda.lib.tokens.contracts.commands.RedeemTokenCommand
 import com.r3.corda.lib.tokens.contracts.datatypes.InputOutputStates
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.utilities.withNotary
+import com.r3.corda.lib.tokens.selection.TokenQueryBy
 import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import com.r3.corda.lib.tokens.workflows.utilities.addNotaryWithCheck
 import com.r3.corda.lib.tokens.workflows.utilities.addTokenTypeJar
@@ -21,11 +22,20 @@ fun generateMoveNonFungible(
     partyAndToken: PartyAndToken,
     persistenceService: PersistenceService,
 ): InputOutputStates<NonFungibleToken> {
+    return generateMoveNonFungible(partyAndToken, persistenceService, TokenQueryBy())
+}
+
+@Suspendable
+fun generateMoveNonFungible(
+    partyAndToken: PartyAndToken,
+    persistenceService: PersistenceService,
+    queryBy: TokenQueryBy
+): InputOutputStates<NonFungibleToken> {
     val (namedQuery, params) = namedQueryForNonfungibleTokenClassAndIdentifier(partyAndToken.token)
     val cursor = persistenceService.query<StateAndRef<NonFungibleToken>>(
         namedQuery,
         params,
-        IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME,
+        queryBy.customPostProcessorName ?: IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME,
     )
     val nonFungibleTokens = mutableListOf<StateAndRef<NonFungibleToken>>()
     do {
@@ -50,7 +60,17 @@ fun generateMoveNonFungible(
     partyAndToken: PartyAndToken,
     persistenceService: PersistenceService,
 ): TransactionBuilder {
-    val (inputs, outputs) = generateMoveNonFungible(partyAndToken, persistenceService)
+    return generateMoveNonFungible(transactionBuilder, partyAndToken, persistenceService)
+}
+
+@Suspendable
+fun generateMoveNonFungible(
+    transactionBuilder: TransactionBuilder,
+    partyAndToken: PartyAndToken,
+    persistenceService: PersistenceService,
+    queryBy : TokenQueryBy
+): TransactionBuilder {
+    val (inputs, outputs) = generateMoveNonFungible(partyAndToken, persistenceService, queryBy)
     val input = inputs.single()
     val output = outputs.single()
     val notary = input.state.notary

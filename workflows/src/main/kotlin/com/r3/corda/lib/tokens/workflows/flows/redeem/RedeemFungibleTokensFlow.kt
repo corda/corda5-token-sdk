@@ -1,6 +1,8 @@
 package com.r3.corda.lib.tokens.workflows.flows.redeem
 
+import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.TokenType
+import com.r3.corda.lib.tokens.selection.TokenQueryBy
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.injection.CordaInject
@@ -19,30 +21,59 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * @param changeHolder owner of possible change output, which defaults to the node identity of the calling node
  * @param issuerSession session with the issuer tokens should be redeemed with
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
+ * @param customPostProcessorName name of custom query post processor for token selection
  */
 class RedeemFungibleTokensFlow (
     val amount: Amount<TokenType>,
     override val issuerSession: FlowSession,
     val changeHolder: AbstractParty?,
     override val observerSessions: List<FlowSession>,
+    val customPostProcessorName: String?
 ) : AbstractRedeemTokensFlow() {
 
     constructor(
         amount: Amount<TokenType>,
         issuerSession: FlowSession,
-    ) : this(amount, issuerSession, null, emptyList())
+    ) : this(amount, issuerSession, null, emptyList(), null)
 
     constructor(
         amount: Amount<TokenType>,
         issuerSession: FlowSession,
         changeHolder: AbstractParty?,
-    ) : this(amount, issuerSession, changeHolder, emptyList())
+    ) : this(amount, issuerSession, changeHolder, emptyList(), null)
 
     constructor(
         amount: Amount<TokenType>,
         issuerSession: FlowSession,
         observerSessions: List<FlowSession>,
-    ) : this(amount, issuerSession, null, observerSessions)
+    ) : this(amount, issuerSession, null, observerSessions, null)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuerSession: FlowSession,
+        customPostProcessorName: String?
+    ) : this(amount, issuerSession, null, emptyList(), customPostProcessorName)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuerSession: FlowSession,
+        changeHolder: AbstractParty?,
+        observerSessions: List<FlowSession>,
+    ) : this(amount, issuerSession, changeHolder, observerSessions, null)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuerSession: FlowSession,
+        changeHolder: AbstractParty?,
+        customPostProcessorName: String?
+    ) : this(amount, issuerSession, changeHolder, emptyList(), customPostProcessorName)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuerSession: FlowSession,
+        observerSessions: List<FlowSession>,
+        customPostProcessorName: String?
+    ) : this(amount, issuerSession, null, observerSessions, customPostProcessorName)
 
     @CordaInject
     lateinit var identityService: IdentityService
@@ -62,7 +93,7 @@ class RedeemFungibleTokensFlow (
             hashingService = hashingService,
             flowEngine = flowEngine,
             amount = amount,
-            issuer = issuerSession.counterparty,
+            tokenQueryBy = TokenQueryBy(issuer = issuerSession.counterparty, customPostProcessorName = customPostProcessorName),
             changeHolder = changeHolder ?: flowIdentity.ourIdentity,
         )
     }

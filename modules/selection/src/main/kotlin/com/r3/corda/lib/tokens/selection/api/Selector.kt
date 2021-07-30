@@ -41,8 +41,8 @@ abstract class Selector {
     @Suspendable
     fun selectTokens(
         requiredAmount: Amount<TokenType>,
+        queryBy: TokenQueryBy,
         lockId: UUID,
-        queryBy: TokenQueryBy
     ): List<StateAndRef<FungibleToken>> {
         return selectTokens(Holder.TokenOnly(), lockId, requiredAmount, queryBy)
     }
@@ -52,7 +52,7 @@ abstract class Selector {
         requiredAmount: Amount<TokenType>,
         lockId: UUID,
     ): List<StateAndRef<FungibleToken>> {
-        return selectTokens(requiredAmount, lockId, TokenQueryBy())
+        return selectTokens(requiredAmount, TokenQueryBy(), lockId)
     }
 
     /**
@@ -73,8 +73,8 @@ abstract class Selector {
     fun selectTokens(
         externalId: UUID,
         requiredAmount: Amount<TokenType>,
-        lockId: UUID,
-        queryBy: TokenQueryBy
+        queryBy: TokenQueryBy,
+        lockId: UUID
     ): List<StateAndRef<FungibleToken>> {
         return selectTokens(Holder.fromUUID(externalId), lockId, requiredAmount, queryBy)
     }
@@ -85,7 +85,7 @@ abstract class Selector {
         requiredAmount: Amount<TokenType>,
         lockId: UUID,
     ): List<StateAndRef<FungibleToken>> {
-        return selectTokens(externalId, requiredAmount, lockId, TokenQueryBy())
+        return selectTokens(externalId, requiredAmount, TokenQueryBy(), lockId)
     }
 
     /**
@@ -106,8 +106,8 @@ abstract class Selector {
     fun selectTokens(
         holdingKey: PublicKey,
         requiredAmount: Amount<TokenType>,
-        lockId: UUID,
-        queryBy: TokenQueryBy = TokenQueryBy()
+        queryBy: TokenQueryBy,
+        lockId: UUID
     ): List<StateAndRef<FungibleToken>> {
         return selectTokens(Holder.KeyIdentity(holdingKey), lockId, requiredAmount, queryBy)
     }
@@ -118,7 +118,7 @@ abstract class Selector {
         requiredAmount: Amount<TokenType>,
         lockId: UUID,
     ): List<StateAndRef<FungibleToken>> {
-        return selectTokens(holdingKey, requiredAmount, lockId, TokenQueryBy())
+        return selectTokens(holdingKey, requiredAmount, TokenQueryBy(), lockId)
     }
 
     /**
@@ -133,21 +133,21 @@ abstract class Selector {
     @Suspendable
     fun generateMove(
         identityService: IdentityService,
+        hashingService: HashingService,
         memberInfo: MemberInfo,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
-        lockId: UUID,
-        hashingService: HashingService,
-        queryBy: TokenQueryBy
+        queryBy: TokenQueryBy,
+        lockId: UUID
     ): InputOutputStates<FungibleToken> {
         return generateMove(
             identityService,
+            hashingService,
             memberInfo,
             Holder.TokenOnly(),
             lockId,
             partiesAndAmounts,
             changeHolder,
-            hashingService,
             queryBy
         )
     }
@@ -155,13 +155,13 @@ abstract class Selector {
     @Suspendable
     fun generateMove(
         identityService: IdentityService,
+        hashingService: HashingService,
         memberInfo: MemberInfo,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
-        lockId: UUID,
-        hashingService: HashingService
+        lockId: UUID
     ): InputOutputStates<FungibleToken> {
-        return generateMove(identityService, memberInfo, partiesAndAmounts, changeHolder, lockId, hashingService, TokenQueryBy())
+        return generateMove(identityService, hashingService, memberInfo, partiesAndAmounts, changeHolder, TokenQueryBy(), lockId)
     }
 
     /**
@@ -176,22 +176,22 @@ abstract class Selector {
     @Suspendable
     fun generateMove(
         identityService: IdentityService,
+        hashingService: HashingService,
         memberInfo: MemberInfo,
         externalId: UUID,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
-        lockId: UUID,
-        hashingService: HashingService,
-        queryBy: TokenQueryBy
+        queryBy: TokenQueryBy,
+        lockId: UUID
     ): InputOutputStates<FungibleToken> {
         return generateMove(
             identityService,
+            hashingService,
             memberInfo,
             Holder.fromUUID(externalId),
             lockId,
             partiesAndAmounts,
             changeHolder,
-            hashingService,
             queryBy
         )
     }
@@ -199,22 +199,22 @@ abstract class Selector {
     @Suspendable
     fun generateMove(
         identityService: IdentityService,
+        hashingService: HashingService,
         memberInfo: MemberInfo,
         externalId: UUID,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
-        lockId: UUID,
-        hashingService: HashingService
+        lockId: UUID
     ): InputOutputStates<FungibleToken> {
         return generateMove(
             identityService,
+            hashingService,
             memberInfo,
             externalId,
             partiesAndAmounts,
             changeHolder,
-            lockId,
-            hashingService,
-            TokenQueryBy()
+            TokenQueryBy(),
+            lockId
         )
     }
 
@@ -230,22 +230,22 @@ abstract class Selector {
     @Suspendable
     fun generateMove(
         identityService: IdentityService,
+        hashingService: HashingService,
         memberInfo: MemberInfo,
         holdingKey: PublicKey,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
-        lockId: UUID,
-        hashingService: HashingService,
-        queryBy: TokenQueryBy
+        queryBy: TokenQueryBy,
+        lockId: UUID
     ): InputOutputStates<FungibleToken> {
         return generateMove(
             identityService,
+            hashingService,
             memberInfo,
             Holder.KeyIdentity(holdingKey),
             lockId,
             partiesAndAmounts,
             changeHolder,
-            hashingService,
             queryBy
         )
     }
@@ -253,22 +253,22 @@ abstract class Selector {
     @Suspendable
     fun generateMove(
         identityService: IdentityService,
+        hashingService: HashingService,
         memberInfo: MemberInfo,
         holdingKey: PublicKey,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
-        lockId: UUID,
-        hashingService: HashingService
+        lockId: UUID
     ): InputOutputStates<FungibleToken> {
         return generateMove(
             identityService,
+            hashingService,
             memberInfo,
             holdingKey,
             partiesAndAmounts,
             changeHolder,
-            lockId,
-            hashingService,
-            TokenQueryBy()
+            TokenQueryBy(),
+            lockId
         )
     }
 
@@ -283,13 +283,13 @@ abstract class Selector {
     @Suspendable
     private fun generateMove(
         identityService: IdentityService,
+        hashingService: HashingService,
         memberInfo: MemberInfo,
         holder: Holder,
         lockId: UUID,
         partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
         changeHolder: AbstractParty,
-        hashingService: HashingService,
-        queryBy: TokenQueryBy = TokenQueryBy()
+        queryBy: TokenQueryBy
     ): InputOutputStates<FungibleToken> {
         // Grab some tokens from the vault and soft-lock.
         // Only supports moves of the same token instance currently.
@@ -360,6 +360,19 @@ abstract class Selector {
         }
 
         return InputOutputStates(acceptableStates, outputStates)
+    }
+
+    @Suspendable
+    private fun generateMove(
+        identityService: IdentityService,
+        hashingService: HashingService,
+        memberInfo: MemberInfo,
+        holder: Holder,
+        lockId: UUID,
+        partiesAndAmounts: List<Pair<AbstractParty, Amount<TokenType>>>,
+        changeHolder: AbstractParty,
+    ): InputOutputStates<FungibleToken> {
+        return generateMove(identityService, hashingService, memberInfo, holder, lockId, partiesAndAmounts, changeHolder, TokenQueryBy())
     }
 
     /**

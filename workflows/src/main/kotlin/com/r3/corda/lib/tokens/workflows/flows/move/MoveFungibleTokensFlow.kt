@@ -1,6 +1,7 @@
 package com.r3.corda.lib.tokens.workflows.flows.move
 
 import com.r3.corda.lib.tokens.contracts.types.TokenType
+import com.r3.corda.lib.tokens.selection.TokenQueryBy
 import com.r3.corda.lib.tokens.workflows.types.PartyAndAmount
 import net.corda.v5.application.flows.FlowSession
 import net.corda.v5.application.flows.flowservices.FlowIdentity
@@ -23,6 +24,7 @@ import net.corda.v5.ledger.transactions.TransactionBuilder
  * @param partiesAndAmounts list of pairing party - amount of token that is to be moved to that party
  * @param participantSessions sessions with the participants of move transaction
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
+ * @param customPostProcessorName name of custom query post processor for token selection
  * @param changeHolder optional holder of the change outputs, it can be confidential identity, if not specified it
  *                     defaults to caller's legal identity
  */
@@ -30,25 +32,85 @@ class MoveFungibleTokensFlow(
     val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
     override val participantSessions: List<FlowSession>,
     override val observerSessions: List<FlowSession>,
+    val customPostProcessorName: String?,
     val changeHolder: AbstractParty?
 ) : AbstractMoveTokensFlow() {
 
     constructor(
         partiesAndAmounts: List<PartyAndAmount<TokenType>>,
         participantSessions: List<FlowSession>,
-    ) : this(partiesAndAmounts, participantSessions, emptyList(), null)
+    ) : this(partiesAndAmounts, participantSessions, emptyList(), null, null)
 
     constructor(
         partiesAndAmounts: List<PartyAndAmount<TokenType>>,
         participantSessions: List<FlowSession>,
         observerSessions: List<FlowSession>,
-    ) : this(partiesAndAmounts, participantSessions, observerSessions, null)
+    ) : this(partiesAndAmounts, participantSessions, observerSessions, null, null)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        participantSessions: List<FlowSession>,
+        customPostProcessorName: String?
+    ) : this(partiesAndAmounts, participantSessions, emptyList(), customPostProcessorName, null)
 
     constructor(
         partiesAndAmounts: List<PartyAndAmount<TokenType>>,
         participantSessions: List<FlowSession>,
         changeHolder: AbstractParty?
-    ) : this(partiesAndAmounts, participantSessions, emptyList(), changeHolder)
+    ) : this(partiesAndAmounts, participantSessions, emptyList(), null, changeHolder)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession>,
+        customPostProcessorName: String?
+    ) : this(partiesAndAmounts, participantSessions, observerSessions, customPostProcessorName, null)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession>,
+        changeHolder: AbstractParty?
+    ) : this(partiesAndAmounts, participantSessions, observerSessions, null, changeHolder)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        participantSessions: List<FlowSession>,
+        customPostProcessorName: String?,
+        changeHolder: AbstractParty?
+    ) : this(partiesAndAmounts, participantSessions, emptyList(), customPostProcessorName, changeHolder)
+
+
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        participantSessions: List<FlowSession>,
+    ) : this(listOf(partyAndAmount), participantSessions)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession>,
+    ) : this(listOf(partyAndAmount), participantSessions, observerSessions)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        participantSessions: List<FlowSession>,
+        customPostProcessorName: String?
+    ) : this(listOf(partyAndAmount), participantSessions, customPostProcessorName)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        participantSessions: List<FlowSession>,
+        changeHolder: AbstractParty?
+    ) : this(listOf(partyAndAmount), participantSessions, changeHolder)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession>,
+        customPostProcessorName: String?
+    ) : this(listOf(partyAndAmount), participantSessions, observerSessions, customPostProcessorName)
 
     constructor(
         partyAndAmount: PartyAndAmount<TokenType>,
@@ -60,19 +122,9 @@ class MoveFungibleTokensFlow(
     constructor(
         partyAndAmount: PartyAndAmount<TokenType>,
         participantSessions: List<FlowSession>,
-    ) : this(listOf(partyAndAmount), participantSessions, emptyList(), null)
-
-    constructor(
-        partyAndAmount: PartyAndAmount<TokenType>,
-        participantSessions: List<FlowSession>,
-        observerSessions: List<FlowSession>,
-    ) : this(listOf(partyAndAmount), participantSessions, observerSessions, null)
-
-    constructor(
-        partyAndAmount: PartyAndAmount<TokenType>,
-        participantSessions: List<FlowSession>,
+        customPostProcessorName: String?,
         changeHolder: AbstractParty?
-    ) : this(listOf(partyAndAmount), participantSessions, emptyList(), changeHolder)
+    ) : this(listOf(partyAndAmount), participantSessions, customPostProcessorName, changeHolder)
 
     @CordaInject
     lateinit var flowIdentity: FlowIdentity
@@ -100,6 +152,7 @@ class MoveFungibleTokensFlow(
             memberLookupService.myInfo(),
             partiesAndAmounts = partiesAndAmounts,
             changeHolder = changeHolder ?: flowIdentity.ourIdentity,
+            TokenQueryBy(customPostProcessorName)
         )
     }
 }

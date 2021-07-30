@@ -103,6 +103,7 @@ fun addMoveFungibleTokens(
     memberInfo: MemberInfo,
     partiesAndAmounts: List<PartyAndAmount<TokenType>>,
     changeHolder: AbstractParty,
+    queryBy: TokenQueryBy
 ): TransactionBuilder {
     // TODO For now default to database query, but switch this line on after we can change API in 2.0
 //    val selector: Selector = ConfigSelection.getPreferredSelection(serviceHub)
@@ -110,14 +111,37 @@ fun addMoveFungibleTokens(
     val (inputs, outputs) =
         selector.generateMove(
             identityService,
+            hashingService,
             memberInfo,
             partiesAndAmounts.toPairs(),
             changeHolder,
-            transactionBuilder.lockId,
-            hashingService,
-            TokenQueryBy()
+            queryBy,
+            transactionBuilder.lockId
         )
     return addMoveTokens(transactionBuilder = transactionBuilder, inputs = inputs, outputs = outputs)
+}
+
+@Suspendable
+fun addMoveFungibleTokens(
+    transactionBuilder: TransactionBuilder,
+    persistenceService: PersistenceService,
+    identityService: IdentityService,
+    hashingService: HashingService,
+    flowEngine: FlowEngine,
+    memberInfo: MemberInfo,
+    partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+    changeHolder: AbstractParty,
+): TransactionBuilder {
+    return addMoveFungibleTokens(
+        transactionBuilder,
+        persistenceService,
+        identityService,
+        hashingService,
+        flowEngine,
+        memberInfo,
+        partiesAndAmounts,
+        changeHolder
+    )
 }
 
 /**
@@ -137,6 +161,7 @@ fun addMoveFungibleTokens(
     amount: Amount<TokenType>,
     holder: AbstractParty,
     changeHolder: AbstractParty,
+    queryBy: TokenQueryBy
 ): TransactionBuilder {
     return addMoveFungibleTokens(
         transactionBuilder = transactionBuilder,
@@ -146,7 +171,34 @@ fun addMoveFungibleTokens(
         memberInfo = memberInfo,
         partiesAndAmounts = listOf(PartyAndAmount(holder, amount)),
         changeHolder = changeHolder,
-        hashingService = hashingService
+        hashingService = hashingService,
+        queryBy = queryBy
+    )
+}
+
+@Suspendable
+fun addMoveFungibleTokens(
+    transactionBuilder: TransactionBuilder,
+    persistenceService: PersistenceService,
+    identityService: IdentityService,
+    hashingService: HashingService,
+    flowEngine: FlowEngine,
+    memberInfo: MemberInfo,
+    amount: Amount<TokenType>,
+    holder: AbstractParty,
+    changeHolder: AbstractParty,
+): TransactionBuilder {
+    return addMoveFungibleTokens(
+        transactionBuilder,
+        persistenceService,
+        identityService,
+        hashingService,
+        flowEngine,
+        memberInfo,
+        amount,
+        holder,
+        changeHolder,
+        TokenQueryBy()
     )
 }
 
@@ -161,8 +213,19 @@ fun addMoveNonFungibleTokens(
     persistenceService: PersistenceService,
     token: TokenType,
     holder: AbstractParty,
+    queryBy: TokenQueryBy
 ): TransactionBuilder {
-    return generateMoveNonFungible(transactionBuilder, PartyAndToken(holder, token), persistenceService)
+    return generateMoveNonFungible(transactionBuilder, PartyAndToken(holder, token), persistenceService, queryBy)
+}
+
+@Suspendable
+fun addMoveNonFungibleTokens(
+    transactionBuilder: TransactionBuilder,
+    persistenceService: PersistenceService,
+    token: TokenType,
+    holder: AbstractParty,
+): TransactionBuilder {
+    return addMoveNonFungibleTokens(transactionBuilder, persistenceService, token, holder, TokenQueryBy())
 }
 
 /**
@@ -173,6 +236,16 @@ fun addMoveNonFungibleTokens(
     transactionBuilder: TransactionBuilder,
     persistenceService: PersistenceService,
     partyAndToken: PartyAndToken,
+    queryBy: TokenQueryBy
 ): TransactionBuilder {
-    return generateMoveNonFungible(transactionBuilder, partyAndToken, persistenceService)
+    return generateMoveNonFungible(transactionBuilder, partyAndToken, persistenceService, queryBy)
+}
+
+@Suspendable
+fun addMoveNonFungibleTokens(
+    transactionBuilder: TransactionBuilder,
+    persistenceService: PersistenceService,
+    partyAndToken: PartyAndToken,
+): TransactionBuilder {
+    return addMoveNonFungibleTokens(transactionBuilder, persistenceService, partyAndToken, TokenQueryBy())
 }

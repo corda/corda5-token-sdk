@@ -10,7 +10,6 @@ import com.r3.corda.lib.tokens.contracts.utilities.of
 import com.r3.corda.lib.tokens.workflows.TokenBuilderException
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.crypto.HashingService
-import net.corda.v5.crypto.BasicHashingService
 import net.corda.v5.ledger.contracts.Amount
 import java.math.BigDecimal
 

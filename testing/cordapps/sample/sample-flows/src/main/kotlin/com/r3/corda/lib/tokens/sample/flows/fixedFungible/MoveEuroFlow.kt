@@ -1,5 +1,6 @@
 package com.r3.corda.lib.tokens.sample.flows.fixedFungible
 
+import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.money.EUR
 import com.r3.corda.lib.tokens.workflows.flows.rpc.ConfidentialMoveFungibleTokens
 import com.r3.corda.lib.tokens.workflows.flows.rpc.MoveFungibleTokens
@@ -15,6 +16,11 @@ import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.json.JsonMarshallingService
 import net.corda.v5.application.services.json.parseJson
 import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.util.contextLogger
+import net.corda.v5.ledger.contracts.ContractState
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.services.vault.StateAndRefPostProcessor
+import java.util.stream.Stream
 
 @StartableByRPC
 class MoveEuroFlow @JsonConstructor constructor(
@@ -38,6 +44,10 @@ class MoveEuroFlow @JsonConstructor constructor(
         val recipient = CordaX500Name.parse(params["recipient"]!!)
         val recipientParty = identityService.partyFromName(recipient)!!
 
+        val postProcessor = params["filterOnlyIssuedByBob"]?.let {
+            if (it.toBoolean()) FilterTokensByIssuerBobPostProcessor.POST_PROCESSOR_NAME else null
+        }
+
         if (confidential) {
             flowEngine.subFlow(
                 ConfidentialMoveFungibleTokens(
@@ -45,7 +55,8 @@ class MoveEuroFlow @JsonConstructor constructor(
                         recipientParty,
                         EUR(amount)
                     ),
-                    emptyList()
+                    emptyList(),
+                    postProcessor
                 )
             )
         } else {
@@ -54,9 +65,27 @@ class MoveEuroFlow @JsonConstructor constructor(
                     PartyAndAmount(
                         recipientParty,
                         EUR(amount)
-                    )
+                    ),
+                    postProcessor
                 )
             )
+        }
+    }
+}
+
+class FilterTokensByIssuerBobPostProcessor : StateAndRefPostProcessor<StateAndRef<ContractState>> {
+    companion object {
+        const val POST_PROCESSOR_NAME = "MoveEuroFlow.FilterByIssuerBob"
+        val logger = contextLogger()
+    }
+
+    override val name = POST_PROCESSOR_NAME
+
+    override fun postProcess(inputs: Stream<StateAndRef<ContractState>>): Stream<StateAndRef<ContractState>> {
+        return inputs.filter {
+            it.state.data is FungibleToken
+        }.filter {
+            (it.state.data as FungibleToken).issuer.name.toString().contains("bob")
         }
     }
 }

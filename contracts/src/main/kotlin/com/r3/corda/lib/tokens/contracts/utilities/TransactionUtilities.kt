@@ -8,6 +8,7 @@ import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.crypto.DigestAlgorithmName
 import net.corda.v5.crypto.SecureHash
+import net.corda.v5.crypto.getZeroHash
 import net.corda.v5.ledger.contracts.Amount
 import net.corda.v5.ledger.contracts.ContractState
 import net.corda.v5.ledger.contracts.StateAndRef
@@ -100,7 +101,7 @@ fun TokenType.getAttachmentIdForGenericParam(
             }
             if (classToSearch.protectionDomain.codeSource.location
                     == TokenType::class.java.protectionDomain.codeSource.location) {
-                hashingService.zeroHash(DigestAlgorithmName.SHA2_256)
+                hashingService.getZeroHash(DigestAlgorithmName.SHA2_256)
             } else {
                 val hash = hashingService.hash(
                     classToSearch.protectionDomain.codeSource.location.readBytes(),
@@ -110,7 +111,7 @@ fun TokenType.getAttachmentIdForGenericParam(
             }
         }
     }
-    return if (computedValue == hashingService.zeroHash(DigestAlgorithmName.SHA2_256)) {
+    return if (computedValue == hashingService.getZeroHash(DigestAlgorithmName.SHA2_256)) {
         null
     } else {
         computedValue

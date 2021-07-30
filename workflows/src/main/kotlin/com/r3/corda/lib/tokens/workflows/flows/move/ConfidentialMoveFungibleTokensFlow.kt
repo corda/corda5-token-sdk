@@ -30,19 +30,55 @@ import net.corda.v5.ledger.transactions.SignedTransaction
  * @param participantSessions sessions with the participants of move transaction
  * @param changeHolder holder of the change outputs, it can be confidential identity
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
+ * @param customPostProcessorName name of custom query post processor for token selection
  */
 class ConfidentialMoveFungibleTokensFlow (
     val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
     val participantSessions: List<FlowSession>,
     val changeHolder: AbstractParty,
     val observerSessions: List<FlowSession>,
+    val customPostProcessorName: String?
 ) : Flow<SignedTransaction> {
 
     constructor(
         partiesAndAmounts: List<PartyAndAmount<TokenType>>,
         participantSessions: List<FlowSession>,
         changeHolder: AbstractParty
-    ) : this (partiesAndAmounts, participantSessions, changeHolder, emptyList())
+    ) : this (partiesAndAmounts, participantSessions, changeHolder, emptyList(), null)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        participantSessions: List<FlowSession>,
+        changeHolder: AbstractParty,
+        observerSessions: List<FlowSession>,
+    ) : this (partiesAndAmounts, participantSessions, changeHolder, observerSessions, null)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        participantSessions: List<FlowSession>,
+        changeHolder: AbstractParty,
+        customPostProcessorName: String?
+    ) : this (partiesAndAmounts, participantSessions, changeHolder, emptyList(), customPostProcessorName)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        participantSessions: List<FlowSession>,
+        changeHolder: AbstractParty,
+    ) : this(listOf(partyAndAmount), participantSessions, changeHolder, emptyList(), null)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        participantSessions: List<FlowSession>,
+        changeHolder: AbstractParty,
+        observerSessions: List<FlowSession>
+    ) : this(listOf(partyAndAmount), participantSessions, changeHolder, observerSessions, null)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        participantSessions: List<FlowSession>,
+        changeHolder: AbstractParty,
+        customPostProcessorName: String?
+    ) : this (listOf(partyAndAmount), participantSessions, changeHolder, emptyList(), customPostProcessorName)
 
     @CordaInject
     lateinit var flowEngine: FlowEngine
@@ -59,31 +95,18 @@ class ConfidentialMoveFungibleTokensFlow (
     @CordaInject
     lateinit var hashingService: HashingService
 
-    constructor(
-        partyAndAmount: PartyAndAmount<TokenType>,
-        participantSessions: List<FlowSession>,
-        changeHolder: AbstractParty,
-        observerSessions: List<FlowSession>
-    ) : this(listOf(partyAndAmount), participantSessions, changeHolder, observerSessions)
-
-    constructor(
-        partyAndAmount: PartyAndAmount<TokenType>,
-        participantSessions: List<FlowSession>,
-        changeHolder: AbstractParty,
-    ) : this(listOf(partyAndAmount), participantSessions, changeHolder, emptyList())
-
     @Suspendable
     override fun call(): SignedTransaction {
         // TODO add in memory selection too
         val tokenSelection = DatabaseTokenSelection(persistenceService, identityService, flowEngine)
         val (inputs, outputs) = tokenSelection.generateMove(
             identityService,
+            hashingService = hashingService,
             memberLookupService.myInfo(),
             lockId = flowEngine.flowId.uuid,
             partiesAndAmounts = partiesAndAmounts.toPairs(),
             changeHolder = changeHolder,
-            hashingService = hashingService,
-            queryBy = TokenQueryBy()
+            queryBy = TokenQueryBy(customPostProcessorName = customPostProcessorName)
         )
         // TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role
         participantSessions.forEach { it.send(TransactionRole.PARTICIPANT) }

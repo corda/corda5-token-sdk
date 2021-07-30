@@ -20,6 +20,7 @@ import net.corda.v5.ledger.transactions.SignedTransaction
  * @param amount amount of token to redeem
  * @param issuerSession session with the issuer tokens should be redeemed with
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
+ * @param customPostProcessorName name of custom query post processor for token selection
  * @param changeHolder optional change key, if using accounts you should generate the change key prior to calling this
  *                     flow then pass it in to the flow via this parameter
  */
@@ -27,25 +28,53 @@ class ConfidentialRedeemFungibleTokensFlow (
     val amount: Amount<TokenType>,
     val issuerSession: FlowSession,
     val observerSessions: List<FlowSession>,
+    val customPostProcessorName: String?,
     val changeHolder: AbstractParty?
 ) : Flow<SignedTransaction> {
 
     constructor(
         amount: Amount<TokenType>,
         issuerSession: FlowSession
-    ) : this(amount, issuerSession, emptyList(), null)
+    ) : this(amount, issuerSession, emptyList(), null, null)
 
     constructor(
         amount: Amount<TokenType>,
         issuerSession: FlowSession,
         observerSessions: List<FlowSession>
-    ) : this(amount, issuerSession, observerSessions, null)
+    ) : this(amount, issuerSession, observerSessions, null, null)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuerSession: FlowSession,
+        customPostProcessorName: String?
+    ) : this(amount, issuerSession, emptyList(), customPostProcessorName, null)
 
     constructor(
         amount: Amount<TokenType>,
         issuerSession: FlowSession,
         changeHolder: AbstractParty?
-    ) : this(amount, issuerSession, emptyList(), changeHolder)
+    ) : this(amount, issuerSession, emptyList(), null, changeHolder)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuerSession: FlowSession,
+        observerSessions: List<FlowSession>,
+        customPostProcessorName: String?,
+    ) : this(amount, issuerSession, observerSessions, customPostProcessorName, null)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuerSession: FlowSession,
+        observerSessions: List<FlowSession>,
+        changeHolder: AbstractParty?
+    ) : this(amount, issuerSession, observerSessions, null, changeHolder)
+
+    constructor(
+        amount: Amount<TokenType>,
+        issuerSession: FlowSession,
+        customPostProcessorName: String?,
+        changeHolder: AbstractParty?
+    ) : this(amount, issuerSession, emptyList(), customPostProcessorName, changeHolder)
 
     @CordaInject
     lateinit var keyManagementService: KeyManagementService
@@ -71,6 +100,7 @@ class ConfidentialRedeemFungibleTokensFlow (
                 issuerSession = issuerSession,
                 changeHolder = confidentialHolder,  // This will never be null.
                 observerSessions = observerSessions,
+                customPostProcessorName = customPostProcessorName
             )
         )
     }

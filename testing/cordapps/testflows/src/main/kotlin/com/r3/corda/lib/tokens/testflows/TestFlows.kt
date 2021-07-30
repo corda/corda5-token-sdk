@@ -146,11 +146,11 @@ class DvPFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
         val (inputs, outputs) =
             DatabaseTokenSelection(persistenceService, identityService, flowEngine).generateMove(
                 identityService,
+                hashingService = hashingService,
                 memberLookupService.myInfo(),
                 lockId = flowEngine.flowId.uuid,
                 partiesAndAmounts = listOf(Pair(otherSession.counterparty, dvPNotification.amount)),
-                changeHolder = changeHolder,
-                hashingService = hashingService
+                changeHolder = changeHolder
             )
         flowEngine.subFlow(SendStateAndRefFlow(otherSession, inputs))
         otherSession.send(outputs)
@@ -211,7 +211,7 @@ class RedeemFungibleGBP(
 
     @Suspendable
     override fun call(): SignedTransaction {
-        return flowEngine.subFlow(RedeemFungibleTokens(amount, issuerParty, emptyList(), null))
+        return flowEngine.subFlow(RedeemFungibleTokens(amount, issuerParty))
     }
 }
 

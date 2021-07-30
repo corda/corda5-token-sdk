@@ -4,14 +4,18 @@ import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import net.corda.v5.application.identity.Party
 import net.corda.v5.ledger.contracts.StateAndRef
 
-//TODO: After 2.0 we should get rid of queryCriteria, because it was a mistake to expose it in the
 data class TokenQueryBy (
     val issuer: Party?,
     val predicate: (StateAndRef<FungibleToken>) -> Boolean,
+    val customPostProcessorName: String?
 ) {
-    constructor() : this(null, { true })
-    constructor(issuer: Party?) : this(issuer, { true })
-    constructor(predicate: (StateAndRef<FungibleToken>) -> Boolean) : this(null, predicate)
+    constructor() : this(null, { true }, null)
+    constructor(issuer: Party?) : this(issuer, { true }, null)
+    constructor(predicate: (StateAndRef<FungibleToken>) -> Boolean) : this(null, predicate, null)
+    constructor(customPostProcessorName: String?) : this(null, { true }, customPostProcessorName)
+    constructor(issuer: Party?, predicate: (StateAndRef<FungibleToken>) -> Boolean) : this(issuer, predicate, null)
+    constructor(issuer: Party?, customPostProcessorName: String?) : this(issuer, { true }, customPostProcessorName)
+    constructor(predicate: (StateAndRef<FungibleToken>) -> Boolean, customPostProcessorName: String?) : this(null, predicate, customPostProcessorName)
 }
 
 internal fun TokenQueryBy.issuerAndPredicate(): (StateAndRef<FungibleToken>) -> Boolean {

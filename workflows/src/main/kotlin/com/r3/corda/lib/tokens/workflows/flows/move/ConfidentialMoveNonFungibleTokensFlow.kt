@@ -1,6 +1,7 @@
 package com.r3.corda.lib.tokens.workflows.flows.move
 
 import com.r3.corda.lib.tokens.contracts.types.TokenType
+import com.r3.corda.lib.tokens.selection.TokenQueryBy
 import com.r3.corda.lib.tokens.workflows.flows.confidential.ConfidentialTokensFlow
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.TransactionRole
 import com.r3.corda.lib.tokens.workflows.internal.selection.generateMoveNonFungible
@@ -23,17 +24,31 @@ import net.corda.v5.ledger.transactions.SignedTransaction
  * @param partyAndToken list of pairing party - token that is to be moved to that party
  * @param participantSessions sessions with the participants of move transaction
  * @param observerSessions optional sessions with the observer nodes, to witch the transaction will be broadcasted
+ * @param customPostProcessorName name of custom query post processor for token selection
  */
 class ConfidentialMoveNonFungibleTokensFlow (
     val partyAndToken: PartyAndToken,
     val participantSessions: List<FlowSession>,
     val observerSessions: List<FlowSession>,
+    val customPostProcessorName: String?
 ) : Flow<SignedTransaction> {
 
     constructor(
         partyAndToken: PartyAndToken,
         participantSessions: List<FlowSession>,
-    ) : this(partyAndToken, participantSessions, emptyList())
+    ) : this(partyAndToken, participantSessions, emptyList(), null)
+
+    constructor(
+        partyAndToken: PartyAndToken,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession>,
+    ) : this(partyAndToken, participantSessions, observerSessions, null)
+
+    constructor(
+        partyAndToken: PartyAndToken,
+        participantSessions: List<FlowSession>,
+        customPostProcessorName: String?
+    ) : this(partyAndToken, participantSessions, emptyList(), customPostProcessorName)
 
     @CordaInject
     lateinit var persistenceService: PersistenceService
@@ -43,7 +58,7 @@ class ConfidentialMoveNonFungibleTokensFlow (
 
     @Suspendable
     override fun call(): SignedTransaction {
-        val (inputs, outputs) = generateMoveNonFungible(partyAndToken, persistenceService)
+        val (inputs, outputs) = generateMoveNonFungible(partyAndToken, persistenceService, TokenQueryBy(customPostProcessorName))
         val input = inputs.single()
         val output = outputs.single()
         // TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role
