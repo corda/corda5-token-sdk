@@ -81,16 +81,16 @@ class FungibleFixedTokenTests {
                 true
             )
 
-            val carolineEuro = 100000.0
+            val carolineEuro = bobEuro / 2
             // Transfer half of bob's euro to caroline
-            alice().moveEuroToken(
+            bob().moveEuroToken(
                 carolineEuro,
                 caroline().getX500Name(),
                 confidential = true
             )
 
             val aliceX500Name = alice().getX500Name()
-            bob().redeemEuroToken(bobEuro, aliceX500Name)
+            bob().redeemEuroToken(bobEuro / 2, aliceX500Name)
             caroline().redeemEuroToken(carolineEuro, aliceX500Name)
         }
     }
