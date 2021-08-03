@@ -149,7 +149,9 @@ configure(publishProjects) { subproject ->
     publishing {
         publications {
             create(subproject.name, MavenPublication) {
-                from components.java
+                pluginManager.withPlugin('org.jetbrains.kotlin.jvm') {
+                    from components.kotlin
+                }
 
                 groupId subproject.group
                 version tasks.jar.archiveVersion.get()
@@ -157,9 +159,9 @@ configure(publishProjects) { subproject ->
                 artifact tasks.sourceJar
                 artifact tasks.javadocJar
 
-                def cpk = tasks.findByName("cpk")
-                if(cpk) {
-                    artifact cpk
+                // Publish any CPK that this project may have.
+                pluginManager.withPlugin('net.corda.plugins.cordapp-cpk') {
+                    artifact tasks.named('cpk', Jar)
                 }
 
                 pom {
