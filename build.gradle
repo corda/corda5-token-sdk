@@ -127,9 +127,7 @@ subprojects {
 def publishProjects = [
         project(":contracts"),
         project(":workflows"),
-        project(":modules:selection"),
-        project(":testing:cordapps:sample:sample-contracts"),
-        project(":testing:cordapps:sample:sample-flows")
+        project(":modules:selection")
 ]
 
 configure(publishProjects) { subproject ->
