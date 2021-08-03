@@ -38,7 +38,7 @@ object FungibleTokenSchemaV1 : MappedSchema(
                 " WHERE state.stateStatus = 0" +
                 " AND state.stateRef.txId = token.stateRef.txId" +
                 " AND state.stateRef.index = token.stateRef.index" +
-                " ORDER BY token.stateRef ASC"
+                " ORDER BY token.stateRef.txId, token.stateRef.index ASC"
         ),
         NamedQuery(
             name = "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassAndIdentifier",
