@@ -22,6 +22,9 @@ cordapp {
         versionId 1
         vendor "R3"
     }
+    signing {
+        enabled = true
+    }
 }
 
 jar {

@@ -16,7 +16,7 @@ cordapp {
         versionId 3
     }
     signing {
-        enabled = false
+        enabled = true
     }
 }
 
@@ -41,8 +41,8 @@ sourceSets {
 }
 
 configurations {
-    integrationTestCompile.extendsFrom testCompile
-    integrationTestRuntime.extendsFrom testRuntime
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 compileKotlin {
@@ -63,10 +63,10 @@ dependencies {
     cordapp("$corda_release_group:corda-flows:$corda_release_version") { changing = true}
 
     // Logging.
-    testCompile "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
+    testImplementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
 
     // Testing.
-    testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
 
     // CorDapp dependencies.
     cordapp project(":contracts")
@@ -76,7 +76,7 @@ dependencies {
     //CI for confidential tokens
     cordapp "$confidential_id_release_group:ci-workflows:$confidential_id_release_version"
 
-    compile("org.postgresql:postgresql:42.2.18")
+    implementation("org.postgresql:postgresql:42.2.18")
 }
 
 task integrationTest(type: Test, dependsOn: []) {
