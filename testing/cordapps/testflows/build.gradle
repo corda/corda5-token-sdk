@@ -16,7 +16,7 @@ dependencies {
 
 cordapp {
     targetPlatformVersion corda_platform_version as Integer
-    minimumPlatformVersion corda_platform_version as Integer
+
     workflow {
         name "Corda Tokens SDK - Sample Workflows"
         versionId 1

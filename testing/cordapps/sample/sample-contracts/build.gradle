@@ -12,7 +12,7 @@ dependencies {
 
 cordapp {
     targetPlatformVersion corda_platform_version as Integer
-    minimumPlatformVersion corda_platform_version as Integer
+
     contract {
         name "Corda Tokens SDK - Sample Contracts"
         versionId 1
@@ -25,8 +25,4 @@ cordapp {
 
 tasks.named('jar', Jar) {
     archiveBaseName = 'tokens-sample-contracts'
-    bnd """\
-Bundle-Name: Corda Token SDK Sample Contracts
-Bundle-SymbolicName: \${project.group}.tokens-sample-contracts
-"""
 }

@@ -1,8 +1,10 @@
-apply plugin: 'net.corda.plugins.cordapp-cpk'
-
+plugins {
+    id 'net.corda.plugins.cordapp-cpk'
+    id 'org.jetbrains.kotlin.jvm'
+}
 cordapp {
     targetPlatformVersion corda_platform_version.toInteger()
-    minimumPlatformVersion corda_platform_version as Integer
+
     contract {
         name "Token SDK test-contracts"
         vendor "R3"
@@ -15,11 +17,6 @@ cordapp {
 }
 
 sourceSets {
-    main {
-        resources {
-            srcDir rootProject.file("config/dev")
-        }
-    }
     test {
         resources {
             srcDir rootProject.file("config/test")
@@ -29,7 +26,7 @@ sourceSets {
 
 dependencies {
     // Kotlin.
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    implementation "net.corda.kotlin:kotlin-stdlib-jdk8-osgi:$kotlin_version"
 
     // Logging.
     testImplementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"

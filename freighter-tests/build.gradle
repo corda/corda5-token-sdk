@@ -54,7 +54,7 @@ dependencies {
 }
 
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
         allWarningsAsErrors = true
         languageVersion = "1.4"

@@ -1,6 +1,8 @@
-apply plugin: 'kotlin-jpa'
-apply plugin: 'net.corda.plugins.cordapp-cpk'
-
+plugins {
+    id 'net.corda.plugins.cordapp-cpk'
+    id 'org.jetbrains.kotlin.jvm'
+    id 'jacoco'
+}
 
 evaluationDependsOn(":modules:selection")
 
@@ -8,11 +10,11 @@ def selectionProject = project(":modules:selection")
 
 cordapp {
     targetPlatformVersion corda_platform_version.toInteger()
-    minimumPlatformVersion corda_platform_version as Integer
+
     workflow {
         name "Token SDK Workflows"
-        vendor "R3"
-        licence "Apache 2"
+        vendor "Corda Open Source"
+        licence "Apache License, Version 2.0"
         versionId 3
     }
     signing {
@@ -21,11 +23,6 @@ cordapp {
 }
 
 sourceSets {
-    main {
-        resources {
-            srcDir rootProject.file("config/dev")
-        }
-    }
     test {
         resources {
             srcDir rootProject.file("config/test")
@@ -54,13 +51,13 @@ dependencies {
     cordaProvided("org.hibernate:hibernate-core:$hibernateVersion")
 
     // Corda dependencies.
-    cordaProvided("$corda_release_group:corda-application:$corda_release_version") { changing = true }
-    cordaProvided("$corda_release_group:corda-node-api:$corda_release_version") { changing = true }
-    cordaProvided("$corda_release_group:corda-ledger:$corda_release_version") { changing = true}
-    cordaProvided("$corda_release_group:corda-crypto-api:$corda_release_version") { changing = true}
-    cordaProvided("$corda_release_group:corda-persistence:$corda_release_version") { changing = true}
+    cordaProvided("$corda_release_group:corda-application:$corda_release_version")
+    cordaProvided("$corda_release_group:corda-node-api:$corda_release_version")
+    cordaProvided("$corda_release_group:corda-ledger:$corda_release_version")
+    cordaProvided("$corda_release_group:corda-crypto-api:$corda_release_version")
+    cordaProvided("$corda_release_group:corda-persistence:$corda_release_version")
 
-    cordapp("$corda_release_group:corda-flows:$corda_release_version") { changing = true}
+    cordapp("$corda_release_group:corda-flows:$corda_release_version")
 
     // Logging.
     testImplementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
@@ -85,9 +82,5 @@ task integrationTest(type: Test, dependsOn: []) {
 }
 
 tasks.named('jar', Jar) {
-    archiveBaseName = 'tokens-workflows'
-    bnd """\
-Bundle-Name: Corda Token SDK Workflows
-Bundle-SymbolicName: \${project.group}.tokens-workflows
-"""
+    archiveBaseName = "tokens-workflows"
 }
