@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>UnusedPrivateMember:SampleFlowTests.kt$SampleFlowTests$recipient: CordaX500Name</ID>
+  </CurrentIssues>
+</SmellBaseline>

@@ -1,18 +1,28 @@
 package com.r3.corda.lib.tokens.workflows.flows.issue
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFinalityFlowHandler
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
+import com.r3.corda.lib.tokens.workflows.utilities.isOurIdentity
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.application.services.MemberLookupService
+import net.corda.v5.base.annotations.Suspendable
 
 /**
  * The in-line flow handler for [IssueTokensFlow].
  */
-class IssueTokensFlowHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class IssueTokensFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
+    @CordaInject
+    lateinit var memberLookupService: MemberLookupService
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call() {
-        if (!serviceHub.myInfo.isLegalIdentity(otherSession.counterparty)) {
-            subFlow(ObserverAwareFinalityFlowHandler(otherSession))
+        if (!memberLookupService.isOurIdentity(otherSession.counterparty)) {
+            flowEngine.subFlow(ObserverAwareFinalityFlowHandler(otherSession))
         }
     }
 }

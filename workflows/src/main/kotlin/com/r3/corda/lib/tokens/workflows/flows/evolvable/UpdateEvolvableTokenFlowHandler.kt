@@ -1,17 +1,24 @@
 package com.r3.corda.lib.tokens.workflows.flows.evolvable
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFinalityFlowHandler
-import net.corda.core.contracts.requireThat
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.flows.SignTransactionFlow
-import net.corda.core.transactions.SignedTransaction
-import net.corda.core.utilities.unwrap
+import net.corda.systemflows.SignTransactionFlow
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.receive
+import net.corda.v5.application.flows.unwrap
+import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.requireThat
+import net.corda.v5.ledger.transactions.SignedTransaction
 
 /** In-line counter-flow for [UpdateEvolvableTokenFlow]. */
-class UpdateEvolvableTokenFlowHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class UpdateEvolvableTokenFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call() {
         // Receive the notification
@@ -21,8 +28,9 @@ class UpdateEvolvableTokenFlowHandler(val otherSession: FlowSession) : FlowLogic
         if (notification.signatureRequired) {
             val signTransactionFlow = object : SignTransactionFlow(otherSession) {
                 override fun checkTransaction(stx: SignedTransaction) = requireThat {
-                    val ledgerTransaction = stx.toLedgerTransaction(serviceHub, checkSufficientSignatures = false)
-                    val evolvableTokenTypeStateRef = ledgerTransaction.inRefsOfType<EvolvableTokenType>().single()
+                    val ledgerTransaction = transactionMappingService.toLedgerTransaction(stx, checkSufficientSignatures = false)
+                    val evolvableTokenTypeStateRef =
+                        ledgerTransaction.inRefsOfType(EvolvableTokenType::class.java).single()
                     val oldMaintainers = evolvableTokenTypeStateRef.state.data.maintainers
                     require(otherSession.counterparty in oldMaintainers) {
                         "This flow can only be started by existing maintainers of the EvolvableTokenType. However it " +
@@ -30,10 +38,10 @@ class UpdateEvolvableTokenFlowHandler(val otherSession: FlowSession) : FlowLogic
                     }
                 }
             }
-            subFlow(signTransactionFlow)
+            flowEngine.subFlow(signTransactionFlow)
         }
 
         // Resolve the update transaction.
-        subFlow(ObserverAwareFinalityFlowHandler(otherSession))
+        flowEngine.subFlow(ObserverAwareFinalityFlowHandler(otherSession))
     }
 }

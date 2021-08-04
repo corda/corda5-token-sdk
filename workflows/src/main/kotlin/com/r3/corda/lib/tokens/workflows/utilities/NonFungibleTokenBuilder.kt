@@ -6,8 +6,8 @@ import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.heldBy
 import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
 import com.r3.corda.lib.tokens.workflows.TokenBuilderException
-import net.corda.core.contracts.Amount
-import net.corda.core.identity.Party
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.crypto.HashingService
 
 /**
  * A utility class designed for Java developers to more easily access Kotlin DSL
@@ -28,7 +28,7 @@ class NonFungibleTokenBuilder {
      *
      * @param t The token type that will be used to build an [IssuedTokenType]
      */
-    fun <T: TokenType> ofTokenType(t: T): NonFungibleTokenBuilder = this.apply { this.tokenType = t }
+    fun <T : TokenType> ofTokenType(t: T): NonFungibleTokenBuilder = this.apply { this.tokenType = t }
 
     /**
      * Replicates the Kotlin DSL [issuedBy] infix function. Supplies a [Party] to the builder
@@ -52,9 +52,15 @@ class NonFungibleTokenBuilder {
      */
     @Throws(TokenBuilderException::class)
     fun buildIssuedTokenType(): IssuedTokenType = when {
-        !::tokenType.isInitialized -> { throw TokenBuilderException("A token type has not been provided to the builder.") }
-        !::issuer.isInitialized -> { throw TokenBuilderException("A token issuer has not been provided to the builder.") }
-        else -> { tokenType issuedBy issuer }
+        !::tokenType.isInitialized -> {
+            throw TokenBuilderException("A token type has not been provided to the builder.")
+        }
+        !::issuer.isInitialized -> {
+            throw TokenBuilderException("A token issuer has not been provided to the builder.")
+        }
+        else -> {
+            tokenType issuedBy issuer
+        }
     }
 
     /**
@@ -62,8 +68,12 @@ class NonFungibleTokenBuilder {
      * builder methods have not been called: [ofTokenType], [issuedBy], [heldBy].
      */
     @Throws(TokenBuilderException::class)
-    fun buildNonFungibleToken(): NonFungibleToken = when {
-        ::holder.isInitialized -> { buildIssuedTokenType() heldBy holder }
-        else -> { throw TokenBuilderException("A token holder has not been provided to the builder.") }
+    fun buildNonFungibleToken(hashingService: HashingService): NonFungibleToken = when {
+        !::holder.isInitialized -> {
+            throw TokenBuilderException("A token holder has not been provided to the builder.")
+        }
+        else -> {
+            buildIssuedTokenType().heldBy(holder, hashingService)
+        }
     }
 }

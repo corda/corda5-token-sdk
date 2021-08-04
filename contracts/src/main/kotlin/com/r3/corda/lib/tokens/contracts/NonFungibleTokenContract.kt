@@ -2,11 +2,11 @@ package com.r3.corda.lib.tokens.contracts
 
 import com.r3.corda.lib.tokens.contracts.commands.TokenCommand
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
-import net.corda.core.contracts.Attachment
-import net.corda.core.contracts.CommandWithParties
-import net.corda.core.contracts.ContractState
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.internal.uncheckedCast
+import net.corda.v5.base.util.uncheckedCast
+import net.corda.v5.ledger.contracts.Attachment
+import net.corda.v5.ledger.contracts.Command
+import net.corda.v5.ledger.contracts.ContractState
+import net.corda.v5.ledger.contracts.StateAndRef
 import java.security.PublicKey
 
 /**
@@ -21,11 +21,11 @@ class NonFungibleTokenContract : AbstractTokenContract<NonFungibleToken>() {
     }
 
     override fun verifyIssue(
-            issueCommand: CommandWithParties<TokenCommand>,
-            inputs: List<IndexedState<NonFungibleToken>>,
-            outputs: List<IndexedState<NonFungibleToken>>,
-            attachments: List<Attachment>,
-            references: List<StateAndRef<ContractState>>
+        issueCommand: Command<TokenCommand>,
+        inputs: List<IndexedState<NonFungibleToken>>,
+        outputs: List<IndexedState<NonFungibleToken>>,
+        attachments: List<Attachment>,
+        references: List<StateAndRef<ContractState>>
     ) {
         require(inputs.isEmpty()) { "When issuing non fungible tokens, there cannot be any input states." }
         require(outputs.size == 1) { "When issuing non fungible tokens, there must be a single output state." }
@@ -43,11 +43,11 @@ class NonFungibleTokenContract : AbstractTokenContract<NonFungibleToken>() {
     // Even if we have two tokens containing the same info, they will have different linear IDs so end up in different
     // groups.
     override fun verifyMove(
-            moveCommands: List<CommandWithParties<TokenCommand>>,
-            inputs: List<IndexedState<NonFungibleToken>>,
-            outputs: List<IndexedState<NonFungibleToken>>,
-            attachments: List<Attachment>,
-            references: List<StateAndRef<ContractState>>
+        moveCommands: List<Command<TokenCommand>>,
+        inputs: List<IndexedState<NonFungibleToken>>,
+        outputs: List<IndexedState<NonFungibleToken>>,
+        attachments: List<Attachment>,
+        references: List<StateAndRef<ContractState>>
     ) {
         // There must be inputs and outputs present.
         require(inputs.isNotEmpty()) { "When moving a non fungible token, there must be one input state present." }
@@ -61,18 +61,18 @@ class NonFungibleTokenContract : AbstractTokenContract<NonFungibleToken>() {
         // There should only be one move command with one signature.
         require(moveCommands.size == 1) { "There should be only one move command per group when moving non fungible tokens." }
         require(input.state.data.linearId == output.state.data.linearId) { "The linear ID must not change." }
-        val moveCommand: CommandWithParties<TokenCommand> = moveCommands.single()
+        val moveCommand: Command<TokenCommand> = moveCommands.single()
         require(moveCommand.signers.toSet() == setOf(input.state.data.holder.owningKey)) {
             "The current holder must be the only signing party when a non-fungible (discrete) token is moved."
         }
     }
 
     override fun verifyRedeem(
-            redeemCommand: CommandWithParties<TokenCommand>,
-            inputs: List<IndexedState<NonFungibleToken>>,
-            outputs: List<IndexedState<NonFungibleToken>>,
-            attachments: List<Attachment>,
-            references: List<StateAndRef<ContractState>>
+        redeemCommand: Command<TokenCommand>,
+        inputs: List<IndexedState<NonFungibleToken>>,
+        outputs: List<IndexedState<NonFungibleToken>>,
+        attachments: List<Attachment>,
+        references: List<StateAndRef<ContractState>>
     ) {
         // There must be inputs and outputs present.
         require(outputs.isEmpty()) { "When redeeming a held token, there must be no output." }

@@ -1,0 +1,46 @@
+plugins {
+    id 'kotlin'
+}
+
+sourceSets {
+    e2eTest {
+        compileClasspath += sourceSets.main.output + sourceSets.test.output
+        runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+    }
+}
+
+configurations {
+    e2eTestImplementation.extendsFrom testImplementation
+    e2eTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+dependencies {
+    e2eTestImplementation "org.assertj:assertj-core:$assertj_version"
+    testImplementation "org.junit.jupiter:junit-jupiter:$junit_version"
+
+    e2eTestImplementation "$corda_release_group:corda-application:$corda_release_version"
+    e2eTestImplementation "$corda_release_group:corda-ledger:$corda_release_version"
+    e2eTestImplementation "$corda_release_group:corda-dev-network-lib:$corda_release_version"
+    e2eTestImplementation "$corda_release_group:corda-client-rpc:$corda_release_version"
+    e2eTestImplementation "$corda_release_group:corda-client-extensions-rpc:$corda_release_version"
+    e2eTestImplementation "$corda_release_group:corda-legacy-api:$corda_release_version"
+
+    e2eTestImplementation project(":workflows")
+    e2eTestImplementation project(":contracts")
+    e2eTestImplementation project(":modules:contracts-for-testing")
+    e2eTestImplementation project(":testing:cordapps:sample:sample-flows")
+    e2eTestImplementation project(":testing:cordapps:sample:sample-contracts")
+}
+
+tasks.register('e2eTest', Test) {
+    description = 'Runs end to end tests.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.e2eTest.output.classesDirs
+    classpath = sourceSets.e2eTest.runtimeClasspath
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    reports { junitXml.setEnabled(true) }
+}

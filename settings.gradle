@@ -1,6 +1,42 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven {
+            url "$artifactoryContextUrl/corda-releases"
+        }
+        maven {
+            url "$artifactoryContextUrl/corda-os-maven"
+            credentials {
+                username = settings.ext.find('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
+                password = settings.ext.find('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
+            }
+        }
+    }
+
+    plugins {
+        id 'net.corda.plugins.cordapp-cpk' version corda_gradle_plugins_version
+        id 'net.corda.plugins.cordapp-cpb' version corda_gradle_plugins_version
+        id 'net.corda.plugins.quasar-utils' version corda_gradle_plugins_version
+        id 'net.corda.cordapp.cordapp-configuration' version corda_release_version
+        id 'org.jetbrains.kotlin.jvm' version kotlin_version
+        id 'org.jetbrains.kotlin.plugin.noarg' version kotlin_version
+        id 'org.jetbrains.kotlin.plugin.allopen' version kotlin_version
+        id 'com.jfrog.artifactory' version jfrogArtifactoryPluginVersion
+        id 'io.gitlab.arturbosch.detekt' version detektVersion
+    }
+}
+
 include 'contracts'
 include 'workflows'
 include 'modules:contracts-for-testing'
 include 'modules:selection'
 include 'freighter-tests'
 
+include 'testing'
+include 'testing:cordapps'
+include 'testing:cordapps:testflows'
+include 'testing:cordapps:sample'
+include 'testing:cordapps:sample:sample-contracts'
+include 'testing:cordapps:sample:sample-flows'
+
+include 'testing:e2e'

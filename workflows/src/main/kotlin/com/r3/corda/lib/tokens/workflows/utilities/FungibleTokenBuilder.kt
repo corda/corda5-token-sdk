@@ -8,8 +8,9 @@ import com.r3.corda.lib.tokens.contracts.utilities.heldBy
 import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
 import com.r3.corda.lib.tokens.contracts.utilities.of
 import com.r3.corda.lib.tokens.workflows.TokenBuilderException
-import net.corda.core.contracts.Amount
-import net.corda.core.identity.Party
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.crypto.HashingService
+import net.corda.v5.ledger.contracts.Amount
 import java.math.BigDecimal
 
 /**
@@ -60,7 +61,7 @@ class FungibleTokenBuilder {
      *
      * @param t The token type that will be used to build an [Amount] of a [TokenType]
      */
-    fun <T: TokenType> ofTokenType(t: T): FungibleTokenBuilder = this.apply { this.tokenType = t }
+    fun <T : TokenType> ofTokenType(t: T): FungibleTokenBuilder = this.apply { this.tokenType = t }
 
     /**
      * Replicates the Kotlin DSL [issuedBy] infix function. Supplies a [Party] to the builder
@@ -88,9 +89,15 @@ class FungibleTokenBuilder {
      */
     @Throws(TokenBuilderException::class)
     fun buildAmountTokenType(): Amount<TokenType> = when {
-        !::tokenType.isInitialized -> { throw TokenBuilderException("A Token Type has not been provided to the builder.") }
-        amount == null -> { throw TokenBuilderException("An amount value has not been provided to the builder.") }
-        else -> { amount!! of tokenType }
+        !::tokenType.isInitialized -> {
+            throw TokenBuilderException("A Token Type has not been provided to the builder.")
+        }
+        amount == null -> {
+            throw TokenBuilderException("An amount value has not been provided to the builder.")
+        }
+        else -> {
+            amount!! of tokenType
+        }
     }
 
     /**
@@ -99,8 +106,12 @@ class FungibleTokenBuilder {
      */
     @Throws(TokenBuilderException::class)
     fun buildAmountIssuedTokenType(): Amount<IssuedTokenType> = when {
-        !::issuer.isInitialized -> { throw TokenBuilderException("A token issuer has not been provided to the builder.") }
-        else -> { buildAmountTokenType() issuedBy issuer }
+        !::issuer.isInitialized -> {
+            throw TokenBuilderException("A token issuer has not been provided to the builder.")
+        }
+        else -> {
+            buildAmountTokenType() issuedBy issuer
+        }
     }
 
     /**
@@ -108,8 +119,12 @@ class FungibleTokenBuilder {
      * if the appropriate builder methods have not been called: [withAmount], [ofTokenType], [issuedBy], [heldBy].
      */
     @Throws(TokenBuilderException::class)
-    fun buildFungibleToken() = when {
-        !::holder.isInitialized -> { throw TokenBuilderException("A token holder has not been provided to the builder.") }
-        else -> { buildAmountIssuedTokenType() heldBy holder }
+    fun buildFungibleToken(hashingService: HashingService) = when {
+        !::holder.isInitialized -> {
+            throw TokenBuilderException("A token holder has not been provided to the builder.")
+        }
+        else -> {
+            buildAmountIssuedTokenType().heldBy(holder, hashingService)
+        }
     }
 }

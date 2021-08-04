@@ -1,11 +1,12 @@
 @file:JvmName("AmountUtilities")
+
 package com.r3.corda.lib.tokens.contracts.utilities
 
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.Amount
-import net.corda.core.identity.Party
-import net.corda.core.internal.uncheckedCast
+import net.corda.v5.application.identity.Party
+import net.corda.v5.base.util.uncheckedCast
+import net.corda.v5.ledger.contracts.Amount
 import java.math.BigDecimal
 
 // -------------------------------------------------------------------------------
@@ -141,9 +142,9 @@ fun <T : TokenType> Iterable<Amount<T>>.sumTokensOrZero(token: T): Amount<T> {
  */
 
 fun Amount<out TokenType>.withoutIssuer(): Amount<TokenType> {
-    return if (token is IssuedTokenType){
+    return if (token is IssuedTokenType) {
         Amount(quantity, displayTokenSize, (token as IssuedTokenType).tokenType)
-    }else{
+    } else {
         Amount(quantity, displayTokenSize, token)
     }
 }

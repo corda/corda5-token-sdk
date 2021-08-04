@@ -1,20 +1,26 @@
 package com.r3.corda.lib.tokens.workflows.internal.flows.finality
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.commands.RedeemTokenCommand
 import com.r3.corda.lib.tokens.workflows.utilities.ourSigningKeys
 import com.r3.corda.lib.tokens.workflows.utilities.participants
 import com.r3.corda.lib.tokens.workflows.utilities.requireSessionsForParticipants
 import com.r3.corda.lib.tokens.workflows.utilities.toWellKnownParties
-import net.corda.core.contracts.CommandWithParties
-import net.corda.core.flows.FinalityFlow
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
-import net.corda.core.transactions.LedgerTransaction
-import net.corda.core.transactions.SignedTransaction
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.systemflows.FinalityFlow
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.FlowIdentity
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.crypto.KeyManagementService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.Command
+import net.corda.v5.ledger.services.TransactionMappingService
+import net.corda.v5.ledger.transactions.LedgerTransaction
+import net.corda.v5.ledger.transactions.SignedTransaction
+import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /**
  * This flow is a wrapper around [FinalityFlow] and properly handles broadcasting transactions to observers (those which
@@ -33,10 +39,25 @@ import net.corda.core.transactions.TransactionBuilder
  * @property allSessions a set of sessions for, at least, all the transaction participants and maybe observers
  */
 class ObserverAwareFinalityFlow private constructor(
-        val allSessions: List<FlowSession>,
-        val signedTransaction: SignedTransaction? = null,
-        val transactionBuilder: TransactionBuilder? = null
-) : FlowLogic<SignedTransaction>() {
+    val allSessions: List<FlowSession>,
+    val signedTransaction: SignedTransaction? = null,
+    val transactionBuilder: TransactionBuilder? = null
+) : Flow<SignedTransaction> {
+
+    @CordaInject
+    lateinit var transactionMappingService: TransactionMappingService
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
+    @CordaInject
+    lateinit var flowIdentity: FlowIdentity
+
+    @CordaInject
+    lateinit var keyManagementService: KeyManagementService
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
 
     constructor(transactionBuilder: TransactionBuilder, allSessions: List<FlowSession>)
             : this(allSessions, null, transactionBuilder)
@@ -47,19 +68,20 @@ class ObserverAwareFinalityFlow private constructor(
     @Suspendable
     override fun call(): SignedTransaction {
         // Check there is a session for each participant, apart from the node itself.
-        val ledgerTransaction: LedgerTransaction = transactionBuilder?.toLedgerTransaction(serviceHub)
-                ?: signedTransaction!!.toLedgerTransaction(serviceHub, false)
+        val ledgerTransaction: LedgerTransaction =
+            transactionBuilder?.let { transactionMappingService.toLedgerTransaction(it.toWireTransaction()) }
+                ?: transactionMappingService.toLedgerTransaction(signedTransaction!!, false)
         val participants: List<AbstractParty> = ledgerTransaction.participants
         val issuers: Set<Party> = ledgerTransaction.commands
-                .map(CommandWithParties<*>::value)
-                .filterIsInstance<RedeemTokenCommand>()
-                .map { it.token.issuer }
-                .toSet()
-        val wellKnownParticipantsAndIssuers: Set<Party> = participants.toWellKnownParties(serviceHub).toSet() + issuers
-        val wellKnownParticipantsApartFromUs: Set<Party> = wellKnownParticipantsAndIssuers - ourIdentity
+            .map(Command<*>::value)
+            .filterIsInstance<RedeemTokenCommand>()
+            .map { it.token.issuer }
+            .toSet()
+        val wellKnownParticipantsAndIssuers: Set<Party> = participants.toWellKnownParties(identityService).toSet() + issuers
+        val wellKnownParticipantsApartFromUs: Set<Party> = wellKnownParticipantsAndIssuers - flowIdentity.ourIdentity
         // We need participantSessions for all participants apart from us.
         requireSessionsForParticipants(wellKnownParticipantsApartFromUs, allSessions)
-        val finalSessions = allSessions.filter { it.counterparty != ourIdentity }
+        val finalSessions = allSessions.filter { it.counterparty != flowIdentity.ourIdentity }
         // Notify all session counterparties of their role. Observers store the transaction using
         // StatesToRecord.ALL_VISIBLE, participants store the transaction using StatesToRecord.ONLY_RELEVANT.
         finalSessions.forEach { session ->
@@ -67,11 +89,11 @@ class ObserverAwareFinalityFlow private constructor(
             else session.send(TransactionRole.OBSERVER)
         }
         // Sign and finalise the transaction, obtaining the signing keys required from the LedgerTransaction.
-        val ourSigningKeys = ledgerTransaction.ourSigningKeys(serviceHub)
+        val ourSigningKeys = ledgerTransaction.ourSigningKeys(keyManagementService)
         val stx = transactionBuilder?.let {
-            serviceHub.signInitialTransaction(it, signingPubKeys = ourSigningKeys)
+            it.sign(signingPubKeys = ourSigningKeys)
         } ?: signedTransaction
         ?: throw IllegalArgumentException("Didn't provide transactionBuilder nor signedTransaction to the flow.")
-        return subFlow(FinalityFlow(transaction = stx, sessions = finalSessions))
+        return flowEngine.subFlow(FinalityFlow(transaction = stx, sessions = finalSessions))
     }
 }

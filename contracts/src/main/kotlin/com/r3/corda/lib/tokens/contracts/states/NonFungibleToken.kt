@@ -2,22 +2,22 @@ package com.r3.corda.lib.tokens.contracts.states
 
 import com.r3.corda.lib.tokens.contracts.NonFungibleTokenContract
 import com.r3.corda.lib.tokens.contracts.internal.schemas.NonFungibleTokenSchemaV1
-import com.r3.corda.lib.tokens.contracts.internal.schemas.PersistentNonFungibleToken
+import com.r3.corda.lib.tokens.contracts.internal.schemas.NonFungibleTokenSchemaV1.PersistentNonFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.getAttachmentIdForGenericParam
 import com.r3.corda.lib.tokens.contracts.utilities.holderString
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.BelongsToContract
-import net.corda.core.contracts.LinearState
-import net.corda.core.contracts.UniqueIdentifier
-import net.corda.core.crypto.SecureHash
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
-import net.corda.core.schemas.MappedSchema
-import net.corda.core.schemas.PersistentState
-import net.corda.core.schemas.QueryableState
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.crypto.HashingService
+import net.corda.v5.crypto.SecureHash
+import net.corda.v5.ledger.UniqueIdentifier
+import net.corda.v5.ledger.contracts.BelongsToContract
+import net.corda.v5.ledger.contracts.LinearState
+import net.corda.v5.ledger.schemas.PersistentState
+import net.corda.v5.ledger.schemas.QueryableState
+import net.corda.v5.persistence.MappedSchema
 
 /**
  * This class is for handling the issuer and holder relationship for non-fungible token types. Non-fungible tokens
@@ -37,12 +37,19 @@ import net.corda.core.schemas.QueryableState
  * @param TokenType the [TokenType].
  */
 @BelongsToContract(NonFungibleTokenContract::class)
-open class NonFungibleToken @JvmOverloads constructor(
-        val token: IssuedTokenType,
-        override val holder: AbstractParty,
-        override val linearId: UniqueIdentifier,
-        override val tokenTypeJarHash: SecureHash? = token.tokenType.getAttachmentIdForGenericParam()
+open class NonFungibleToken (
+    val token: IssuedTokenType,
+    override val holder: AbstractParty,
+    override val linearId: UniqueIdentifier,
+    override val tokenTypeJarHash: SecureHash?
 ) : AbstractToken, QueryableState, LinearState {
+
+    constructor(
+        token: IssuedTokenType,
+        holder: AbstractParty,
+        linearId: UniqueIdentifier,
+        hashingService: HashingService
+    ) : this(token, holder, linearId, token.tokenType.getAttachmentIdForGenericParam(hashingService))
 
     override val issuedTokenType: IssuedTokenType get() = token
 
@@ -58,10 +65,10 @@ open class NonFungibleToken @JvmOverloads constructor(
 
     override fun generateMappedObject(schema: MappedSchema): PersistentState = when (schema) {
         is NonFungibleTokenSchemaV1 -> PersistentNonFungibleToken(
-                issuer = token.issuer,
-                holder = holder,
-                tokenClass = token.tokenType.tokenClass,
-                tokenIdentifier = token.tokenType.tokenIdentifier
+            issuer = token.issuer,
+            holder = holder,
+            tokenClass = token.tokenType.tokenClass,
+            tokenIdentifier = token.tokenType.tokenIdentifier
         )
         else -> throw IllegalArgumentException("Unrecognised schema $schema")
     }
@@ -88,6 +95,4 @@ open class NonFungibleToken @JvmOverloads constructor(
         result = 31 * result + (tokenTypeJarHash?.hashCode() ?: 0)
         return result
     }
-
-
 }

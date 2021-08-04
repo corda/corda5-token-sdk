@@ -1,14 +1,15 @@
 package com.r3.corda.lib.tokens.workflows.flows.confidential
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.workflows.internal.flows.confidential.AnonymisePartiesFlow
 import com.r3.corda.lib.tokens.workflows.utilities.toWellKnownParties
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.identity.AnonymousParty
-import net.corda.core.identity.Party
-
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.IdentityService
+import net.corda.v5.base.annotations.Suspendable
 
 /**
  * This flow extracts the holders from a list of tokens to be issued on ledger, then requests only the well known
@@ -26,9 +27,16 @@ import net.corda.core.identity.Party
  * @property sessions a list of participants' sessions which may contain sessions for observers.
  */
 class ConfidentialTokensFlow(
-        val tokens: List<AbstractToken>,
-        val sessions: List<FlowSession>
-) : FlowLogic<List<AbstractToken>>() {
+    val tokens: List<AbstractToken>,
+    val sessions: List<FlowSession>
+) : Flow<List<AbstractToken>> {
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call(): List<AbstractToken> {
         // Some holders might be anonymous already. E.g. if some token selection has been performed and a confidential
@@ -36,14 +44,14 @@ class ConfidentialTokensFlow(
         val tokensWithWellKnownHolders = tokens.filter { it.holder is Party }
         val tokensWithAnonymousHolders = tokens - tokensWithWellKnownHolders
         val wellKnownTokenHolders = tokensWithWellKnownHolders
-                .map(AbstractToken::holder)
-                .toWellKnownParties(serviceHub)
-        val anonymousParties = subFlow(AnonymisePartiesFlow(wellKnownTokenHolders, sessions))
+            .map(AbstractToken::holder)
+            .toWellKnownParties(identityService)
+        val anonymousParties = flowEngine.subFlow(AnonymisePartiesFlow(wellKnownTokenHolders, sessions))
         // Replace Party with AnonymousParty.
         return tokensWithWellKnownHolders.map { token ->
             val holder = token.holder
             val anonymousParty = anonymousParties[holder]
-                    ?: throw IllegalStateException("Missing anonymous party for $holder.")
+                ?: throw IllegalStateException("Missing anonymous party for $holder.")
             token.withNewHolder(anonymousParty)
         } + tokensWithAnonymousHolders
     }

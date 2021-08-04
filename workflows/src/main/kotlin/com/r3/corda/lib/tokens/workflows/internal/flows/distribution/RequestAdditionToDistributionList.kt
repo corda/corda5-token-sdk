@@ -1,14 +1,20 @@
 package com.r3.corda.lib.tokens.workflows.internal.flows.distribution
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
 import com.r3.corda.lib.tokens.workflows.utilities.addPartyToDistributionList
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.flows.InitiatedBy
-import net.corda.core.flows.InitiatingFlow
-import net.corda.core.utilities.unwrap
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.InitiatedBy
+import net.corda.v5.application.flows.InitiatingFlow
+import net.corda.v5.application.flows.flowservices.FlowMessaging
+import net.corda.v5.application.flows.receive
+import net.corda.v5.application.flows.sendAndReceive
+import net.corda.v5.application.flows.unwrap
+import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.application.services.persistence.PersistenceService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.util.contextLogger
+import net.corda.v5.ledger.contracts.StateAndRef
 
 /**
  * Simple set of flows for a party to request updates for a particular evolvable token. These flows don't do much
@@ -33,14 +39,22 @@ object RequestAdditionToDistributionList {
     }
 
     @InitiatingFlow
-    class Initiator(val stateAndRef: StateAndRef<EvolvableTokenType>) : FlowLogic<Unit>() {
+    class Initiator(val stateAndRef: StateAndRef<EvolvableTokenType>) : Flow<Unit> {
+
+        private companion object {
+            val logger = contextLogger()
+        }
+
+        @CordaInject
+        lateinit var flowMessaging: FlowMessaging
+
         @Suspendable
         override fun call() {
             val state = stateAndRef.state.data
             // Pick the first maintainer.
             // TODO: Try each maintainer.
             val maintainer = state.maintainers.first()
-            val session = initiateFlow(maintainer)
+            val session = flowMessaging.initiateFlow(maintainer)
             logger.info("Requesting addition to $maintainer distribution list for ${state.linearId}.")
             val result = session.sendAndReceive<FlowResult>(stateAndRef).unwrap { it }
             // Don't do anything with the flow result for now.
@@ -51,16 +65,23 @@ object RequestAdditionToDistributionList {
     }
 
     @InitiatedBy(Initiator::class)
-    class Responder(val otherSession: FlowSession) : FlowLogic<Unit>() {
+    class Responder(val otherSession: FlowSession) : Flow<Unit> {
+
+        private companion object {
+            val logger = contextLogger()
+        }
+
+        @CordaInject
+        lateinit var persistenceService: PersistenceService
+
         @Suspendable
         override fun call() {
             // Receive the stateAndRef that the requesting party wants updates for.
             val stateAndRef = otherSession.receive<StateAndRef<EvolvableTokenType>>().unwrap { it }
             val linearId = stateAndRef.state.data.linearId
             logger.info("Receiving request from ${otherSession.counterparty} to be added to the distribution list for $linearId.")
-            addPartyToDistributionList(otherSession.counterparty, linearId)
+            addPartyToDistributionList(persistenceService, otherSession.counterparty, linearId)
             otherSession.send(FlowResult.Success)
         }
     }
-
 }

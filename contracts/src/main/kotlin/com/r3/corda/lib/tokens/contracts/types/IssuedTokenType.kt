@@ -1,8 +1,8 @@
 package com.r3.corda.lib.tokens.contracts.types
 
-import net.corda.core.contracts.Amount
-import net.corda.core.identity.Party
-import net.corda.core.serialization.CordaSerializable
+import net.corda.v5.application.identity.Party
+import net.corda.v5.base.annotations.CordaSerializable
+import net.corda.v5.ledger.contracts.Amount
 import java.math.BigDecimal
 
 /**
@@ -22,7 +22,6 @@ import java.math.BigDecimal
  */
 @CordaSerializable
 data class IssuedTokenType(val issuer: Party, val tokenType: TokenType) : TokenType(tokenType.tokenIdentifier, tokenType.fractionDigits) {
-
 
     /**
      * This is required by [Amount] to determine the default fraction digits when adding or subtracting amounts of

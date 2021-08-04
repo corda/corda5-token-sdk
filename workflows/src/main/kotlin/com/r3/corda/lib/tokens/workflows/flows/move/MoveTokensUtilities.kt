@@ -1,7 +1,7 @@
 @file:JvmName("MoveTokensUtilities")
+
 package com.r3.corda.lib.tokens.workflows.flows.move
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.commands.MoveTokenCommand
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
@@ -13,12 +13,16 @@ import com.r3.corda.lib.tokens.workflows.types.PartyAndAmount
 import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import com.r3.corda.lib.tokens.workflows.types.toPairs
 import com.r3.corda.lib.tokens.workflows.utilities.addTokenTypeJar
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.identity.AbstractParty
-import net.corda.core.node.ServiceHub
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.node.MemberInfo
+import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.crypto.HashingService
+import net.corda.v5.application.services.persistence.PersistenceService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /* For fungible tokens. */
 
@@ -27,9 +31,9 @@ import net.corda.core.transactions.TransactionBuilder
  */
 @Suspendable
 fun addMoveTokens(
-        transactionBuilder: TransactionBuilder,
-        inputs: List<StateAndRef<AbstractToken>>,
-        outputs: List<AbstractToken>
+    transactionBuilder: TransactionBuilder,
+    inputs: List<StateAndRef<AbstractToken>>,
+    outputs: List<AbstractToken>
 ): TransactionBuilder {
     val outputGroups: Map<IssuedTokenType, List<AbstractToken>> = outputs.groupBy { it.issuedTokenType }
     val inputGroups: Map<IssuedTokenType, List<StateAndRef<AbstractToken>>> = inputs.groupBy {
@@ -43,14 +47,14 @@ fun addMoveTokens(
     transactionBuilder.apply {
         // Add a notary to the transaction.
         // TODO: Deal with notary change.
-        notary = inputs.map { it.state.notary }.toSet().single()
-        outputGroups.forEach { issuedTokenType: IssuedTokenType, outputStates: List<AbstractToken> ->
+        setNotary(inputs.map { it.state.notary }.toSet().single())
+        outputGroups.forEach { (issuedTokenType: IssuedTokenType, outputStates: List<AbstractToken>) ->
             val inputGroup = inputGroups[issuedTokenType]
-                    ?: throw IllegalArgumentException("No corresponding inputs for the outputs issued token type: $issuedTokenType")
+                ?: throw IllegalArgumentException("No corresponding inputs for the outputs issued token type: $issuedTokenType")
             val keys = inputGroup.map { it.state.data.holder.owningKey }
 
-            var inputStartingIdx = inputStates().size
-            var outputStartingIdx = outputStates().size
+            var inputStartingIdx = this@apply.inputStates.size
+            var outputStartingIdx = this@apply.outputStates.size
 
             val inputIdx = inputGroup.map {
                 addInputState(it)
@@ -76,9 +80,9 @@ fun addMoveTokens(
  */
 @Suspendable
 fun addMoveTokens(
-        transactionBuilder: TransactionBuilder,
-        input: StateAndRef<AbstractToken>,
-        output: AbstractToken
+    transactionBuilder: TransactionBuilder,
+    input: StateAndRef<AbstractToken>,
+    output: AbstractToken
 ): TransactionBuilder {
     return addMoveTokens(transactionBuilder = transactionBuilder, inputs = listOf(input), outputs = listOf(output))
 }
@@ -86,49 +90,115 @@ fun addMoveTokens(
 /**
  * Adds multiple token moves to transaction. [partiesAndAmounts] parameter specify which parties should receive amounts of the token.
  * With possible change paid to [changeHolder]. This method will combine multiple token amounts from different issuers if needed.
- * If you would like to choose only tokens from one issuer you can provide optional [queryCriteria] for move generation.
  * Note: For now this method always uses database token selection, to use in memory one, use [addMoveTokens] with already selected
  * input and output states.
  */
 @Suspendable
-@JvmOverloads
 fun addMoveFungibleTokens(
-        transactionBuilder: TransactionBuilder,
-        serviceHub: ServiceHub,
-        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
-        changeHolder: AbstractParty,
-        queryCriteria: QueryCriteria? = null
+    transactionBuilder: TransactionBuilder,
+    persistenceService: PersistenceService,
+    identityService: IdentityService,
+    hashingService: HashingService,
+    flowEngine: FlowEngine,
+    memberInfo: MemberInfo,
+    partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+    changeHolder: AbstractParty,
+    queryBy: TokenQueryBy
 ): TransactionBuilder {
     // TODO For now default to database query, but switch this line on after we can change API in 2.0
 //    val selector: Selector = ConfigSelection.getPreferredSelection(serviceHub)
-    val selector = DatabaseTokenSelection(serviceHub)
-    val (inputs, outputs) = selector.generateMove(partiesAndAmounts.toPairs(), changeHolder, TokenQueryBy(queryCriteria = queryCriteria), transactionBuilder.lockId)
+    val selector = DatabaseTokenSelection(persistenceService, identityService, flowEngine)
+    val (inputs, outputs) =
+        selector.generateMove(
+            identityService,
+            hashingService,
+            memberInfo,
+            partiesAndAmounts.toPairs(),
+            changeHolder,
+            queryBy,
+            transactionBuilder.lockId
+        )
     return addMoveTokens(transactionBuilder = transactionBuilder, inputs = inputs, outputs = outputs)
+}
+
+@Suspendable
+fun addMoveFungibleTokens(
+    transactionBuilder: TransactionBuilder,
+    persistenceService: PersistenceService,
+    identityService: IdentityService,
+    hashingService: HashingService,
+    flowEngine: FlowEngine,
+    memberInfo: MemberInfo,
+    partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+    changeHolder: AbstractParty,
+): TransactionBuilder {
+    return addMoveFungibleTokens(
+        transactionBuilder,
+        persistenceService,
+        identityService,
+        hashingService,
+        flowEngine,
+        memberInfo,
+        partiesAndAmounts,
+        changeHolder
+    )
 }
 
 /**
  * Add single move of [amount] of token to the new [holder]. Possible change output will be paid to [changeHolder].
  * This method will combine multiple token amounts from different issuers if needed.
- * If you would like to choose only tokens from one issuer you can provide optional [queryCriteria] for move generation.
  * Note: For now this method always uses database token selection, to use in memory one, use [addMoveTokens] with already selected
  * input and output states.
  */
 @Suspendable
-@JvmOverloads
 fun addMoveFungibleTokens(
-        transactionBuilder: TransactionBuilder,
-        serviceHub: ServiceHub,
-        amount: Amount<TokenType>,
-        holder: AbstractParty,
-        changeHolder: AbstractParty,
-        queryCriteria: QueryCriteria? = null
+    transactionBuilder: TransactionBuilder,
+    persistenceService: PersistenceService,
+    identityService: IdentityService,
+    hashingService: HashingService,
+    flowEngine: FlowEngine,
+    memberInfo: MemberInfo,
+    amount: Amount<TokenType>,
+    holder: AbstractParty,
+    changeHolder: AbstractParty,
+    queryBy: TokenQueryBy
 ): TransactionBuilder {
     return addMoveFungibleTokens(
-            transactionBuilder = transactionBuilder,
-            serviceHub = serviceHub,
-            partiesAndAmounts = listOf(PartyAndAmount(holder, amount)),
-            changeHolder = changeHolder,
-            queryCriteria = queryCriteria
+        transactionBuilder = transactionBuilder,
+        persistenceService = persistenceService,
+        identityService = identityService,
+        flowEngine = flowEngine,
+        memberInfo = memberInfo,
+        partiesAndAmounts = listOf(PartyAndAmount(holder, amount)),
+        changeHolder = changeHolder,
+        hashingService = hashingService,
+        queryBy = queryBy
+    )
+}
+
+@Suspendable
+fun addMoveFungibleTokens(
+    transactionBuilder: TransactionBuilder,
+    persistenceService: PersistenceService,
+    identityService: IdentityService,
+    hashingService: HashingService,
+    flowEngine: FlowEngine,
+    memberInfo: MemberInfo,
+    amount: Amount<TokenType>,
+    holder: AbstractParty,
+    changeHolder: AbstractParty,
+): TransactionBuilder {
+    return addMoveFungibleTokens(
+        transactionBuilder,
+        persistenceService,
+        identityService,
+        hashingService,
+        flowEngine,
+        memberInfo,
+        amount,
+        holder,
+        changeHolder,
+        TokenQueryBy()
     )
 }
 
@@ -136,31 +206,46 @@ fun addMoveFungibleTokens(
 
 /**
  * Add single move of [token] to the new [holder].
- * Provide optional [queryCriteria] for move generation.
  */
 @Suspendable
-@JvmOverloads
 fun addMoveNonFungibleTokens(
-        transactionBuilder: TransactionBuilder,
-        serviceHub: ServiceHub,
-        token: TokenType,
-        holder: AbstractParty,
-        queryCriteria: QueryCriteria? = null
+    transactionBuilder: TransactionBuilder,
+    persistenceService: PersistenceService,
+    token: TokenType,
+    holder: AbstractParty,
+    queryBy: TokenQueryBy
 ): TransactionBuilder {
-    return generateMoveNonFungible(transactionBuilder, PartyAndToken(holder, token), serviceHub.vaultService, queryCriteria)
+    return generateMoveNonFungible(transactionBuilder, PartyAndToken(holder, token), persistenceService, queryBy)
+}
+
+@Suspendable
+fun addMoveNonFungibleTokens(
+    transactionBuilder: TransactionBuilder,
+    persistenceService: PersistenceService,
+    token: TokenType,
+    holder: AbstractParty,
+): TransactionBuilder {
+    return addMoveNonFungibleTokens(transactionBuilder, persistenceService, token, holder, TokenQueryBy())
 }
 
 /**
  * Add single move of token to the new holder specified using [partyAndToken] parameter.
- * Provide optional [queryCriteria] for move generation.
  */
 @Suspendable
-@JvmOverloads
 fun addMoveNonFungibleTokens(
-        transactionBuilder: TransactionBuilder,
-        serviceHub: ServiceHub,
-        partyAndToken: PartyAndToken,
-        queryCriteria: QueryCriteria? = null
+    transactionBuilder: TransactionBuilder,
+    persistenceService: PersistenceService,
+    partyAndToken: PartyAndToken,
+    queryBy: TokenQueryBy
 ): TransactionBuilder {
-    return generateMoveNonFungible(transactionBuilder, partyAndToken, serviceHub.vaultService, queryCriteria)
+    return generateMoveNonFungible(transactionBuilder, partyAndToken, persistenceService, queryBy)
+}
+
+@Suspendable
+fun addMoveNonFungibleTokens(
+    transactionBuilder: TransactionBuilder,
+    persistenceService: PersistenceService,
+    partyAndToken: PartyAndToken,
+): TransactionBuilder {
+    return addMoveNonFungibleTokens(transactionBuilder, persistenceService, partyAndToken, TokenQueryBy())
 }

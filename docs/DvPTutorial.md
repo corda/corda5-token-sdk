@@ -13,9 +13,8 @@ At the end of this section you will know how to:
 * sign and finalise token transaction,
 * construct business logic using the building blocks from `tokens-sdk`.
 
-If you would like to see how to write simple integration tests using similar example take a look at: 
+If you would like to see how to write simple integration tests using similar example take a look at:
 [driver test](../workflows/src/integrationTest/kotlin/com/r3/corda/lib/tokens/integrationTest/TokenDriverTest.kt)
-
 
 ## Basic components
 
@@ -26,12 +25,11 @@ to set up a project as described in [README](../README.md).
 We will issue a simple `House` token onto the ledger (non-fungible token), then some money (fungible tokens). Then two parties can perform
 `House` swap in exchange for money. We will build a flow that constructs simple transaction that combines two movements of tokens.
 
-
 ## Define your states and contracts
 
-First let's define `House` state using `EvolvableTokenType`. We add `address` and `valuation` fields, `maintainers` and 
-`fractionDigits` are required by `EvolvableTokenType`. `EvolvableTokenType`s are for storing token reference data that
-we expect to change over time. In our use case house valuation can change.
+First let's define `House` state using `EvolvableTokenType`. We add `address` and `valuation` fields, `maintainers` and
+`fractionDigits` are required by `EvolvableTokenType`. `EvolvableTokenType`s are for storing token reference data that we expect to change
+over time. In our use case house valuation can change.
 
 ```kotlin
 // A token representing a house on ledger.
@@ -83,12 +81,11 @@ Let's take a look how to create and issue `EvolvableTokenType` onto the ledger.
     subFlow(CreateEvolvableTokens(house withNotary notary))
 ```
 
-`CreateEvolvableTokens` flow creates the evolvable state and shares it with maintainers and potential observers. To issue
-a token that references the `EvolvableTokenType` we have to call one of the flows from the family of `IssueTokens` flows.
+`CreateEvolvableTokens` flow creates the evolvable state and shares it with maintainers and potential observers. To issue a token that
+references the `EvolvableTokenType` we have to call one of the flows from the family of `IssueTokens` flows.
 
-**Note** Because `EvolvableTokenType` is a `State` but not a `TokenType`, to issue it onto the ledger you need to convert it into `TokenPointer` first.
-This way, the token can evolve independently to which party currently owns (some amount) of the token.
-
+**Note** Because `EvolvableTokenType` is a `State` but not a `TokenType`, to issue it onto the ledger you need to convert it
+into `TokenPointer` first. This way, the token can evolve independently to which party currently owns (some amount) of the token.
 
 Let's issue `NonFungibleToken` referencing `House` held by Alice party.
 
@@ -102,11 +99,11 @@ Let's issue `NonFungibleToken` referencing `House` held by Alice party.
 ```
 
 There are some flows from issue tokens family that let you issue a token onto the ledger. In this case we used
-`ConfidentialIssueTokens` this flow generates confidential identities first to use them in the transaction instead of well known
-legal identities. Notice that issuer is always well known.
+`ConfidentialIssueTokens` this flow generates confidential identities first to use them in the transaction instead of well known legal
+identities. Notice that issuer is always well known.
 
-For testing delivery versus payment it would be great to have some money tokens issued onto the ledger as well. Issuing
-fungible `GBP` tokens is straightforward:
+For testing delivery versus payment it would be great to have some money tokens issued onto the ledger as well. Issuing fungible `GBP`
+tokens is straightforward:
 
 ```kotlin
     // Let's print some money!
@@ -115,7 +112,7 @@ fungible `GBP` tokens is straightforward:
 ```
 
 **Note** There are different versions of `IssueFlow` inlined (that require you to pass in flow sessions) and initiating (callable via RPC),
- it's worth checking API documentation.
+it's worth checking API documentation.
 
 ## Write initiator flow
 
@@ -177,8 +174,8 @@ Add move of `GBP` tokens to the transaction builder:
         ...
 ```
 
-It can happen that input states to the transaction have confidential identities as participants, we should synchronise any
-identities before the final phase:
+It can happen that input states to the transaction have confidential identities as participants, we should synchronise any identities before
+the final phase:
 
 ```kotlin
         ...
@@ -200,10 +197,10 @@ The last step is signing the transaction by all parties involved:
         ...
 ```
 
-Evolvable tokens are special, because they can change over time. To keep all the parties interested notified about the update
-distribution lists are used. This is a tactical solution that will be changed in the future for more robust design.
-Distribution list is a list of identities that should receive updates, it's usually kept on the issuer node (and other maintainers nodes if specified).
-For this mechanism to behave correctly we need to add special `UpdateDistributionListFlow` subflow:
+Evolvable tokens are special, because they can change over time. To keep all the parties interested notified about the update distribution
+lists are used. This is a tactical solution that will be changed in the future for more robust design. Distribution list is a list of
+identities that should receive updates, it's usually kept on the issuer node (and other maintainers nodes if specified). For this mechanism
+to behave correctly we need to add special `UpdateDistributionListFlow` subflow:
 
 ```kotlin
         ...
@@ -249,13 +246,14 @@ The responder flow is pretty straightforward to write calling corresponding flow
 Notice the ```DatabaseTokenSelection(serviceHub).generateMove(...)``` used for chosing tokens that cover the required amount.
 
 ## Extra advanced topic
+
 ### Updating evolvable token
 
-So why bother with the `EvolvableTokenType` if we don't use it (apart from obscure `UpdateDistributionListFlow` usage)?
-Well, let's say because of unclear political situation prices of houses in London change. We could record this event by
-updating the already issued house valuation and all interested parties will get notified of that change.
+So why bother with the `EvolvableTokenType` if we don't use it (apart from obscure `UpdateDistributionListFlow` usage)? Well, let's say
+because of unclear political situation prices of houses in London change. We could record this event by updating the already issued house
+valuation and all interested parties will get notified of that change.
 
-It's sufficient for the issuer (or house state maintainer) to update that token by simply running: 
+It's sufficient for the issuer (or house state maintainer) to update that token by simply running:
 
 ```kotlin
     // Update that evolvable state on issuer node.
@@ -264,9 +262,8 @@ It's sufficient for the issuer (or house state maintainer) to update that token 
     subFlow(UpdateEvolvableToken(oldStateAndRef = old, newState = new))
 ```
 
-
-It will send the transaction with new updated house state to all parties on the issuer's distribution list. They will record it locally
-in their vaults. Next time `housePtr.pointer.resolve(serviceHub)` is called it will contain updated state.
+It will send the transaction with new updated house state to all parties on the issuer's distribution list. They will record it locally in
+their vaults. Next time `housePtr.pointer.resolve(serviceHub)` is called it will contain updated state.
 
 ## Next steps
 

@@ -4,12 +4,12 @@ import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.TransactionState
-import net.corda.core.crypto.toStringShort
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.AnonymousParty
-import net.corda.core.identity.Party
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.crypto.HashingService
+import net.corda.v5.crypto.toStringShort
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.TransactionState
 
 class TokenUtilities
 
@@ -21,10 +21,10 @@ class TokenUtilities
  * Creates a [FungibleToken] from an an amount of [IssuedTokenType].
  * E.g. Amount<IssuedTokenType<TokenType>> -> FungibleToken<TokenType>.
  */
-infix fun Amount<IssuedTokenType>.heldBy(owner: AbstractParty): FungibleToken = _heldBy(owner)
+fun Amount<IssuedTokenType>.heldBy(owner: AbstractParty, hashingService: HashingService): FungibleToken = _heldBy(owner, hashingService)
 
-internal infix fun Amount<IssuedTokenType>._heldBy(owner: AbstractParty): FungibleToken {
-	return FungibleToken(this, owner)
+internal fun Amount<IssuedTokenType>._heldBy(owner: AbstractParty, hashingService: HashingService): FungibleToken {
+    return FungibleToken(this, owner, hashingService)
 }
 
 // --------------------------
@@ -35,14 +35,14 @@ internal infix fun Amount<IssuedTokenType>._heldBy(owner: AbstractParty): Fungib
 infix fun <T : AbstractToken> T.withNotary(notary: Party): TransactionState<T> = _withNotary(notary)
 
 internal infix fun <T : AbstractToken> T._withNotary(notary: Party): TransactionState<T> {
-	return TransactionState(data = this, notary = notary)
+    return TransactionState(data = this, notary = notary)
 }
 
 /** Adds a notary [Party] to an [EvolvableTokenType], by wrapping it in a [TransactionState]. */
 infix fun <T : EvolvableTokenType> T.withNotary(notary: Party): TransactionState<T> = _withNotary(notary)
 
 internal infix fun <T : EvolvableTokenType> T._withNotary(notary: Party): TransactionState<T> {
-	return TransactionState(data = this, notary = notary)
+    return TransactionState(data = this, notary = notary)
 }
 
 /**
@@ -50,7 +50,7 @@ internal infix fun <T : EvolvableTokenType> T._withNotary(notary: Party): Transa
  * and shortens the public key for [AnonymousParty]s to the first 16 characters.
  */
 val AbstractToken.holderString: String
-	get() =
-		(holder as? Party)?.name?.organisation ?: holder.owningKey.toStringShort().substring(0, 16)
+    get() =
+        (holder as? Party)?.name?.organisation ?: holder.owningKey.toStringShort().substring(0, 16)
 
 infix fun <T : AbstractToken> T.withNewHolder(newHolder: AbstractParty) = withNewHolder(newHolder)

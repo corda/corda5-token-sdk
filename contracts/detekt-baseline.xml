@@ -1,0 +1,57 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>FunctionNaming:AmountUtilities.kt$internal infix fun Amount&lt;TokenType&gt;._issuedBy(issuer: Party): Amount&lt;IssuedTokenType&gt;</ID>
+    <ID>FunctionNaming:AmountUtilities.kt$internal infix fun TokenType._issuedBy(issuer: Party): IssuedTokenType</ID>
+    <ID>FunctionNaming:TokenUtilities.kt$internal fun Amount&lt;IssuedTokenType&gt;._heldBy(owner: AbstractParty, hashingService: HashingService): FungibleToken</ID>
+    <ID>FunctionNaming:TokenUtilities.kt$internal infix fun &lt;T : AbstractToken&gt; T._withNotary(notary: Party): TransactionState&lt;T&gt;</ID>
+    <ID>FunctionNaming:TokenUtilities.kt$internal infix fun &lt;T : EvolvableTokenType&gt; T._withNotary(notary: Party): TransactionState&lt;T&gt;</ID>
+    <ID>MagicNumber:TokenUtilities.kt$16</ID>
+    <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$"Extended TokenType: ${tokenTypes.single().javaClass} has been used, whilst no jarHash has been provided to pin the providing jar"</ID>
+    <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$"There must be exactly one Jar (Hash) providing extended TokenType: ${outputs.first().tokenType.tokenIdentifier} / ${outputs.first().tokenType.javaClass}"</ID>
+    <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$//This function checks that the underlying State is of a specific type, whilst returning the TransactionState that wraps it</ID>
+    <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$TokenInfo</ID>
+    <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$private</ID>
+    <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$require</ID>
+    <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$require(jar in attachments.map { it.id }) { "Expected to find type jar: $jar in transaction attachment list, but did not" }</ID>
+    <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$val groups = groupStates(tx) { TokenInfo(it.state.data.javaClass, it.state.data.issuedTokenType, it.state.contract) }</ID>
+    <ID>MaxLineLength:AbstractTokenContract.kt$AbstractTokenContract$val inputsToVerify = (0 until tx.inputs.size).map { it to tx.inputs[it].state }.mapNotNull { castIfPossible(it) }</ID>
+    <ID>MaxLineLength:EvolvableTokenContract.kt$EvolvableTokenContract$"Only evolvable token maintainers (from inputs and outputs) may sign the update evolvable token transaction."</ID>
+    <ID>MaxLineLength:FungibleToken.kt$FungibleToken$*</ID>
+    <ID>MaxLineLength:FungibleTokenContract.kt$FungibleTokenContract$require(amount &gt; Amount.zero(issuedToken)) { "If there is an output, it must have a value greater than zero." }</ID>
+    <ID>MaxLineLength:FungibleTokenContract.kt$FungibleTokenContract$require(inputAmount &gt; Amount.zero(issuedToken)) { "In move groups there must be an amount of input tokens &gt; ZERO." }</ID>
+    <ID>MaxLineLength:FungibleTokenContract.kt$FungibleTokenContract$require(outputAmount &gt; Amount.zero(issuedToken)) { "In move groups there must be an amount of output tokens &gt; ZERO." }</ID>
+    <ID>MaxLineLength:FungibleTokenContract.kt$FungibleTokenContract$val issuerKey: PublicKey = inputs.map { it.state.data }.map(FungibleToken::issuer).toSet().single().owningKey</ID>
+    <ID>MaxLineLength:FungibleTokenSchema.kt$FungibleTokenSchemaV1.PersistentFungibleToken$" FROM com.r3.corda.lib.tokens.contracts.internal.schemas.FungibleTokenSchemaV1\$PersistentFungibleToken token,"</ID>
+    <ID>MaxLineLength:FungibleTokenSchema.kt$FungibleTokenSchemaV1.PersistentFungibleToken$name = "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierAndExternalId"</ID>
+    <ID>MaxLineLength:FungibleTokenSchema.kt$FungibleTokenSchemaV1.PersistentFungibleToken$name = "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierHolderAndIssuer"</ID>
+    <ID>MaxLineLength:FungibleTokenSchema.kt$FungibleTokenSchemaV1.PersistentFungibleToken$name = "FungibleTokenSchemaV1.PersistentFungibleToken.findAllUnconsumedTokensByClassIdentifierIssuerAndExternalId"</ID>
+    <ID>MaxLineLength:IssuedTokenType.kt$IssuedTokenType$data</ID>
+    <ID>MaxLineLength:NonFungibleToken.kt$NonFungibleToken$return NonFungibleToken(token = token, holder = newHolder, linearId = linearId, tokenTypeJarHash = tokenTypeJarHash)</ID>
+    <ID>MaxLineLength:NonFungibleTokenContract.kt$NonFungibleTokenContract$require(moveCommands.size == 1) { "There should be only one move command per group when moving non fungible tokens." }</ID>
+    <ID>MaxLineLength:NonFungibleTokenSchema.kt$NonFungibleTokenSchemaV1.PersistentNonFungibleToken$" FROM com.r3.corda.lib.tokens.contracts.internal.schemas.NonFungibleTokenSchemaV1\$PersistentNonFungibleToken token,"</ID>
+    <ID>MaxLineLength:NonFungibleTokenSchema.kt$NonFungibleTokenSchemaV1.PersistentNonFungibleToken$name = "NonFungibleTokenSchemaV1.PersistentNonFungibleToken.findAllUnconsumedTokensByClassIdentifierAndIssuer"</ID>
+    <ID>MaxLineLength:TokenCommand.kt$MoveTokenCommand$class</ID>
+    <ID>MaxLineLength:TokenCommand.kt$RedeemTokenCommand$class</ID>
+    <ID>MaxLineLength:TokenType.kt$TokenType$*</ID>
+    <ID>MaxLineLength:TokenUtilities.kt$fun</ID>
+    <ID>MaxLineLength:TransactionUtilities.kt$* If the [TokenType] is not a [TokenPointer] this function discovers the JAR which implements the receiving [TokenType].</ID>
+    <ID>NewLineAtEndOfFile:AbstractToken.kt$com.r3.corda.lib.tokens.contracts.states.AbstractToken.kt</ID>
+    <ID>NewLineAtEndOfFile:AbstractTokenContract.kt$com.r3.corda.lib.tokens.contracts.AbstractTokenContract.kt</ID>
+    <ID>NewLineAtEndOfFile:AmountUtilities.kt$com.r3.corda.lib.tokens.contracts.utilities.AmountUtilities.kt</ID>
+    <ID>NewLineAtEndOfFile:EvolvableTokenContract.kt$com.r3.corda.lib.tokens.contracts.EvolvableTokenContract.kt</ID>
+    <ID>NewLineAtEndOfFile:EvolvableTokenTypeCommand.kt$com.r3.corda.lib.tokens.contracts.commands.EvolvableTokenTypeCommand.kt</ID>
+    <ID>NewLineAtEndOfFile:FungibleToken.kt$com.r3.corda.lib.tokens.contracts.states.FungibleToken.kt</ID>
+    <ID>NewLineAtEndOfFile:InputOutputStates.kt$com.r3.corda.lib.tokens.contracts.datatypes.InputOutputStates.kt</ID>
+    <ID>NewLineAtEndOfFile:IssuedTokenType.kt$com.r3.corda.lib.tokens.contracts.types.IssuedTokenType.kt</ID>
+    <ID>NewLineAtEndOfFile:NamedQueryAndParameters.kt$com.r3.corda.lib.tokens.contracts.datatypes.NamedQueryAndParameters.kt</ID>
+    <ID>NewLineAtEndOfFile:NonFungibleToken.kt$com.r3.corda.lib.tokens.contracts.states.NonFungibleToken.kt</ID>
+    <ID>NewLineAtEndOfFile:NonFungibleTokenContract.kt$com.r3.corda.lib.tokens.contracts.NonFungibleTokenContract.kt</ID>
+    <ID>NewLineAtEndOfFile:TokenCommand.kt$com.r3.corda.lib.tokens.contracts.commands.TokenCommand.kt</ID>
+    <ID>NewLineAtEndOfFile:TokenType.kt$com.r3.corda.lib.tokens.contracts.types.TokenType.kt</ID>
+    <ID>NewLineAtEndOfFile:TokenUtilities.kt$com.r3.corda.lib.tokens.contracts.utilities.TokenUtilities.kt</ID>
+    <ID>TooManyFunctions:AmountUtilities.kt$com.r3.corda.lib.tokens.contracts.utilities.AmountUtilities.kt</ID>
+    <ID>TooManyFunctions:TransactionUtilities.kt$com.r3.corda.lib.tokens.contracts.utilities.TransactionUtilities.kt</ID>
+  </CurrentIssues>
+</SmellBaseline>

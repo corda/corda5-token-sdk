@@ -1,17 +1,22 @@
 package com.r3.corda.lib.tokens.workflows.flows.evolvable
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFinalityFlow
-import net.corda.core.contracts.TransactionState
-import net.corda.core.flows.CollectSignaturesFlow
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
-import net.corda.core.serialization.CordaSerializable
-import net.corda.core.transactions.SignedTransaction
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.systemflows.CollectSignaturesFlow
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.FlowIdentity
+import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.IdentityService
+import net.corda.v5.base.annotations.CordaSerializable
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.TransactionState
+import net.corda.v5.ledger.services.TransactionService
+import net.corda.v5.ledger.transactions.SignedTransaction
+import net.corda.v5.ledger.transactions.TransactionBuilderFactory
 
 /**
  * Inline sub-flow for creating multiple tokens of evolvable token type. This is just a simple flow for now.
@@ -20,28 +25,51 @@ import net.corda.core.transactions.TransactionBuilder
  * @property participantSessions a list of sessions for participants in the evolvable token types
  * @property observerSessions a list of sessions for any observers to the create observable token transaction
  */
-class CreateEvolvableTokensFlow
-@JvmOverloads
-constructor(
-        val transactionStates: List<TransactionState<EvolvableTokenType>>,
-        val participantSessions: List<FlowSession>,
-        val observerSessions: List<FlowSession> = emptyList()
-) : FlowLogic<SignedTransaction>() {
-    @JvmOverloads
-    constructor(transactionState: TransactionState<EvolvableTokenType>, participantSessions: List<FlowSession>, observerSessions: List<FlowSession> = emptyList()) :
-            this(listOf(transactionState), participantSessions, observerSessions)
+class CreateEvolvableTokensFlow (
+    val transactionStates: List<TransactionState<EvolvableTokenType>>,
+    val participantSessions: List<FlowSession>,
+    val observerSessions: List<FlowSession>
+) : Flow<SignedTransaction> {
+
+    constructor(
+        transactionStates: List<TransactionState<EvolvableTokenType>>,
+        participantSessions: List<FlowSession>,
+    ) : this(transactionStates, participantSessions, emptyList())
+
+    constructor(
+        transactionState: TransactionState<EvolvableTokenType>,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession>
+    ) : this(listOf(transactionState), participantSessions, observerSessions)
+
+    constructor(
+        transactionState: TransactionState<EvolvableTokenType>,
+        participantSessions: List<FlowSession>,
+    ) : this(listOf(transactionState), participantSessions, emptyList())
 
     @CordaSerializable
     data class Notification(val signatureRequired: Boolean = false)
 
     private val evolvableTokens = transactionStates.map { it.data }
 
+    @CordaInject
+    lateinit var transactionBuilderFactory: TransactionBuilderFactory
+
+    @CordaInject
+    lateinit var flowIdentity: FlowIdentity
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
     @Suspendable
     override fun call(): SignedTransaction {
         checkLinearIds(transactionStates)
         // TODO what about... preferred notary
         checkSameNotary()
-        val transactionBuilder = TransactionBuilder(transactionStates.first().notary) // todo
+        val transactionBuilder = transactionBuilderFactory.create().setNotary(transactionStates.first().notary) // todo
 
         // Create a transaction which updates the ledger with the new evolvable tokens.
         transactionStates.forEach {
@@ -49,21 +77,29 @@ constructor(
         }
 
         // Sign the transaction proposal
-        val ptx: SignedTransaction = serviceHub.signInitialTransaction(transactionBuilder)
+        val ptx: SignedTransaction = transactionBuilder.sign()
 
         // Gather signatures from other maintainers
         // Check that we have sessions with all maitainers but not with ourselves
-        val otherMaintainerSessions = participantSessions.filter { it.counterparty in evolvableTokens.otherMaintainers(ourIdentity) }
+        val otherMaintainerSessions =
+            participantSessions.filter { it.counterparty in evolvableTokens.otherMaintainers(flowIdentity.ourIdentity) }
         otherMaintainerSessions.forEach { it.send(Notification(signatureRequired = true)) }
-        val stx = subFlow(CollectSignaturesFlow(
+        val stx = flowEngine.subFlow(
+            CollectSignaturesFlow(
                 partiallySignedTx = ptx,
                 sessionsToCollectFrom = otherMaintainerSessions
-        ))
+            )
+        )
         // Finalise with all participants, including maintainers, participants, and subscribers (via distribution list)
         val wellKnownObserverSessions = participantSessions.filter { it.counterparty in wellKnownObservers }
         val allObserverSessions = (wellKnownObserverSessions + observerSessions).toSet()
         allObserverSessions.forEach { it.send(Notification(signatureRequired = false)) }
-        return subFlow(ObserverAwareFinalityFlow(signedTransaction = stx, allSessions = otherMaintainerSessions + allObserverSessions))
+        return flowEngine.subFlow(
+            ObserverAwareFinalityFlow(
+                signedTransaction = stx,
+                allSessions = otherMaintainerSessions + allObserverSessions
+            )
+        )
     }
 
     private fun checkLinearIds(transactionStates: List<TransactionState<EvolvableTokenType>>) {
@@ -81,11 +117,11 @@ constructor(
     // TODO Refactor it more.
     private val otherObservers
         get(): Set<AbstractParty> {
-            return evolvableTokens.participants().minus(evolvableTokens.maintainers()).minus(this.ourIdentity)
+            return evolvableTokens.participants().minus(evolvableTokens.maintainers()).minus(flowIdentity.ourIdentity)
         }
 
     private val wellKnownObservers
         get(): List<Party> {
-            return otherObservers.map { serviceHub.identityService.wellKnownPartyFromAnonymous(it)!! }
+            return otherObservers.map { identityService.partyFromAnonymous(it)!! }
         }
 }

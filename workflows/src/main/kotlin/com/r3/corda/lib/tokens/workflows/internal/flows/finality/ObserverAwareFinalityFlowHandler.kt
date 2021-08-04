@@ -1,14 +1,25 @@
 package com.r3.corda.lib.tokens.workflows.internal.flows.finality
 
-import co.paralleluniverse.fibers.Suspendable
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.flows.ReceiveFinalityFlow
-import net.corda.core.node.StatesToRecord
-import net.corda.core.transactions.SignedTransaction
-import net.corda.core.utilities.unwrap
+import com.r3.corda.lib.tokens.workflows.utilities.isOurIdentity
+import net.corda.systemflows.ReceiveFinalityFlow
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.receive
+import net.corda.v5.application.flows.unwrap
+import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.application.services.MemberLookupService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.services.StatesToRecord
+import net.corda.v5.ledger.transactions.SignedTransaction
 
-class ObserverAwareFinalityFlowHandler(val otherSession: FlowSession) : FlowLogic<SignedTransaction?>() {
+class ObserverAwareFinalityFlowHandler(val otherSession: FlowSession) : Flow<SignedTransaction?> {
+    @CordaInject
+    lateinit var memberLookupService: MemberLookupService
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
     override fun call(): SignedTransaction? {
         val role = otherSession.receive<TransactionRole>().unwrap { it }
@@ -17,8 +28,8 @@ class ObserverAwareFinalityFlowHandler(val otherSession: FlowSession) : FlowLogi
             TransactionRole.OBSERVER -> StatesToRecord.ALL_VISIBLE
         }
         // If states are issued to self, then ReceiveFinalityFlow does not need to be invoked.
-        return if (!serviceHub.myInfo.isLegalIdentity(otherSession.counterparty)) {
-            subFlow(ReceiveFinalityFlow(otherSideSession = otherSession, statesToRecord = statesToRecord))
+        return if (!memberLookupService.isOurIdentity(otherSession.counterparty)) {
+            flowEngine.subFlow(ReceiveFinalityFlow(otherSideSession = otherSession, statesToRecord = statesToRecord))
         } else null
     }
 }

@@ -1,11 +1,11 @@
 package com.r3.corda.lib.tokens.workflows.flows.move
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.flows.FlowSession
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /**
  * General inlined flow used to move any type of tokens. This flow builds a transaction containing passed as parameters
@@ -19,21 +19,31 @@ import net.corda.core.transactions.TransactionBuilder
  * @param participantSessions session with the participants of move tokens transaction
  * @param observerSessions session with optional observers of the redeem transaction
  */
-class MoveTokensFlow
-@JvmOverloads
-constructor(
-        val inputs: List<StateAndRef<AbstractToken>>,
-        val outputs: List<AbstractToken>,
-        override val participantSessions: List<FlowSession>,
-        override val observerSessions: List<FlowSession> = emptyList()
+class MoveTokensFlow (
+    val inputs: List<StateAndRef<AbstractToken>>,
+    val outputs: List<AbstractToken>,
+    override val participantSessions: List<FlowSession>,
+    override val observerSessions: List<FlowSession>
 ) : AbstractMoveTokensFlow() {
-    @JvmOverloads
+
     constructor(
-            input: StateAndRef<AbstractToken>,
-            output: AbstractToken,
-            participantSessions: List<FlowSession>,
-            observerSessions: List<FlowSession> = emptyList()
+        input: List<StateAndRef<AbstractToken>>,
+        output: List<AbstractToken>,
+        participantSessions: List<FlowSession>,
+    ) : this(input, output, participantSessions, emptyList())
+
+    constructor(
+        input: StateAndRef<AbstractToken>,
+        output: AbstractToken,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession>
     ) : this(listOf(input), listOf(output), participantSessions, observerSessions)
+
+    constructor(
+        input: StateAndRef<AbstractToken>,
+        output: AbstractToken,
+        participantSessions: List<FlowSession>,
+    ) : this(input, output, participantSessions, emptyList())
 
     @Suspendable
     override fun addMove(transactionBuilder: TransactionBuilder) {

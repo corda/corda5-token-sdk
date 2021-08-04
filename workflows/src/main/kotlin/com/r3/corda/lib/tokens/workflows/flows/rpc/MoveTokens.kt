@@ -1,18 +1,28 @@
 package com.r3.corda.lib.tokens.workflows.flows.rpc
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.workflows.flows.move.*
 import com.r3.corda.lib.tokens.workflows.types.PartyAndAmount
 import com.r3.corda.lib.tokens.workflows.types.PartyAndToken
 import com.r3.corda.lib.tokens.workflows.utilities.sessionsForParties
-import net.corda.core.contracts.Amount
-import net.corda.core.flows.*
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.AnonymousParty
-import net.corda.core.identity.Party
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.transactions.SignedTransaction
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowException
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.InitiatedBy
+import net.corda.v5.application.flows.InitiatingFlow
+import net.corda.v5.application.flows.StartableByRPC
+import net.corda.v5.application.flows.StartableByService
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.flows.flowservices.FlowIdentity
+import net.corda.v5.application.flows.flowservices.FlowMessaging
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.crypto.KeyManagementService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.transactions.SignedTransaction
 
 /**
  * Initiating flow used to move amounts of tokens to parties, [partiesAndAmounts] specifies what amount of tokens is moved
@@ -23,44 +33,119 @@ import net.corda.core.transactions.SignedTransaction
  *
  * @param partiesAndAmounts list of pairing party - amount of token that is to be moved to that party
  * @param observers optional observing parties to which the transaction will be broadcast
- * @param queryCriteria additional criteria for token selection
+ * @param customPostProcessorName name of custom query post processor for token selection
  * @param changeHolder optional holder of the change outputs, it can be confidential identity, if not specified it
  *                     defaults to caller's legal identity
  */
 @StartableByService
 @StartableByRPC
 @InitiatingFlow
-class MoveFungibleTokens
-@JvmOverloads
-constructor(
-        val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
-        val observers: List<Party> = emptyList(),
-        val queryCriteria: QueryCriteria? = null,
-        val changeHolder: AbstractParty? = null
-) : FlowLogic<SignedTransaction>() {
+class MoveFungibleTokens (
+    val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+    val observers: List<Party>,
+    val customPostProcessorName: String?,
+    val changeHolder: AbstractParty?
+) : Flow<SignedTransaction> {
 
-    @JvmOverloads
     constructor(
-            partyAndAmount: PartyAndAmount<TokenType>,
-            observers: List<Party> = emptyList(),
-            queryCriteria: QueryCriteria? = null,
-            changeHolder: AbstractParty? = null
-    ) : this(listOf(partyAndAmount), observers, queryCriteria, changeHolder)
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+    ) : this(partiesAndAmounts, emptyList(), null, null)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        observers: List<Party>,
+    ) : this(partiesAndAmounts, observers, null, null)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        customPostProcessorName: String?,
+    ) : this(partiesAndAmounts, emptyList(), customPostProcessorName, null)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        changeHolder: AbstractParty?
+    ) : this(partiesAndAmounts, emptyList(), null, changeHolder)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        observers: List<Party>,
+        customPostProcessorName: String?,
+    ) : this(partiesAndAmounts, observers, customPostProcessorName, null)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        observers: List<Party>,
+        changeHolder: AbstractParty?
+    ) : this(partiesAndAmounts, observers, null, changeHolder)
+
+    constructor(
+        partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+        customPostProcessorName: String?,
+        changeHolder: AbstractParty?
+    ) : this(partiesAndAmounts, emptyList(), customPostProcessorName, changeHolder)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+    ) : this(listOf(partyAndAmount), emptyList(), null, null)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        observers: List<Party>,
+    ) : this(listOf(partyAndAmount), observers, null, null)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        customPostProcessorName: String?,
+    ) : this(listOf(partyAndAmount), emptyList(), customPostProcessorName, null)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        changeHolder: AbstractParty?
+    ) : this(listOf(partyAndAmount), emptyList(), null, changeHolder)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        observers: List<Party>,
+        customPostProcessorName: String?,
+    ) : this(listOf(partyAndAmount), observers, customPostProcessorName, null)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        observers: List<Party>,
+        changeHolder: AbstractParty?
+    ) : this(listOf(partyAndAmount), observers, null, changeHolder)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        customPostProcessorName: String?,
+        changeHolder: AbstractParty?
+    ) : this(listOf(partyAndAmount), emptyList(), customPostProcessorName, changeHolder)
 
     constructor(amount: Amount<TokenType>, holder: AbstractParty) : this(PartyAndAmount(holder, amount), emptyList())
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var flowMessaging: FlowMessaging
+
+    @CordaInject
+    lateinit var identityService: IdentityService
 
     @Suspendable
     override fun call(): SignedTransaction {
         val participants = partiesAndAmounts.map(PartyAndAmount<*>::party)
-        val observerSessions = sessionsForParties(observers)
-        val participantSessions = sessionsForParties(participants)
-        return subFlow(MoveFungibleTokensFlow(
+        val observerSessions = sessionsForParties(identityService, flowMessaging, observers)
+        val participantSessions = sessionsForParties(identityService, flowMessaging, participants)
+        return flowEngine.subFlow(
+            MoveFungibleTokensFlow(
                 partiesAndAmounts = partiesAndAmounts,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
-                queryCriteria = queryCriteria,
-                changeHolder = changeHolder
-        ))
+                changeHolder = changeHolder,
+                customPostProcessorName = customPostProcessorName
+            )
+        )
     }
 }
 
@@ -68,9 +153,12 @@ constructor(
  * Responder flow for [MoveFungibleTokens].
  */
 @InitiatedBy(MoveFungibleTokens::class)
-class MoveFungibleTokensHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class MoveFungibleTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
-    override fun call() = subFlow(MoveTokensFlowHandler(otherSession))
+    override fun call() = flowEngine.subFlow(MoveTokensFlowHandler(otherSession))
 }
 
 /**
@@ -82,28 +170,52 @@ class MoveFungibleTokensHandler(val otherSession: FlowSession) : FlowLogic<Unit>
  *
  * @param partyAndToken pairing party - token that is to be moved to that party
  * @param observers optional observing parties to which the transaction will be broadcast
- * @param queryCriteria additional criteria for token selection
+ * @param customPostProcessorName name of custom query post processor for token selection
  */
 @StartableByService
 @StartableByRPC
 @InitiatingFlow
-class MoveNonFungibleTokens
-@JvmOverloads
-constructor(
-        val partyAndToken: PartyAndToken,
-        val observers: List<Party> = emptyList(),
-        val queryCriteria: QueryCriteria? = null
-) : FlowLogic<SignedTransaction>() {
+class MoveNonFungibleTokens (
+    val partyAndToken: PartyAndToken,
+    val observers: List<Party>,
+    val customPostProcessorName: String?
+) : Flow<SignedTransaction> {
+
+    constructor(
+        partyAndToken: PartyAndToken,
+    ) : this(partyAndToken, emptyList(), null)
+
+    constructor(
+        partyAndToken: PartyAndToken,
+        observers: List<Party>,
+    ) : this(partyAndToken, observers, null)
+
+    constructor(
+        partyAndToken: PartyAndToken,
+        customPostProcessorName: String?
+    ) : this(partyAndToken, emptyList(), customPostProcessorName)
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var flowMessaging: FlowMessaging
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
     @Suspendable
     override fun call(): SignedTransaction {
-        val observerSessions = sessionsForParties(observers)
-        val participantSessions = sessionsForParties(listOf(partyAndToken.party))
-        return subFlow(MoveNonFungibleTokensFlow(
+        val observerSessions = sessionsForParties(identityService, flowMessaging, observers)
+        val participantSessions = sessionsForParties(identityService, flowMessaging, listOf(partyAndToken.party))
+        return flowEngine.subFlow(
+            MoveNonFungibleTokensFlow(
                 partyAndToken = partyAndToken,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
-                queryCriteria = queryCriteria
-        ))
+                customPostProcessorName = customPostProcessorName
+            )
+        )
     }
 }
 
@@ -111,9 +223,13 @@ constructor(
  * Responder flow for [MoveNonFungibleTokens].
  */
 @InitiatedBy(MoveNonFungibleTokens::class)
-class MoveNonFungibleTokensHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class MoveNonFungibleTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
-    override fun call() = subFlow(MoveTokensFlowHandler(otherSession))
+    override fun call() = flowEngine.subFlow(MoveTokensFlowHandler(otherSession))
 }
 
 /* Confidential flows. */
@@ -127,48 +243,77 @@ class MoveNonFungibleTokensHandler(val otherSession: FlowSession) : FlowLogic<Un
  *
  * @param partiesAndAmounts list of pairing party - amount of token that is to be moved to that party
  * @param observers optional observing parties to which the transaction will be broadcast
- * @param queryCriteria additional criteria for token selection
+ * @param customPostProcessorName name of custom query post processor for token selection
  * @param changeHolder holder of the change outputs, it can be confidential identity
  */
 @StartableByService
 @StartableByRPC
 @InitiatingFlow
 class ConfidentialMoveFungibleTokens(
-        val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
-        val observers: List<Party>,
-        val queryCriteria: QueryCriteria? = null,
-        val changeHolder: AbstractParty? = null
-) : FlowLogic<SignedTransaction>() {
+    val partiesAndAmounts: List<PartyAndAmount<TokenType>>,
+    val observers: List<Party>,
+    val customPostProcessorName: String?,
+    val changeHolder: AbstractParty?
+) : Flow<SignedTransaction> {
 
     constructor(
-            partyAndAmount: PartyAndAmount<TokenType>,
-            observers: List<Party>,
-            queryCriteria: QueryCriteria? = null,
-            changeHolder: AbstractParty? = null
-    ) : this(listOf(partyAndAmount), observers, queryCriteria, changeHolder)
+        partyAndAmount: PartyAndAmount<TokenType>,
+        observers: List<Party>,
+    ) : this(listOf(partyAndAmount), observers, null, null)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        observers: List<Party>,
+        customPostProcessorName: String?,
+    ) : this(listOf(partyAndAmount), observers, customPostProcessorName, null)
+
+    constructor(
+        partyAndAmount: PartyAndAmount<TokenType>,
+        observers: List<Party>,
+        changeHolder: AbstractParty?
+    ) : this(listOf(partyAndAmount), observers, null, changeHolder)
+
+    @CordaInject
+    lateinit var keyManagementService: KeyManagementService
+
+    @CordaInject
+    lateinit var flowMessaging: FlowMessaging
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
+    @CordaInject
+    lateinit var flowIdentity: FlowIdentity
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
 
     @Suspendable
     override fun call(): SignedTransaction {
         val participants = partiesAndAmounts.map(PartyAndAmount<*>::party)
-        val observerSessions = sessionsForParties(observers)
-        val participantSessions = sessionsForParties(participants)
+        val observerSessions = sessionsForParties(identityService, flowMessaging, observers)
+        val participantSessions = sessionsForParties(identityService, flowMessaging, participants)
         val confidentialHolder = changeHolder ?: let {
-            val key = serviceHub.keyManagementService.freshKey()
+            val key = keyManagementService.freshKey()
             try {
-                serviceHub.identityService.registerKey(key, ourIdentity)
+                identityService.registerKey(key, flowIdentity.ourIdentity.name)
             } catch (e: Exception) {
-                throw FlowException("Could not register a new key for party: $ourIdentity as the provided public key is already registered " +
-                        "or registered to a different party.")
+                throw FlowException(
+                    "Could not register a new key for party: ${flowIdentity.ourIdentity} as the provided public key is already registered " +
+                            "or registered to a different party."
+                )
             }
-            AnonymousParty(key)
+            identityService.anonymousPartyFromKey(key)
         }
-        return subFlow(ConfidentialMoveFungibleTokensFlow(
+        return flowEngine.subFlow(
+            ConfidentialMoveFungibleTokensFlow(
                 partiesAndAmounts = partiesAndAmounts,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
-                queryCriteria = queryCriteria,
-                changeHolder = confidentialHolder
-        ))
+                changeHolder = confidentialHolder,
+                customPostProcessorName = customPostProcessorName
+            )
+        )
     }
 }
 
@@ -176,9 +321,13 @@ class ConfidentialMoveFungibleTokens(
  * Responder flow for [ConfidentialMoveFungibleTokens]
  */
 @InitiatedBy(ConfidentialMoveFungibleTokens::class)
-class ConfidentialMoveFungibleTokensHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class ConfidentialMoveFungibleTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
-    override fun call() = subFlow(ConfidentialMoveTokensFlowHandler(otherSession))
+    override fun call() = flowEngine.subFlow(ConfidentialMoveTokensFlowHandler(otherSession))
 }
 
 /**
@@ -190,26 +339,43 @@ class ConfidentialMoveFungibleTokensHandler(val otherSession: FlowSession) : Flo
  *
  * @param partyAndToken list of pairing party - token that is to be moved to that party
  * @param observers optional observing parties to which the transaction will be broadcast
- * @param queryCriteria additional criteria for token selection
+ * @param customPostProcessorName name of custom query post processor for token selection
  */
 @StartableByService
 @StartableByRPC
 @InitiatingFlow
 class ConfidentialMoveNonFungibleTokens(
-        val partyAndToken: PartyAndToken,
-        val observers: List<Party>,
-        val queryCriteria: QueryCriteria? = null
-) : FlowLogic<SignedTransaction>() {
+    val partyAndToken: PartyAndToken,
+    val observers: List<Party>,
+    val customPostProcessorName: String?
+) : Flow<SignedTransaction> {
+
+    constructor(
+        partyAndToken: PartyAndToken,
+        observers: List<Party>,
+    ) : this(partyAndToken, observers, null)
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var flowMessaging: FlowMessaging
+
+    @CordaInject
+    lateinit var identityService: IdentityService
+
     @Suspendable
     override fun call(): SignedTransaction {
-        val observerSessions = sessionsForParties(observers)
-        val participantSessions = sessionsForParties(listOf(partyAndToken.party))
-        return subFlow(ConfidentialMoveNonFungibleTokensFlow(
+        val observerSessions = sessionsForParties(identityService, flowMessaging, observers)
+        val participantSessions = sessionsForParties(identityService, flowMessaging, listOf(partyAndToken.party))
+        return flowEngine.subFlow(
+            ConfidentialMoveNonFungibleTokensFlow(
                 partyAndToken = partyAndToken,
                 participantSessions = participantSessions,
                 observerSessions = observerSessions,
-                queryCriteria = queryCriteria
-        ))
+                customPostProcessorName = customPostProcessorName
+            )
+        )
     }
 }
 
@@ -217,7 +383,11 @@ class ConfidentialMoveNonFungibleTokens(
  * Responder flow for [ConfidentialMoveNonFungibleTokens].
  */
 @InitiatedBy(ConfidentialMoveNonFungibleTokens::class)
-class ConfidentialMoveNonFungibleTokensHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+class ConfidentialMoveNonFungibleTokensHandler(val otherSession: FlowSession) : Flow<Unit> {
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
     @Suspendable
-    override fun call() = subFlow(ConfidentialMoveTokensFlowHandler(otherSession))
+    override fun call() = flowEngine.subFlow(ConfidentialMoveTokensFlowHandler(otherSession))
 }

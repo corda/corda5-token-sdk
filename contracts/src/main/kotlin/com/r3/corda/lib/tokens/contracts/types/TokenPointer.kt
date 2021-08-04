@@ -3,7 +3,7 @@ package com.r3.corda.lib.tokens.contracts.types
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
-import net.corda.core.contracts.LinearPointer
+import net.corda.v5.ledger.contracts.LinearPointer
 
 /**
  * To harness the power of [EvolvableTokenType]s, they cannot be directly embedded in [NonFungibleToken]s or
@@ -17,8 +17,8 @@ import net.corda.core.contracts.LinearPointer
  * @param T the type of [EvolvableTokenType] which is being pointed to by this [TokenPointer].
  */
 class TokenPointer<T : EvolvableTokenType>(
-        val pointer: LinearPointer<T>,
-        fractionDigits: Int
+    val pointer: LinearPointer<T>,
+    fractionDigits: Int
 ) : TokenType(pointer.pointer.id.toString(), fractionDigits) {
     /**
      * The fully qualified class name for the [EvolvableTokenType] being pointed to.

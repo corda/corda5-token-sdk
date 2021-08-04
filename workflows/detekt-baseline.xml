@@ -1,0 +1,140 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ForbiddenComment:AbstractRedeemTokensFlow.kt$AbstractRedeemTokensFlow$// TODO: Only do this if necessary.</ID>
+    <ID>ForbiddenComment:DistributionUtilities.kt$* Utility function to persist a new entity pertaining to a distribution record. * TODO: Add some error handling. * TODO: Don't duplicate pairs of linearId and party.</ID>
+    <ID>ForbiddenComment:FlowUtilities.kt$* Utility function to persist a new entity pertaining to a distribution record. * TODO: Add some error handling.</ID>
+    <ID>ForbiddenComment:MoveTokensUtilities.kt$// TODO: Deal with notary change.</ID>
+    <ID>ForbiddenComment:QueryUtilities.kt$// TODO: Add queries for getting the balance of all tokens, not just relevant ones.</ID>
+    <ID>ForbiddenComment:QueryUtilities.kt$// TODO: Allow discrimination by issuer or a set of issuers.</ID>
+    <ID>ForbiddenComment:RequestAdditionToDistributionList.kt$RequestAdditionToDistributionList.Initiator$// TODO: Try each maintainer.</ID>
+    <ID>ForbiddenComment:UpdateDistributionListFlow.kt$UpdateDistributionListFlow$// TODO: Handle updates of the distribution list for observers.</ID>
+    <ID>FunctionNaming:TokenUtilities.kt$private fun IssuedTokenType._heldBy(owner: AbstractParty, hashingService: HashingService): NonFungibleToken</ID>
+    <ID>FunctionNaming:Utilities.kt$fun AUD(amount: Double): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun AUD(amount: Int): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun AUD(amount: Long): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun BTC(amount: Double): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun BTC(amount: Int): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun BTC(amount: Long): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun CAD(amount: Double): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun CAD(amount: Int): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun CAD(amount: Long): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun CHF(amount: Double): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun CHF(amount: Int): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun CHF(amount: Long): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun EUR(amount: Double): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun EUR(amount: Int): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun EUR(amount: Long): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun GBP(amount: Double): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun GBP(amount: Int): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun GBP(amount: Long): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun JPY(amount: Double): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun JPY(amount: Int): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun JPY(amount: Long): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun NZD(amount: Double): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun NZD(amount: Int): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun NZD(amount: Long): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun USD(amount: Double): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun USD(amount: Int): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun USD(amount: Long): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun XRP(amount: Double): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun XRP(amount: Int): Amount&lt;TokenType&gt;</ID>
+    <ID>FunctionNaming:Utilities.kt$fun XRP(amount: Long): Amount&lt;TokenType&gt;</ID>
+    <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, hashingService: HashingService, flowEngine: FlowEngine, memberInfo: MemberInfo, amount: Amount&lt;TokenType&gt;, holder: AbstractParty, changeHolder: AbstractParty, )</ID>
+    <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, hashingService: HashingService, flowEngine: FlowEngine, memberInfo: MemberInfo, amount: Amount&lt;TokenType&gt;, holder: AbstractParty, changeHolder: AbstractParty, queryBy: TokenQueryBy )</ID>
+    <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, hashingService: HashingService, flowEngine: FlowEngine, memberInfo: MemberInfo, partiesAndAmounts: List&lt;PartyAndAmount&lt;TokenType&gt;&gt;, changeHolder: AbstractParty, )</ID>
+    <ID>LongParameterList:MoveTokensUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, hashingService: HashingService, flowEngine: FlowEngine, memberInfo: MemberInfo, partiesAndAmounts: List&lt;PartyAndAmount&lt;TokenType&gt;&gt;, changeHolder: AbstractParty, queryBy: TokenQueryBy )</ID>
+    <ID>LongParameterList:RedeemFlowUtilities.kt$( transactionBuilder: TransactionBuilder, persistenceService: PersistenceService, identityService: IdentityService, hashingService: HashingService, flowEngine: FlowEngine, amount: Amount&lt;TokenType&gt;, changeHolder: AbstractParty, tokenQueryBy: TokenQueryBy )</ID>
+    <ID>MagicNumber:DistributionUtilities.kt$50</ID>
+    <ID>MagicNumber:NonFungibleTokenSelection.kt$50</ID>
+    <ID>MagicNumber:QueryUtilities.kt$10</ID>
+    <ID>MagicNumber:RedeemFlowUtilities.kt$10</ID>
+    <ID>MatchingDeclarationName:ConfidentialIdentityUtilities.kt$ActionRequest</ID>
+    <ID>MatchingDeclarationName:DistributionUtilities.kt$DistributionListUpdate</ID>
+    <ID>MatchingDeclarationName:Exceptions.kt$TokenBuilderException : FlowException</ID>
+    <ID>MatchingDeclarationName:FinalityUtilities.kt$TransactionRole</ID>
+    <ID>MaxLineLength:AbstractRedeemTokensFlow.kt$AbstractRedeemTokensFlow$*</ID>
+    <ID>MaxLineLength:ConfidentialIssueTokensFlow.kt$ConfidentialIssueTokensFlow$// TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role</ID>
+    <ID>MaxLineLength:ConfidentialMoveFungibleTokensFlow.kt$ConfidentialMoveFungibleTokensFlow$// TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role</ID>
+    <ID>MaxLineLength:ConfidentialMoveNonFungibleTokensFlow.kt$ConfidentialMoveNonFungibleTokensFlow$// TODO Not pretty fix, because we decided to go with sessions approach, we need to make sure that right responders are started depending on observer/participant role</ID>
+    <ID>MaxLineLength:ConfidentialMoveNonFungibleTokensFlow.kt$ConfidentialMoveNonFungibleTokensFlow$val (inputs, outputs) = generateMoveNonFungible(partyAndToken, persistenceService, TokenQueryBy(customPostProcessorName))</ID>
+    <ID>MaxLineLength:ConfidentialMoveNonFungibleTokensFlow.kt$ConfidentialMoveNonFungibleTokensFlow$val confidentialOutput = flowEngine.subFlow(ConfidentialTokensFlow(listOf(output), participantSessions)).single()</ID>
+    <ID>MaxLineLength:DistributionRecord.kt$DistributionRecordSchemaV1.DistributionRecord$query</ID>
+    <ID>MaxLineLength:EvolvableTokenUtilities.kt$*</ID>
+    <ID>MaxLineLength:EvolvableTokenUtilities.kt$internal fun Iterable&lt;EvolvableTokenType&gt;.maintainers(): Set&lt;Party&gt;</ID>
+    <ID>MaxLineLength:EvolvableTokens.kt$CreateEvolvableTokens$val observers = evolvableTokens.participants().minus(evolvableTokens.maintainers()).minus(flowIdentity.ourIdentity)</ID>
+    <ID>MaxLineLength:EvolvableTokens.kt$UpdateEvolvableToken$return flowEngine.subFlow(UpdateEvolvableTokenFlow(oldStateAndRef, newState, participantsSessions, observersSessions))</ID>
+    <ID>MaxLineLength:FlowUtilities.kt$// Extension function that has nicer error message than the default one from [IdentityService::requireWellKnownPartyFromAnonymous].</ID>
+    <ID>MaxLineLength:FlowUtilities.kt$fun</ID>
+    <ID>MaxLineLength:IssueTokens.kt$ConfidentialIssueTokens$*</ID>
+    <ID>MaxLineLength:IssueTokens.kt$IssueTokens$*</ID>
+    <ID>MaxLineLength:MoveNonFungibleTokensFlow.kt$MoveNonFungibleTokensFlow$addMoveNonFungibleTokens(transactionBuilder, persistenceService, partyAndToken, TokenQueryBy(customPostProcessorName))</ID>
+    <ID>MaxLineLength:MoveTokens.kt$ConfidentialMoveFungibleTokens$"Could not register a new key for party: ${flowIdentity.ourIdentity} as the provided public key is already registered "</ID>
+    <ID>MaxLineLength:MoveTokens.kt$MoveFungibleTokens$*</ID>
+    <ID>MaxLineLength:MoveTokensUtilities.kt$*</ID>
+    <ID>MaxLineLength:MoveTokensUtilities.kt$?:</ID>
+    <ID>MaxLineLength:NonFungibleTokenSelection.kt$addCommand(MoveTokenCommand(output.token, inputs = listOf(currentInputSize), outputs = listOf(currentOutputSize)), signingKey)</ID>
+    <ID>MaxLineLength:NonFungibleTokenSelection.kt$require(nonFungibleTokens.size == 1) { "Your query wasn't specific enough and returned multiple non-fungible tokens." }</ID>
+    <ID>MaxLineLength:NotaryUtilities.kt$"Notary passed to transaction builder (${txb.notary}) should be the same as the one used by input states ($notary)."</ID>
+    <ID>MaxLineLength:NotaryUtilities.kt$/** Adds a notary to a new [TransactionBuilder]. If the notary is already set then it get overwritten by preferred notary */</ID>
+    <ID>MaxLineLength:NotaryUtilities.kt$/** Adds a notary to the [TransactionBuilder]. If the notary is already set then it get overwritten by preferred notary */</ID>
+    <ID>MaxLineLength:NotaryUtilities.kt$fun</ID>
+    <ID>MaxLineLength:ObserverAwareFinalityFlow.kt$ObserverAwareFinalityFlow$val wellKnownParticipantsAndIssuers: Set&lt;Party&gt; = participants.toWellKnownParties(identityService).toSet() + issuers</ID>
+    <ID>MaxLineLength:QueryUtilities.kt$fun</ID>
+    <ID>MaxLineLength:QueryUtilities.kt$inline</ID>
+    <ID>MaxLineLength:QueryUtilities.kt$val result = query&lt;StateAndRef&lt;FungibleToken&gt;&gt;(namedQuery, params, IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME)</ID>
+    <ID>MaxLineLength:RedeemFlowUtilities.kt$* Redeem amount of certain type of the token issued by [issuer]. Pay possible change to the [changeHolder] - it can be confidential identity.</ID>
+    <ID>MaxLineLength:RedeemFungibleTokensFlow.kt$RedeemFungibleTokensFlow$tokenQueryBy = TokenQueryBy(issuer = issuerSession.counterparty, customPostProcessorName = customPostProcessorName)</ID>
+    <ID>MaxLineLength:RedeemTokensFlow.kt$RedeemTokensFlow$*</ID>
+    <ID>MaxLineLength:RedeemTokensFlowHandler.kt$RedeemTokensFlowHandler$// Synchronise all confidential identities, issuer isn't involved in move transactions, so states holders may</ID>
+    <ID>MaxLineLength:RedeemTokensFlowHandler.kt$RedeemTokensFlowHandler$// There is edge case where issuer redeems with themselves, then we need to be careful not to call handler for</ID>
+    <ID>MaxLineLength:RequestAdditionToDistributionList.kt$RequestAdditionToDistributionList$*</ID>
+    <ID>MaxLineLength:RequestAdditionToDistributionList.kt$RequestAdditionToDistributionList.Responder$logger.info("Receiving request from ${otherSession.counterparty} to be added to the distribution list for $linearId.")</ID>
+    <ID>MaxLineLength:TokenUtilities.kt$fun</ID>
+    <ID>MaxLineLength:UpdateDistributionListFlow.kt$UpdateDistributionListFlow$val issueTypes: List&lt;TokenPointer&lt;*&gt;&gt; = issueCmds.map { it.token.tokenType }.mapNotNull { it as? TokenPointer&lt;*&gt; }</ID>
+    <ID>MaxLineLength:UpdateEvolvableTokenFlow.kt$UpdateEvolvableTokenFlow$return (evolvableTokens.participants() + subscribers).minus(evolvableTokens.maintainers()).minus(flowIdentity.ourIdentity)</ID>
+    <ID>MaxLineLength:UpdateEvolvableTokenFlowHandler.kt$UpdateEvolvableTokenFlowHandler.&lt;no name provided&gt;$val ledgerTransaction = transactionMappingService.toLedgerTransaction(stx, checkSufficientSignatures = false)</ID>
+    <ID>NewLineAtEndOfFile:AnonymisePartiesFlow.kt$com.r3.corda.lib.tokens.workflows.internal.flows.confidential.AnonymisePartiesFlow.kt</ID>
+    <ID>NewLineAtEndOfFile:AnonymisePartiesFlowHandler.kt$com.r3.corda.lib.tokens.workflows.internal.flows.confidential.AnonymisePartiesFlowHandler.kt</ID>
+    <ID>NewLineAtEndOfFile:ConfidentialIssueTokensFlowHandler.kt$com.r3.corda.lib.tokens.workflows.flows.issue.ConfidentialIssueTokensFlowHandler.kt</ID>
+    <ID>NewLineAtEndOfFile:ConfidentialRedeemFungibleTokensFlow.kt$com.r3.corda.lib.tokens.workflows.flows.redeem.ConfidentialRedeemFungibleTokensFlow.kt</ID>
+    <ID>NewLineAtEndOfFile:ConfidentialRedeemFungibleTokensFlowHandler.kt$com.r3.corda.lib.tokens.workflows.flows.redeem.ConfidentialRedeemFungibleTokensFlowHandler.kt</ID>
+    <ID>NewLineAtEndOfFile:ConfidentialTokensFlowHandler.kt$com.r3.corda.lib.tokens.workflows.flows.confidential.ConfidentialTokensFlowHandler.kt</ID>
+    <ID>NewLineAtEndOfFile:CreateEvolvableTokensFlowHandler.kt$com.r3.corda.lib.tokens.workflows.flows.evolvable.CreateEvolvableTokensFlowHandler.kt</ID>
+    <ID>NewLineAtEndOfFile:DigitalCurrency.kt$com.r3.corda.lib.tokens.money.DigitalCurrency.kt</ID>
+    <ID>NewLineAtEndOfFile:DistributionRecord.kt$com.r3.corda.lib.tokens.workflows.internal.schemas.DistributionRecord.kt</ID>
+    <ID>NewLineAtEndOfFile:DistributionUtilities.kt$com.r3.corda.lib.tokens.workflows.internal.flows.distribution.DistributionUtilities.kt</ID>
+    <ID>NewLineAtEndOfFile:EvolvableTokenUtilities.kt$com.r3.corda.lib.tokens.workflows.flows.evolvable.EvolvableTokenUtilities.kt</ID>
+    <ID>NewLineAtEndOfFile:Exceptions.kt$com.r3.corda.lib.tokens.workflows.Exceptions.kt</ID>
+    <ID>NewLineAtEndOfFile:FinalityUtilities.kt$com.r3.corda.lib.tokens.workflows.internal.flows.finality.FinalityUtilities.kt</ID>
+    <ID>NewLineAtEndOfFile:IdentityUtilities.kt$com.r3.corda.lib.tokens.workflows.utilities.IdentityUtilities.kt</ID>
+    <ID>NewLineAtEndOfFile:IssueTokens.kt$com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens.kt</ID>
+    <ID>NewLineAtEndOfFile:IssueTokensFlowHandler.kt$com.r3.corda.lib.tokens.workflows.flows.issue.IssueTokensFlowHandler.kt</ID>
+    <ID>NewLineAtEndOfFile:IssueTokensUtilities.kt$com.r3.corda.lib.tokens.workflows.flows.issue.IssueTokensUtilities.kt</ID>
+    <ID>NewLineAtEndOfFile:MoveFungibleTokensFlow.kt$com.r3.corda.lib.tokens.workflows.flows.move.MoveFungibleTokensFlow.kt</ID>
+    <ID>NewLineAtEndOfFile:MoveNonFungibleTokensFlow.kt$com.r3.corda.lib.tokens.workflows.flows.move.MoveNonFungibleTokensFlow.kt</ID>
+    <ID>NewLineAtEndOfFile:MoveTokens.kt$com.r3.corda.lib.tokens.workflows.flows.rpc.MoveTokens.kt</ID>
+    <ID>NewLineAtEndOfFile:MoveTokensFlowHandler.kt$com.r3.corda.lib.tokens.workflows.flows.move.MoveTokensFlowHandler.kt</ID>
+    <ID>NewLineAtEndOfFile:MoveTokensUtilities.kt$com.r3.corda.lib.tokens.workflows.flows.move.MoveTokensUtilities.kt</ID>
+    <ID>NewLineAtEndOfFile:NonFungibleTokenSelection.kt$com.r3.corda.lib.tokens.workflows.internal.selection.NonFungibleTokenSelection.kt</ID>
+    <ID>NewLineAtEndOfFile:ObserverAwareFinalityFlow.kt$com.r3.corda.lib.tokens.workflows.internal.flows.finality.ObserverAwareFinalityFlow.kt</ID>
+    <ID>NewLineAtEndOfFile:RedeemFungibleTokensFlow.kt$com.r3.corda.lib.tokens.workflows.flows.redeem.RedeemFungibleTokensFlow.kt</ID>
+    <ID>NewLineAtEndOfFile:RedeemNonFungibleTokensFlow.kt$com.r3.corda.lib.tokens.workflows.flows.redeem.RedeemNonFungibleTokensFlow.kt</ID>
+    <ID>NewLineAtEndOfFile:RedeemTokens.kt$com.r3.corda.lib.tokens.workflows.flows.rpc.RedeemTokens.kt</ID>
+    <ID>NewLineAtEndOfFile:RequestAdditionToDistributionList.kt$com.r3.corda.lib.tokens.workflows.internal.flows.distribution.RequestAdditionToDistributionList.kt</ID>
+    <ID>NewLineAtEndOfFile:UpdateDistributionListFlow.kt$com.r3.corda.lib.tokens.workflows.internal.flows.distribution.UpdateDistributionListFlow.kt</ID>
+    <ID>NewLineAtEndOfFile:UpdateDistributionListFlowHandler.kt$com.r3.corda.lib.tokens.workflows.internal.flows.distribution.UpdateDistributionListFlowHandler.kt</ID>
+    <ID>NewLineAtEndOfFile:UpdateEvolvableTokenFlowHandler.kt$com.r3.corda.lib.tokens.workflows.flows.evolvable.UpdateEvolvableTokenFlowHandler.kt</ID>
+    <ID>SwallowedException:MoveTokens.kt$ConfidentialMoveFungibleTokens$catch (e: Exception) { throw FlowException( "Could not register a new key for party: ${flowIdentity.ourIdentity} as the provided public key is already registered " + "or registered to a different party." ) }</ID>
+    <ID>SwallowedException:NotaryUtilities.kt$catch (e: CordappConfigException) { "" }</ID>
+    <ID>TooGenericExceptionCaught:MoveTokens.kt$ConfidentialMoveFungibleTokens$e: Exception</ID>
+    <ID>TooManyFunctions:FlowUtilities.kt$com.r3.corda.lib.tokens.workflows.utilities.FlowUtilities.kt</ID>
+    <ID>TooManyFunctions:QueryUtilities.kt$com.r3.corda.lib.tokens.workflows.utilities.QueryUtilities.kt</ID>
+    <ID>TooManyFunctions:Utilities.kt$com.r3.corda.lib.tokens.money.Utilities.kt</ID>
+    <ID>UtilityClassWithPublicConstructor:DigitalCurrency.kt$DigitalCurrency</ID>
+    <ID>UtilityClassWithPublicConstructor:FiatCurrency.kt$FiatCurrency</ID>
+    <ID>VarCouldBeVal:RedeemTokensFlowHandler.kt$RedeemTokensFlowHandler.&lt;no name provided&gt;$@CordaInject lateinit var flowIdentity: FlowIdentity</ID>
+    <ID>WildcardImport:MoveTokens.kt$import com.r3.corda.lib.tokens.workflows.flows.move.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

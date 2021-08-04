@@ -1,0 +1,32 @@
+plugins {
+    id 'net.corda.plugins.cordapp-cpk'
+    id 'kotlin'
+}
+
+dependencies {
+    cordaProvided "$corda_release_group:corda-application:$corda_release_version"
+    cordaProvided "$corda_release_group:corda-base:$corda_release_version"
+    cordaProvided "$corda_release_group:corda-ledger:$corda_release_version"
+    cordaProvided "$corda_release_group:corda-persistence:$corda_release_version"
+
+    cordapp project(":workflows")
+    cordapp project(":modules:selection")
+    cordapp project(":modules:contracts-for-testing")
+}
+
+cordapp {
+    targetPlatformVersion corda_platform_version as Integer
+
+    workflow {
+        name "Corda Tokens SDK - Sample Workflows"
+        versionId 1
+        vendor "R3"
+    }
+    signing {
+        enabled = true
+    }
+}
+
+jar {
+    archiveBaseName = 'tokens-sample-flows'
+}

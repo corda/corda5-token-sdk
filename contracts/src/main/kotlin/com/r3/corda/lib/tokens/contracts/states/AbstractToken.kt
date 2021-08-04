@@ -2,10 +2,10 @@ package com.r3.corda.lib.tokens.contracts.states
 
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import net.corda.core.contracts.ContractState
-import net.corda.core.crypto.SecureHash
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.crypto.SecureHash
+import net.corda.v5.ledger.contracts.ContractState
 
 /** Contains common token properties and functionality. */
 interface AbstractToken : ContractState {

@@ -2,22 +2,23 @@ package com.r3.corda.lib.tokens.contracts.states
 
 import com.r3.corda.lib.tokens.contracts.FungibleTokenContract
 import com.r3.corda.lib.tokens.contracts.internal.schemas.FungibleTokenSchemaV1
-import com.r3.corda.lib.tokens.contracts.internal.schemas.PersistentFungibleToken
+import com.r3.corda.lib.tokens.contracts.internal.schemas.FungibleTokenSchemaV1.PersistentFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenPointer
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.getAttachmentIdForGenericParam
 import com.r3.corda.lib.tokens.contracts.utilities.holderString
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.BelongsToContract
-import net.corda.core.contracts.FungibleState
-import net.corda.core.crypto.SecureHash
-import net.corda.core.crypto.toStringShort
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
-import net.corda.core.schemas.MappedSchema
-import net.corda.core.schemas.PersistentState
-import net.corda.core.schemas.QueryableState
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.crypto.HashingService
+import net.corda.v5.crypto.SecureHash
+import net.corda.v5.crypto.toStringShort
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.BelongsToContract
+import net.corda.v5.ledger.contracts.FungibleState
+import net.corda.v5.ledger.schemas.PersistentState
+import net.corda.v5.ledger.schemas.QueryableState
+import net.corda.v5.persistence.MappedSchema
 
 /**
  * This class is for handling the issuer and holder relationship for fungible token types. If the [TokenType] is a
@@ -33,11 +34,17 @@ import net.corda.core.schemas.QueryableState
  * @property holder the [AbstractParty] which has a claim on the issuer of the [IssuedTokenType].
  */
 @BelongsToContract(FungibleTokenContract::class)
-open class FungibleToken @JvmOverloads constructor(
-        override val amount: Amount<IssuedTokenType>,
-        override val holder: AbstractParty,
-        override val tokenTypeJarHash: SecureHash? = amount.token.tokenType.getAttachmentIdForGenericParam()
+open class FungibleToken (
+    override val amount: Amount<IssuedTokenType>,
+    override val holder: AbstractParty,
+    override val tokenTypeJarHash: SecureHash?
 ) : FungibleState<IssuedTokenType>, AbstractToken, QueryableState {
+
+    constructor(
+        amount: Amount<IssuedTokenType>,
+        holder: AbstractParty,
+        hashingService: HashingService
+    ) : this(amount, holder, amount.token.tokenType.getAttachmentIdForGenericParam(hashingService))
 
     override val tokenType: TokenType get() = amount.token.tokenType
 
@@ -53,12 +60,12 @@ open class FungibleToken @JvmOverloads constructor(
 
     override fun generateMappedObject(schema: MappedSchema): PersistentState = when (schema) {
         is FungibleTokenSchemaV1 -> PersistentFungibleToken(
-                issuer = amount.token.issuer,
-                holder = holder,
-                amount = amount.quantity,
-                tokenClass = amount.token.tokenType.tokenClass,
-                tokenIdentifier = amount.token.tokenType.tokenIdentifier,
-                owningKeyHash = holder.owningKey.toStringShort()
+            issuer = amount.token.issuer,
+            holder = holder,
+            amount = amount.quantity,
+            tokenClass = amount.token.tokenType.tokenClass,
+            tokenIdentifier = amount.token.tokenType.tokenIdentifier,
+            owningKeyHash = holder.owningKey.toStringShort()
         )
         else -> throw IllegalArgumentException("Unrecognised schema $schema")
     }
@@ -82,5 +89,4 @@ open class FungibleToken @JvmOverloads constructor(
         result = 31 * result + (tokenTypeJarHash?.hashCode() ?: 0)
         return result
     }
-
 }

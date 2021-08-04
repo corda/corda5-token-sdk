@@ -1,14 +1,16 @@
 package com.r3.corda.lib.tokens.workflows.flows.issue
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.workflows.flows.confidential.ConfidentialTokensFlow
 import com.r3.corda.lib.tokens.workflows.internal.flows.finality.TransactionRole
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.transactions.SignedTransaction
+import net.corda.v5.application.flows.Flow
+import net.corda.v5.application.flows.FlowSession
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.injection.CordaInject
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.ledger.transactions.SignedTransaction
 
 /**
  * A flow for issuing tokens to confidential keys. To be used in conjunction with the
@@ -18,32 +20,46 @@ import net.corda.core.transactions.SignedTransaction
  * @property participantSessions a list of sessions for the parties being issued tokens.
  * @property observerSessions a list of sessions for any observers.
  */
-class ConfidentialIssueTokensFlow
-@JvmOverloads
-constructor(
-        val tokens: List<AbstractToken>,
-        val participantSessions: List<FlowSession>,
-        val observerSessions: List<FlowSession> = emptyList()
-) : FlowLogic<SignedTransaction>() {
+class ConfidentialIssueTokensFlow (
+    val tokens: List<AbstractToken>,
+    val participantSessions: List<FlowSession>,
+    val observerSessions: List<FlowSession>
+) : Flow<SignedTransaction> {
+
+    constructor(
+        tokens: List<AbstractToken>,
+        participantSessions: List<FlowSession>,
+    ) : this(tokens, participantSessions, emptyList())
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
 
     /** Issue a single [FungibleToken]. */
-    @JvmOverloads
     constructor(
-            token: FungibleToken,
-            participantSessions: List<FlowSession>,
-            observerSessions: List<FlowSession> = emptyList()
+        token: FungibleToken,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession>
     ) : this(listOf(token), participantSessions, observerSessions)
+
+    constructor(
+        token: FungibleToken,
+        participantSessions: List<FlowSession>,
+    ) : this(listOf(token), participantSessions, emptyList())
 
     /** Issue a single [FungibleToken] to self with no observers. */
     constructor(token: FungibleToken) : this(listOf(token), emptyList(), emptyList())
 
     /** Issue a single [NonFungibleToken]. */
-    @JvmOverloads
     constructor(
-            token: NonFungibleToken,
-            participantSessions: List<FlowSession>,
-            observerSessions: List<FlowSession> = emptyList()
+        token: NonFungibleToken,
+        participantSessions: List<FlowSession>,
+        observerSessions: List<FlowSession>
     ) : this(listOf(token), participantSessions, observerSessions)
+
+    constructor(
+        token: NonFungibleToken,
+        participantSessions: List<FlowSession>,
+    ) : this(listOf(token), participantSessions, emptyList())
 
     /** Issue a single [NonFungibleToken] to self with no observers. */
     constructor(token: NonFungibleToken) : this(listOf(token), emptyList(), emptyList())
@@ -54,8 +70,8 @@ constructor(
         participantSessions.forEach { it.send(TransactionRole.PARTICIPANT) }
         observerSessions.forEach { it.send(TransactionRole.OBSERVER) }
         // Request new keys pairs from all proposed token holders.
-        val confidentialTokens = subFlow(ConfidentialTokensFlow(tokens, participantSessions))
+        val confidentialTokens = flowEngine.subFlow(ConfidentialTokensFlow(tokens, participantSessions))
         // Issue tokens using the existing participantSessions.
-        return subFlow(IssueTokensFlow(confidentialTokens, participantSessions, observerSessions))
+        return flowEngine.subFlow(IssueTokensFlow(confidentialTokens, participantSessions, observerSessions))
     }
 }

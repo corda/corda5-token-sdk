@@ -1,11 +1,15 @@
 import org.apache.tools.ant.taskdefs.condition.Os
 
+import static org.gradle.api.JavaVersion.VERSION_11
+
 apply plugin: 'kotlin'
 apply plugin: 'idea'
 
 
 repositories {
     maven { url "http://ci-artifactory.corda.r3cev.com/artifactory/freighter-dev" }
+    maven { url "https://repo.gradle.org/gradle/libs-releases-local/" }
+    jcenter()
 }
 
 sourceSets {
@@ -39,25 +43,32 @@ task freighterTest(type: Test, dependsOn: [project(":workflows").jar]) {
 }
 
 configurations {
-    freighterTestCompile.extendsFrom testCompile
-    freighterTestRuntime.extendsFrom testRuntime
+    freighterTestImplementation.extendsFrom testImplementation
+    freighterTestRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 dependencies {
-    freighterTestCompile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
-    freighterTestCompile "freighter:freighter-testing-core-junit5:0.4.5-SNAPSHOT"
+    freighterTestImplementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+    freighterTestImplementation "freighter:freighter-testing-core-junit5:0.4.5-SNAPSHOT"
 
-    freighterTestCompile project(":contracts")
-    freighterTestCompile project(":workflows")
+    freighterTestImplementation project(":contracts")
+    freighterTestImplementation project(":workflows")
 }
 
 
-tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
     kotlinOptions {
-        languageVersion = "1.2"
-        apiVersion = "1.2"
-        jvmTarget = "1.8"
+        allWarningsAsErrors = true
+        languageVersion = "1.4"
+        apiVersion = "1.4"
+        jvmTarget = VERSION_11
         javaParameters = true   // Useful for reflection.
+        freeCompilerArgs += [
+                "-Xjvm-default=all",
+                // Prevent Kotlin from warning about kotlin.* classes inside the OSGi bundle.
+                "-Xskip-runtime-version-check",
+                "-java-parameters"
+        ]
     }
 }
 

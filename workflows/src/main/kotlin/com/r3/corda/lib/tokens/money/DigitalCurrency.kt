@@ -13,10 +13,10 @@ import java.util.*
 class DigitalCurrency {
     companion object {
         private val registry = mapOf(
-                Pair("XRP", TokenType("Ripple", 6)),
-                Pair("BTC", TokenType("Bitcoin", 8)),
-                Pair("ETH", TokenType("Ethereum", 18)),
-                Pair("DOGE", TokenType("Dogecoin", 8))
+            Pair("XRP", TokenType("Ripple", 6)),
+            Pair("BTC", TokenType("Bitcoin", 8)),
+            Pair("ETH", TokenType("Ethereum", 18)),
+            Pair("DOGE", TokenType("Dogecoin", 8))
         )
 
         @JvmStatic

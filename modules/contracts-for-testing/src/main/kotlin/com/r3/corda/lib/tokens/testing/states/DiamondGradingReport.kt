@@ -2,10 +2,10 @@ package com.r3.corda.lib.tokens.testing.states
 
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
 import com.r3.corda.lib.tokens.testing.contracts.DiamondGradingReportContract
-import net.corda.core.contracts.BelongsToContract
-import net.corda.core.contracts.UniqueIdentifier
-import net.corda.core.identity.Party
-import net.corda.core.serialization.CordaSerializable
+import net.corda.v5.application.identity.Party
+import net.corda.v5.base.annotations.CordaSerializable
+import net.corda.v5.ledger.UniqueIdentifier
+import net.corda.v5.ledger.contracts.BelongsToContract
 import java.math.BigDecimal
 
 /**
@@ -14,22 +14,23 @@ import java.math.BigDecimal
  */
 @BelongsToContract(DiamondGradingReportContract::class)
 data class DiamondGradingReport(
-        val caratWeight: BigDecimal,
-        val color: ColorScale,
-        val clarity: ClarityScale,
-        val cut: CutScale,
-        val assessor: Party,
-        val requester: Party,
-        override val linearId: UniqueIdentifier = UniqueIdentifier()
+    val caratWeight: BigDecimal,
+    val color: ColorScale,
+    val clarity: ClarityScale,
+    val cut: CutScale,
+    val assessor: Party,
+    val requester: Party,
+    override val linearId: UniqueIdentifier = UniqueIdentifier()
 ) : EvolvableTokenType() {
     constructor(
-            caratWeight: String,
-            color: ColorScale,
-            clarity: ClarityScale,
-            cut: CutScale,
-            assessor: Party,
-            requester: Party,
-            linearId: UniqueIdentifier = UniqueIdentifier()) : this(BigDecimal(caratWeight), color, clarity, cut, assessor, requester, linearId)
+        caratWeight: String,
+        color: ColorScale,
+        clarity: ClarityScale,
+        cut: CutScale,
+        assessor: Party,
+        requester: Party,
+        linearId: UniqueIdentifier = UniqueIdentifier()
+    ) : this(BigDecimal(caratWeight), color, clarity, cut, assessor, requester, linearId)
 
     @CordaSerializable
     enum class ColorScale { A, B, C, D, E, F }

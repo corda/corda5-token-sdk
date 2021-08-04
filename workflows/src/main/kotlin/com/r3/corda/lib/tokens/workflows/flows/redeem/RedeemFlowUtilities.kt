@@ -1,10 +1,11 @@
 @file:JvmName("RedeemFlowUtilities")
+
 package com.r3.corda.lib.tokens.workflows.flows.redeem
 
-import co.paralleluniverse.fibers.Suspendable
 import com.r3.corda.lib.tokens.contracts.commands.RedeemTokenCommand
 import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
+import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.sumTokenStateAndRefs
 import com.r3.corda.lib.tokens.selection.TokenQueryBy
@@ -15,24 +16,26 @@ import com.r3.corda.lib.tokens.workflows.internal.selection.generateExitNonFungi
 import com.r3.corda.lib.tokens.workflows.utilities.addNotaryWithCheck
 import com.r3.corda.lib.tokens.workflows.utilities.addTokenTypeJar
 import com.r3.corda.lib.tokens.workflows.utilities.heldTokensByTokenIssuer
-import com.r3.corda.lib.tokens.workflows.utilities.tokenAmountWithIssuerCriteria
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.identity.AbstractParty
-import net.corda.core.identity.Party
-import net.corda.core.node.ServiceHub
-import net.corda.core.node.services.vault.QueryCriteria
-import net.corda.core.transactions.TransactionBuilder
+import net.corda.v5.application.flows.flowservices.FlowEngine
+import net.corda.v5.application.identity.AbstractParty
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.crypto.HashingService
+import net.corda.v5.application.services.persistence.PersistenceService
+import net.corda.v5.base.annotations.Suspendable
+import net.corda.v5.base.util.seconds
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.StateAndRef
+import net.corda.v5.ledger.transactions.TransactionBuilder
 
 /**
  * Add redeeming of multiple [inputs] to the [transactionBuilder] with possible [changeOutput].
  */
 @Suspendable
-@JvmOverloads
 fun addTokensToRedeem(
-        transactionBuilder: TransactionBuilder,
-        inputs: List<StateAndRef<AbstractToken>>,
-        changeOutput: AbstractToken? = null
+    transactionBuilder: TransactionBuilder,
+    inputs: List<StateAndRef<AbstractToken>>,
+    changeOutput: AbstractToken?
 ): TransactionBuilder {
     checkSameIssuer(inputs, changeOutput?.issuer)
     checkSameNotary(inputs)
@@ -46,8 +49,8 @@ fun addTokensToRedeem(
     val issuerKey = firstState.data.issuer.owningKey
     val moveKeys = inputs.map { it.state.data.holder.owningKey }
 
-    var inputIdx = transactionBuilder.inputStates().size
-    val outputIdx = transactionBuilder.outputStates().size
+    var inputIdx = transactionBuilder.inputStates.size
+    val outputIdx = transactionBuilder.outputStates.size
     transactionBuilder.apply {
         val inputIndicies = inputs.map {
             addInputState(it)
@@ -66,18 +69,29 @@ fun addTokensToRedeem(
     return transactionBuilder
 }
 
+@Suspendable
+fun addTokensToRedeem(
+    transactionBuilder: TransactionBuilder,
+    inputs: List<StateAndRef<AbstractToken>>,
+) = addTokensToRedeem(transactionBuilder, inputs, null)
+
 
 /**
  * Redeem non-fungible [heldToken] issued by the [issuer] and add it to the [transactionBuilder].
  */
 @Suspendable
 fun addNonFungibleTokensToRedeem(
-        transactionBuilder: TransactionBuilder,
-        serviceHub: ServiceHub,
-        heldToken: TokenType,
-        issuer: Party
+    transactionBuilder: TransactionBuilder,
+    persistenceService: PersistenceService,
+    heldToken: TokenType,
+    issuer: Party
 ): TransactionBuilder {
-    val heldTokenStateAndRef = serviceHub.vaultService.heldTokensByTokenIssuer(heldToken, issuer).states
+    val cursor = persistenceService.heldTokensByTokenIssuer(heldToken, issuer)
+    val heldTokenStateAndRef = mutableListOf<StateAndRef<NonFungibleToken>>()
+    do {
+        val pollResult = cursor.poll(10, 5.seconds)
+        heldTokenStateAndRef.addAll(pollResult.values)
+    } while (!pollResult.isLastResult)
     check(heldTokenStateAndRef.size == 1) {
         "Exactly one held token of a particular type $heldToken should be in the vault at any one time."
     }
@@ -89,24 +103,22 @@ fun addNonFungibleTokensToRedeem(
 
 /**
  * Redeem amount of certain type of the token issued by [issuer]. Pay possible change to the [changeHolder] - it can be confidential identity.
- * Additional query criteria can be provided using [additionalQueryCriteria].
  */
 @Suspendable
-@JvmOverloads
 fun addFungibleTokensToRedeem(
-        transactionBuilder: TransactionBuilder,
-        serviceHub: ServiceHub,
-        amount: Amount<TokenType>,
-        issuer: Party,
-        changeHolder: AbstractParty,
-        additionalQueryCriteria: QueryCriteria? = null
+    transactionBuilder: TransactionBuilder,
+    persistenceService: PersistenceService,
+    identityService: IdentityService,
+    hashingService: HashingService,
+    flowEngine: FlowEngine,
+    amount: Amount<TokenType>,
+    changeHolder: AbstractParty,
+    tokenQueryBy: TokenQueryBy
 ): TransactionBuilder {
     // TODO For now default to database query, but switch this line on after we can change API in 2.0
-//    val selector: Selector = ConfigSelection.getPreferredSelection(serviceHub)
-    val selector = DatabaseTokenSelection(serviceHub)
-    val baseCriteria = tokenAmountWithIssuerCriteria(amount.token, issuer)
-    val queryCriteria = additionalQueryCriteria?.let { baseCriteria.and(it) } ?: baseCriteria
-    val fungibleStates = selector.selectTokens(amount, TokenQueryBy(issuer = issuer, queryCriteria = queryCriteria), transactionBuilder.lockId)
+    val selector = DatabaseTokenSelection(persistenceService, identityService, flowEngine)
+    val fungibleStates =
+        selector.selectTokens(amount, tokenQueryBy, transactionBuilder.lockId)
     checkSameNotary(fungibleStates)
     check(fungibleStates.isNotEmpty()) {
         "Received empty list of states to redeem."
@@ -114,11 +126,12 @@ fun addFungibleTokensToRedeem(
     val notary = fungibleStates.first().state.notary
     addNotaryWithCheck(transactionBuilder, notary)
     val (exitStates, change) = selector.generateExit(
-            exitStates = fungibleStates,
-            amount = amount,
-            changeHolder = changeHolder
+        exitStates = fungibleStates,
+        amount = amount,
+        changeHolder = changeHolder,
+        hashingService = hashingService
     )
 
-    addTokensToRedeem(transactionBuilder, exitStates, change)
+    addTokensToRedeem(transactionBuilder, exitStates, change.singleOrNull())
     return transactionBuilder
 }

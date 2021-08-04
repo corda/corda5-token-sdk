@@ -5,8 +5,12 @@ import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.utilities.sumTokenStatesOrZero
-import net.corda.core.contracts.*
-import net.corda.core.internal.uncheckedCast
+import net.corda.v5.base.util.uncheckedCast
+import net.corda.v5.ledger.contracts.Amount
+import net.corda.v5.ledger.contracts.Attachment
+import net.corda.v5.ledger.contracts.Command
+import net.corda.v5.ledger.contracts.ContractState
+import net.corda.v5.ledger.contracts.StateAndRef
 import java.security.PublicKey
 
 /**
@@ -30,11 +34,11 @@ open class FungibleTokenContract : AbstractTokenContract<FungibleToken>() {
     }
 
     override fun verifyIssue(
-            issueCommand: CommandWithParties<TokenCommand>,
-            inputs: List<IndexedState<FungibleToken>>,
-            outputs: List<IndexedState<FungibleToken>>,
-            attachments: List<Attachment>,
-            references: List<StateAndRef<ContractState>>
+        issueCommand: Command<TokenCommand>,
+        inputs: List<IndexedState<FungibleToken>>,
+        outputs: List<IndexedState<FungibleToken>>,
+        attachments: List<Attachment>,
+        references: List<StateAndRef<ContractState>>
     ) {
         val issuedToken: IssuedTokenType = issueCommand.value.token
         require(inputs.isEmpty()) { "When issuing tokens, there cannot be any input states." }
@@ -57,15 +61,14 @@ open class FungibleTokenContract : AbstractTokenContract<FungibleToken>() {
                 "The issuer must be the signing party when an amount of tokens are issued."
             }
         }
-
     }
 
     override fun verifyMove(
-            moveCommands: List<CommandWithParties<TokenCommand>>,
-            inputs: List<IndexedState<FungibleToken>>,
-            outputs: List<IndexedState<FungibleToken>>,
-            attachments: List<Attachment>,
-            references: List<StateAndRef<ContractState>>
+        moveCommands: List<Command<TokenCommand>>,
+        inputs: List<IndexedState<FungibleToken>>,
+        outputs: List<IndexedState<FungibleToken>>,
+        attachments: List<Attachment>,
+        references: List<StateAndRef<ContractState>>
     ) {
         // Commands are grouped by Token Type, so we just need a token reference.
         val issuedToken: IssuedTokenType = moveCommands.first().value.token
@@ -87,18 +90,18 @@ open class FungibleTokenContract : AbstractTokenContract<FungibleToken>() {
         // There can be different owners in each move group. There may be one command for each of the signers publickey
         // or all the public keys might be listed within one command.
         val inputOwningKeys: Set<PublicKey> = inputs.map { it.state.data.holder.owningKey }.toSet()
-        val signers: Set<PublicKey> = moveCommands.flatMap(CommandWithParties<TokenCommand>::signers).toSet()
+        val signers: Set<PublicKey> = moveCommands.flatMap(Command<TokenCommand>::signers).toSet()
         require(signers.containsAll(inputOwningKeys)) {
             "Required signers does not contain all the current owners of the tokens being moved"
         }
     }
 
     override fun verifyRedeem(
-            redeemCommand: CommandWithParties<TokenCommand>,
-            inputs: List<IndexedState<FungibleToken>>,
-            outputs: List<IndexedState<FungibleToken>>,
-            attachments: List<Attachment>,
-            references: List<StateAndRef<ContractState>>
+        redeemCommand: Command<TokenCommand>,
+        inputs: List<IndexedState<FungibleToken>>,
+        outputs: List<IndexedState<FungibleToken>>,
+        attachments: List<Attachment>,
+        references: List<StateAndRef<ContractState>>
     ) {
         val issuedToken: IssuedTokenType = redeemCommand.value.token
         // There can be at most one output treated as a change paid back to the owner. Issuer is used to group states,
@@ -120,7 +123,7 @@ open class FungibleTokenContract : AbstractTokenContract<FungibleToken>() {
                 "When redeeming tokens an amount > ZERO must be redeemed."
             }
             val outSum: Amount<IssuedTokenType> = outputs.firstOrNull()?.state?.data?.amount
-                    ?: Amount.zero(issuedToken)
+                ?: Amount.zero(issuedToken)
             // We can't pay back more than redeeming.
             // Additionally, it doesn't make sense to run redeem and pay exact change.
             require(inputSum > outSum) { "Change shouldn't exceed amount redeemed." }
