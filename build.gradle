@@ -68,6 +68,26 @@ subprojects {
         }
     }
 
+    pluginManager.withPlugin('org.jetbrains.kotlin.plugin.noarg') {
+        noArg {
+            annotations(
+                "javax.persistence.Entity",
+                "javax.persistence.Embeddable",
+                "javax.persistence.MappedSuperclass"
+            )
+        }
+    }
+
+    pluginManager.withPlugin('org.jetbrains.kotlin.plugin.allopen') {
+        allOpen {
+            annotations(
+                'javax.persistence.Entity',
+                'javax.persistence.Embeddable',
+                'javax.persistence.MappedSuperclass'
+            )
+        }
+    }
+
     tasks.withType(KotlinCompile).configureEach {
         kotlinOptions {
             allWarningsAsErrors = true

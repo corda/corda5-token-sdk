@@ -3,6 +3,8 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'jacoco'
     id 'org.jetbrains.kotlin.plugin.jpa'
+    id 'org.jetbrains.kotlin.plugin.allopen'
+    id 'org.jetbrains.kotlin.plugin.noarg'
 }
 
 evaluationDependsOn(":modules:selection")
@@ -48,7 +50,6 @@ compileKotlin {
 }
 
 dependencies {
-    implementation "org.liquibase:liquibase-core:$liquibaseVersion"
     cordaProvided("org.hibernate:hibernate-core:$hibernateVersion")
 
     // Corda dependencies.
@@ -61,7 +62,7 @@ dependencies {
     cordapp("$corda_release_group:corda-flows:$corda_release_version")
 
     // Logging.
-    testImplementation "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
+    testRuntimeOnly "org.apache.logging.log4j:log4j-slf4j-impl:${log4j_version}"
 
     // Testing.
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
@@ -73,8 +74,6 @@ dependencies {
 
     //CI for confidential tokens
     cordapp "$confidential_id_release_group:ci-workflows:$confidential_id_release_version"
-
-    implementation("org.postgresql:postgresql:42.2.18")
 }
 
 task integrationTest(type: Test, dependsOn: []) {

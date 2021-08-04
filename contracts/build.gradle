@@ -3,6 +3,8 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'jacoco'
     id 'org.jetbrains.kotlin.plugin.jpa'
+    id 'org.jetbrains.kotlin.plugin.allopen'
+    id 'org.jetbrains.kotlin.plugin.noarg'
 }
 
 sourceSets {
