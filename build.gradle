@@ -106,15 +106,6 @@ def publishProjects = [
 configure(publishProjects) { subproject ->
     apply plugin: 'maven-publish'
     apply plugin: 'com.jfrog.artifactory'
-    apply plugin: 'kotlin-noarg'
-
-    noArg {
-        annotations(
-                "javax.persistence.Entity",
-                "javax.persistence.Embeddable",
-                "javax.persistence.MappedSuperclass"
-        )
-    }
 
     pluginManager.withPlugin('java-library') {
         tasks.register('sourceJar', Jar) {
