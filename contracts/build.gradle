@@ -59,4 +59,7 @@ tasks.withType(Test).configureEach {
 
 tasks.named('jar', Jar) {
     archiveBaseName = "tokens-contracts"
+    bnd '''\
+DynamicImport-Package: *
+'''
 }
