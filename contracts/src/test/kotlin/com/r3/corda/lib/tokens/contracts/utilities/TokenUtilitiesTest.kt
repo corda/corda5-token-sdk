@@ -1,6 +1,5 @@
 package com.r3.corda.lib.tokens.contracts.utilities
 
-import com.r3.corda.lib.tokens.contracts.states.AbstractToken
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
@@ -28,8 +27,6 @@ class TokenUtilitiesTest {
     private val mockHashingService: HashingService = mockk {
         every { digestLength(any()) } returns 64
     }
-
-    private val mockToken: AbstractToken = mockk()
 
     @Test
     fun `Create fungible token from amount using infix heldBy and withHashingService`() {
