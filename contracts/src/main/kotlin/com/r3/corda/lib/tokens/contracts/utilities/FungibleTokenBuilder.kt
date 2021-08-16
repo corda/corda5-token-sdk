@@ -80,7 +80,7 @@ class FungibleTokenBuilder {
     }
 
     /**
-     * Replicates the Kotlin DSL [heldBy] infix function. Supplies a [AbstractParty] to the builder
+     * Replicates the Kotlin DSL [heldBy] infix function. Supplies an [AbstractParty] to the builder
      * representing the identity of the holder of a new fungible token.
      *
      * @param party The identity of the holder that will be used to build an [Amount] of an [IssuedTokenType].
@@ -97,7 +97,7 @@ class FungibleTokenBuilder {
     fun buildAmountTokenType(): Amount<TokenType> = when {
         issuedTokenTypeAmount != null -> {
             throw TokenBuilderException("Cannot build amount token type when amount issued token type has already been set. " +
-                    "`withIssuedTokenTypeAmount` cannot be used in combination with `withAmount`, or `ofTokenType`")
+                    "Do not try to set amount and/or token type in combination with setting the issued token type.")
         }
         !::tokenType.isInitialized -> {
             throw TokenBuilderException("A Token Type has not been provided to the builder.")
@@ -130,7 +130,7 @@ class FungibleTokenBuilder {
     }
 
     /**
-     * Builds an [FungibleToken] state. This function will throw a [TokenBuilderException] if the appropriate builder methods have not been called.
+     * Builds a [FungibleToken] state. This function will throw a [TokenBuilderException] if the appropriate builder methods have not been called.
      * i.e. a combination of [withAmount], [ofTokenType], [issuedBy], [heldBy], or a combination of [withIssuedTokenTypeAmount], [heldBy].
      * The build process uses the input [HashingService] in the [FungibleToken] construction.
      */
