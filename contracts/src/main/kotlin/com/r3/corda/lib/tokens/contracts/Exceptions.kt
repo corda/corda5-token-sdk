@@ -1,4 +1,4 @@
-package com.r3.corda.lib.tokens.workflows
+package com.r3.corda.lib.tokens.contracts
 
 import net.corda.v5.application.flows.FlowException
 

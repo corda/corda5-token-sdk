@@ -6,6 +6,7 @@ import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.contracts.utilities.heldBy
 import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
 import com.r3.corda.lib.tokens.contracts.utilities.sumTokenStateAndRefs
+import com.r3.corda.lib.tokens.contracts.utilities.withHashingService
 import com.r3.corda.lib.tokens.selection.TokenQueryBy
 import com.r3.corda.lib.tokens.selection.memory.internal.Holder
 import net.corda.v5.application.identity.AbstractParty
@@ -414,7 +415,7 @@ abstract class Selector {
         return if (difference.quantity == 0L) {
             null
         } else {
-            difference.heldBy(changeOwner, hashingService)
+            difference heldBy changeOwner withHashingService hashingService
         }
     }
 }

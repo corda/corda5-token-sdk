@@ -1,13 +1,14 @@
-package com.r3.corda.lib.tokens.workflows.utilities
+package com.r3.corda.lib.tokens.contracts.utilities
 
+import com.r3.corda.lib.tokens.contracts.TokenBuilderException
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import com.r3.corda.lib.tokens.contracts.utilities.heldBy
-import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
-import com.r3.corda.lib.tokens.workflows.TokenBuilderException
+import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.crypto.HashingService
+import net.corda.v5.ledger.UniqueIdentifier
+import net.corda.v5.ledger.contracts.Amount
 
 /**
  * A utility class designed for Java developers to more easily access Kotlin DSL
@@ -20,7 +21,8 @@ import net.corda.v5.application.services.crypto.HashingService
 class NonFungibleTokenBuilder {
     private lateinit var tokenType: TokenType
     private lateinit var issuer: Party
-    private lateinit var holder: Party
+    private lateinit var holder: AbstractParty
+    private var issuedTokenType: IssuedTokenType? = null
 
     /**
      * Replicates the Kotlin DSL [ofTokenType] infix function. Supplies a [TokenType] to the builder
@@ -44,14 +46,24 @@ class NonFungibleTokenBuilder {
      *
      * @param party The identity of the holder that will be used to build an [Amount] of an [IssuedTokenType].
      */
-    fun heldBy(party: Party): NonFungibleTokenBuilder = this.apply { this.holder = party }
+    fun heldBy(party: AbstractParty): NonFungibleTokenBuilder = this.apply { this.holder = party }
+
+    /**
+     * Can be used to add a prebuilt [IssuedTokenType] to a builder. Cannot be used in combination with [ofTokenType], and [issuedBy].
+     */
+    fun withIssuedTokenType(issuedTokenType: IssuedTokenType): NonFungibleTokenBuilder =
+        this.apply { this.issuedTokenType = issuedTokenType }
 
     /**
      * Builds an [IssuedTokenType]. This function will throw a [TokenBuilderException] if the appropriate
-     * builder methods have not been called: [ofTokenType], [issuedBy].
+     * builder methods have not been called: [ofTokenType], [issuedBy], or if an issued token type has already been
+     * added to the builder.
      */
     @Throws(TokenBuilderException::class)
     fun buildIssuedTokenType(): IssuedTokenType = when {
+        issuedTokenType != null -> {
+            throw TokenBuilderException("An issued token type has already been provided to the builder.")
+        }
         !::tokenType.isInitialized -> {
             throw TokenBuilderException("A token type has not been provided to the builder.")
         }
@@ -73,7 +85,7 @@ class NonFungibleTokenBuilder {
             throw TokenBuilderException("A token holder has not been provided to the builder.")
         }
         else -> {
-            buildIssuedTokenType().heldBy(holder, hashingService)
+            NonFungibleToken(issuedTokenType ?: buildIssuedTokenType(), holder, UniqueIdentifier(), hashingService)
         }
     }
 }

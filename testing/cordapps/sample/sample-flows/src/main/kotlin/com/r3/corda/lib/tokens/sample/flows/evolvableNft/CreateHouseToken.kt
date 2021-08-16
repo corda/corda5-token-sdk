@@ -1,12 +1,12 @@
 package com.r3.corda.lib.tokens.sample.flows.evolvableNft
 
+import com.r3.corda.lib.tokens.contracts.utilities.NonFungibleTokenBuilder
 import com.r3.corda.lib.tokens.contracts.utilities.amount
 import com.r3.corda.lib.tokens.money.FiatCurrency
-import com.r3.corda.lib.tokens.workflows.flows.rpc.CreateEvolvableTokens
-import com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens
-import com.r3.corda.lib.tokens.workflows.utilities.NonFungibleTokenBuilder
 import com.r3.corda.lib.tokens.sample.states.HouseToken
 import com.r3.corda.lib.tokens.sample.states.JsonRepresentableHouseNFT
+import com.r3.corda.lib.tokens.workflows.flows.rpc.CreateEvolvableTokens
+import com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.JsonConstructor
 import net.corda.v5.application.flows.RpcStartFlowRequestParameters
