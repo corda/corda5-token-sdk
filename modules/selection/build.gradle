@@ -42,6 +42,7 @@ dependencies {
 
     // CorDapp dependencies.
     cordapp project(":contracts")
+    cordapp project(":modules:tokens-builder")
 }
 
 tasks.named('jar', Jar) {

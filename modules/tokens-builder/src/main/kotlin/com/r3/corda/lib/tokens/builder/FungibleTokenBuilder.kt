@@ -1,9 +1,10 @@
-package com.r3.corda.lib.tokens.contracts.utilities
+package com.r3.corda.lib.tokens.builder
 
-import com.r3.corda.lib.tokens.contracts.TokenBuilderException
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
+import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
+import com.r3.corda.lib.tokens.contracts.utilities.of
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.crypto.HashingService

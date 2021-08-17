@@ -1,4 +1,4 @@
-package com.r3.corda.lib.tokens.contracts.utilities
+package com.r3.corda.lib.tokens.builder
 
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
@@ -9,10 +9,10 @@ import io.mockk.mockk
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.ledger.contracts.Amount
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import kotlin.test.assertEquals
 
-class TokenUtilitiesTest {
+class TokenBuilderUtilitiesTest {
 
     private val mockTokenType: TokenType = mockk {
         every { tokenClass } returns TokenType::class.java

@@ -1,6 +1,5 @@
-package com.r3.corda.lib.tokens.contracts.utilities
+package com.r3.corda.lib.tokens.builder
 
-import com.r3.corda.lib.tokens.contracts.TokenBuilderException
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import io.mockk.every
@@ -8,11 +7,11 @@ import io.mockk.mockk
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.crypto.HashingService
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
-import kotlin.test.assertEquals
 
 class NonFungibleTokenBuilderTest {
 

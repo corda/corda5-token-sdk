@@ -30,6 +30,7 @@ include 'contracts'
 include 'workflows'
 include 'modules:contracts-for-testing'
 include 'modules:selection'
+include 'modules:tokens-builder'
 include 'freighter-tests'
 
 include 'testing'

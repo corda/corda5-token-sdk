@@ -1,6 +1,5 @@
-package com.r3.corda.lib.tokens.contracts.utilities
+package com.r3.corda.lib.tokens.builder
 
-import com.r3.corda.lib.tokens.contracts.TokenBuilderException
 import com.r3.corda.lib.tokens.contracts.types.IssuedTokenType
 import com.r3.corda.lib.tokens.contracts.types.TokenType
 import io.mockk.every
@@ -9,17 +8,16 @@ import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party
 import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.ledger.contracts.Amount
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.math.BigDecimal
-import kotlin.test.assertEquals
 
 class FungibleTokenBuilderTest {
 
     private lateinit var mockTokenType: TokenType
     private lateinit var mockIssuer: Party
-    private lateinit var mockTokenTypeIssuedByMockIssuer: IssuedTokenType
     private lateinit var mockHolder: AbstractParty
     private lateinit var mockHashingService: HashingService
     private lateinit var issuedTokenTypeAmountMock: Amount<IssuedTokenType>
@@ -41,10 +39,6 @@ class FungibleTokenBuilderTest {
             }
         }
 
-        mockTokenTypeIssuedByMockIssuer = mockk {
-            every { tokenType } returns mockTokenType
-            every { issuer } returns mockIssuer
-        }
         mockHolder = mockk()
         issuedTokenTypeAmountMock = mockk()
         mockHashingService = mockk {
@@ -107,7 +101,7 @@ class FungibleTokenBuilderTest {
         // Assert Amount of type TokenType is correctly constructed
         val result =  builder.buildAmountIssuedTokenType()
         assertEquals(1, result.quantity)
-        assertEquals(mockTokenTypeIssuedByMockIssuer, result.token)
+        assertEquals(mockTokenType, result.token.tokenType)
         assertEquals(mockIssuer, result.token.issuer)
     }
 
@@ -148,7 +142,7 @@ class FungibleTokenBuilderTest {
         assertEquals(mockHolder, result.holder)
         assertEquals(mockIssuer, result.issuer)
         assertEquals(1, result.amount.quantity)
-        assertEquals(mockTokenTypeIssuedByMockIssuer, result.amount.token)
+        assertEquals(mockTokenType, result.amount.token.tokenType)
         assertEquals(mockIssuer, result.amount.token.issuer)
     }
 }

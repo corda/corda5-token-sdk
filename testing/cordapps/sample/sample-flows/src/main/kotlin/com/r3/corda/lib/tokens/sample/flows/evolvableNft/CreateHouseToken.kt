@@ -1,6 +1,6 @@
 package com.r3.corda.lib.tokens.sample.flows.evolvableNft
 
-import com.r3.corda.lib.tokens.contracts.utilities.NonFungibleTokenBuilder
+import com.r3.corda.lib.tokens.builder.NonFungibleTokenBuilder
 import com.r3.corda.lib.tokens.contracts.utilities.amount
 import com.r3.corda.lib.tokens.money.FiatCurrency
 import com.r3.corda.lib.tokens.sample.states.HouseToken
