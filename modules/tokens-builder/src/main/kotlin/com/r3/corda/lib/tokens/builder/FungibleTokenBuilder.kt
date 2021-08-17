@@ -120,7 +120,7 @@ class FungibleTokenBuilder {
     fun buildAmountIssuedTokenType(): Amount<IssuedTokenType> = when {
         issuedTokenTypeAmount != null -> {
             throw TokenBuilderException("Cannot build amount issued token type when it has already been set. " +
-                    "`withIssuedTokenTypeAmount` cannot be used in combination with `withAmount`, `ofTokenType`, or `issuedBy`")
+                    "Setting amount, token type and/or issuer cannot be used in combination with setting a pre-built amount of type issued token type.")
         }
         !::issuer.isInitialized -> {
             throw TokenBuilderException("A token issuer has not been provided to the builder.")

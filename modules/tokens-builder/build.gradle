@@ -8,7 +8,7 @@ cordapp {
     targetPlatformVersion corda_platform_version.toInteger()
 
     contract {
-        name "Token SDK tokend builder"
+        name "Token SDK tokens builder"
         vendor "R3"
         licence "Apache License, Version 2.0"
         versionId 1
