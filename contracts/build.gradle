@@ -30,7 +30,7 @@ dependencies {
 
     // Testing.
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
-    testImplementation project(":modules:contracts-for-testing")
+    testImplementation project(":testing:cordapps:contracts-for-testing")
 
     testImplementation "org.assertj:assertj-core:$assertj_version"
     testImplementation "org.junit.jupiter:junit-jupiter:$junit_version"

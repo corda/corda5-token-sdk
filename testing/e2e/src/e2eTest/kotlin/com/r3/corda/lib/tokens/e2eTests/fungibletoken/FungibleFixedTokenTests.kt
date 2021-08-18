@@ -1,5 +1,12 @@
-package com.r3.corda.lib.tokens.e2eTests
+package com.r3.corda.lib.tokens.e2eTests.fungibletoken
 
+import com.r3.corda.lib.tokens.e2eTests.alice
+import com.r3.corda.lib.tokens.e2eTests.bob
+import com.r3.corda.lib.tokens.e2eTests.caroline
+import com.r3.corda.lib.tokens.e2eTests.e2eTestNetwork
+import com.r3.corda.lib.tokens.e2eTests.getFlowOutcome
+import com.r3.corda.lib.tokens.e2eTests.getX500Name
+import com.r3.corda.lib.tokens.e2eTests.runFlow
 import com.r3.corda.lib.tokens.sample.flows.fixedFungible.IssueEuroFlow
 import com.r3.corda.lib.tokens.sample.flows.fixedFungible.MoveEuroFlow
 import com.r3.corda.lib.tokens.sample.flows.fixedFungible.RedeemEuroFlow
