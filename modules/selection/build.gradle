@@ -7,8 +7,8 @@ plugins {
 cordapp {
     targetPlatformVersion corda_platform_version.toInteger()
 
-    contract {
-        name "Token SDK test-selection"
+    workflow {
+        name "Token SDK selection"
         vendor "R3"
         licence "Apache License, Version 2.0"
         versionId 2
