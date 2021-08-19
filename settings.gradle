@@ -28,13 +28,13 @@ pluginManagement {
 
 include 'contracts'
 include 'workflows'
-include 'modules:contracts-for-testing'
 include 'modules:selection'
 include 'modules:tokens-builder'
 include 'freighter-tests'
 
 include 'testing'
 include 'testing:cordapps'
+include 'testing:cordapps:contracts-for-testing'
 include 'testing:cordapps:testflows'
 include 'testing:cordapps:sample'
 include 'testing:cordapps:sample:sample-contracts'

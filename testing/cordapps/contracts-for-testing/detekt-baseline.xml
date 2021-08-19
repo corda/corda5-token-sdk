@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>EmptyFunctionBlock:Rubles.kt$DodgeTokenContract${ }</ID>
+    <ID>EqualsWithHashCodeExist:Rubles.kt$PhoBowl : TokenType</ID>
+    <ID>EqualsWithHashCodeExist:Rubles.kt$Ruble : TokenType</ID>
+    <ID>ForbiddenComment:HouseContract.kt$HouseContract$// TODO: When contract scanning bug is fixed then this does not need to implement Contract.</ID>
+    <ID>NewLineAtEndOfFile:DiamondGradingReport.kt$DiamondGradingReport.kt</ID>
+    <ID>NewLineAtEndOfFile:DiamondGradingReportContract.kt$DiamondGradingReportContract.kt</ID>
+    <ID>NewLineAtEndOfFile:House.kt$House.kt</ID>
+    <ID>NewLineAtEndOfFile:HouseContract.kt$HouseContract.kt</ID>
+    <ID>NewLineAtEndOfFile:Rubles.kt$com.r3.corda.lib.tokens.testing.states.Rubles.kt</ID>
+    <ID>NewLineAtEndOfFile:TestEvolvableTokenContract.kt$TestEvolvableTokenContract.kt</ID>
+    <ID>NewLineAtEndOfFile:TestEvolvableTokenType.kt$TestEvolvableTokenType.kt</ID>
+  </CurrentIssues>
+</SmellBaseline>

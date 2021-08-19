@@ -2,8 +2,8 @@ package com.r3.corda.lib.tokens.selection.memory.config
 
 import com.r3.corda.lib.tokens.selection.api.StateSelectionConfig
 import com.r3.corda.lib.tokens.selection.memory.selector.LocalTokenSelector
-import com.r3.corda.lib.tokens.selection.memory.services.VaultWatcherService
-import com.r3.corda.lib.tokens.selection.memory.services.VaultWatcherService.IndexingType
+import com.r3.corda.lib.tokens.selection.memory.services.TokenSelectionService
+import com.r3.corda.lib.tokens.selection.memory.services.TokenSelectionService.IndexingType
 import net.corda.v5.application.cordapp.CordappConfig
 import net.corda.v5.application.cordapp.CordappConfigException
 import net.corda.v5.application.flows.flowservices.FlowEngine
@@ -15,23 +15,23 @@ import org.slf4j.LoggerFactory
 const val CACHE_SIZE_DEFAULT = 1024 // TODO Return good default, for now it's not wired, it will be done in separate PR.
 
 data class InMemorySelectionConfig (
-    val vaultWatcherService: VaultWatcherService,
+    val tokenSelectionService: TokenSelectionService,
     val enabled: Boolean,
     val indexingStrategies: List<IndexingType>,
     val cacheSize: Int
 ) : StateSelectionConfig {
 
     constructor(
-        vaultWatcherService: VaultWatcherService,
+        tokenSelectionService: TokenSelectionService,
         enabled: Boolean,
         indexingStrategies: List<IndexingType>
-    ) : this(vaultWatcherService, enabled, indexingStrategies, CACHE_SIZE_DEFAULT)
+    ) : this(tokenSelectionService, enabled, indexingStrategies, CACHE_SIZE_DEFAULT)
 
     companion object {
         private val logger = LoggerFactory.getLogger("inMemoryConfigSelectionLogger")
 
         @JvmStatic
-        fun parse(config: CordappConfig, vaultWatcherService: VaultWatcherService): InMemorySelectionConfig {
+        fun parse(config: CordappConfig, tokenSelectionService: TokenSelectionService): InMemorySelectionConfig {
             val enabled = if (!config.exists("stateSelection.inMemory.enabled")) {
                 logger.warn("Did not detect a configuration for InMemory selection - enabling memory usage for token indexing. Please set stateSelection.inMemory.enabled to \"false\" to disable this")
                 true
@@ -50,11 +50,11 @@ data class InMemorySelectionConfig (
                 emptyList()
             }
             logger.info("Found in memory token selection configuration with values indexing strategy: $indexingType, cacheSize: $cacheSize")
-            return InMemorySelectionConfig(vaultWatcherService, enabled, indexingType, cacheSize)
+            return InMemorySelectionConfig(tokenSelectionService, enabled, indexingType, cacheSize)
         }
 
-        fun defaultConfig(vaultWatcherService: VaultWatcherService): InMemorySelectionConfig {
-            return InMemorySelectionConfig(vaultWatcherService, true, emptyList())
+        fun defaultConfig(tokenSelectionService: TokenSelectionService): InMemorySelectionConfig {
+            return InMemorySelectionConfig(tokenSelectionService, true, emptyList())
         }
     }
 
@@ -65,9 +65,9 @@ data class InMemorySelectionConfig (
         flowEngine: FlowEngine,
     ): LocalTokenSelector {
         return try {
-            LocalTokenSelector(vaultWatcherService, state = null)
+            LocalTokenSelector(tokenSelectionService, state = null)
         } catch (e: IllegalArgumentException) {
-            throw IllegalArgumentException("Couldn't find VaultWatcherService in CordaServices, please make sure that it was installed in node.")
+            throw IllegalArgumentException("Couldn't find TokenSelectionService in CordaServices, please make sure that it was installed in node.")
         }
     }
 }

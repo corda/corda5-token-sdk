@@ -27,9 +27,10 @@ dependencies {
 
     e2eTestImplementation project(":workflows")
     e2eTestImplementation project(":contracts")
-    e2eTestImplementation project(":modules:contracts-for-testing")
+    e2eTestImplementation project(":testing:cordapps:contracts-for-testing")
     e2eTestImplementation project(":testing:cordapps:sample:sample-flows")
     e2eTestImplementation project(":testing:cordapps:sample:sample-contracts")
+    e2eTestImplementation project(":testing:cordapps:testflows")
 }
 
 tasks.register('e2eTest', Test) {

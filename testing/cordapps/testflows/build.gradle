@@ -11,7 +11,7 @@ dependencies {
 
     cordapp project(":workflows")
     cordapp project(":modules:selection")
-    cordapp project(":modules:contracts-for-testing")
+    cordapp project(":testing:cordapps:contracts-for-testing")
 }
 
 cordapp {
@@ -28,5 +28,5 @@ cordapp {
 }
 
 jar {
-    archiveBaseName = 'tokens-sample-flows'
+    archiveBaseName = 'tokens-test-flows'
 }
