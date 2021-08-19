@@ -1,0 +1,41 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'jacoco'
+    id 'net.corda.plugins.cordapp-cpk'
+}
+
+cordapp {
+    targetPlatformVersion corda_platform_version.toInteger()
+
+    workflow {
+        name "Token SDK tokens builder"
+        vendor "R3"
+        licence "Apache License, Version 2.0"
+        versionId 1
+    }
+    signing {
+        enabled = true
+    }
+}
+
+dependencies {
+    cordapp project(":contracts")
+
+    cordaProvided "$corda_release_group:corda-application:$corda_release_version"
+    cordaProvided "$corda_release_group:corda-crypto-api:$corda_release_version"
+    cordaProvided "$corda_release_group:corda-ledger:$corda_release_version"
+
+    testImplementation "org.assertj:assertj-core:$assertj_version"
+    testImplementation "org.junit.jupiter:junit-jupiter:$junit_version"
+    testImplementation "io.mockk:mockk:$mockkVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    reports { junitXml.setEnabled(true) }
+}
+
+tasks.named('jar', Jar) {
+    archiveBaseName = "tokens-builder"
+}

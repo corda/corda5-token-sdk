@@ -1,9 +1,9 @@
 package com.r3.corda.lib.tokens.sample.flows.fixedFungible
 
+import com.r3.corda.lib.tokens.builder.FungibleTokenBuilder
 import com.r3.corda.lib.tokens.money.EUR
 import com.r3.corda.lib.tokens.workflows.flows.rpc.ConfidentialIssueTokens
 import com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens
-import com.r3.corda.lib.tokens.workflows.utilities.FungibleTokenBuilder
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.JsonConstructor
 import net.corda.v5.application.flows.RpcStartFlowRequestParameters

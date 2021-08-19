@@ -2,10 +2,10 @@
 
 package com.r3.corda.lib.tokens.workflows.flows.evolvable
 
+import com.r3.corda.lib.tokens.builder.withNotary
 import com.r3.corda.lib.tokens.contracts.commands.Create
 import com.r3.corda.lib.tokens.contracts.commands.Update
 import com.r3.corda.lib.tokens.contracts.states.EvolvableTokenType
-import com.r3.corda.lib.tokens.contracts.utilities.withNotary
 import com.r3.corda.lib.tokens.workflows.internal.flows.distribution.getDistributionList
 import net.corda.v5.application.identity.AbstractParty
 import net.corda.v5.application.identity.Party

@@ -69,8 +69,8 @@ dependencies {
 
     // CorDapp dependencies.
     cordapp project(":contracts")
-
     cordapp project(":modules:selection")
+    cordapp project(":modules:tokens-builder")
 
     //CI for confidential tokens
     cordapp "$confidential_id_release_group:ci-workflows:$confidential_id_release_version"

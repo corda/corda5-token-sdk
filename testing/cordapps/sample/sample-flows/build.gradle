@@ -10,6 +10,7 @@ dependencies {
 
     cordapp project(":workflows")
     cordapp project(":testing:cordapps:sample:sample-contracts")
+    cordapp project(":modules:tokens-builder")
 }
 
 cordapp {

@@ -1,9 +1,10 @@
 package com.r3.corda.lib.tokens.selection.api
 
+import com.r3.corda.lib.tokens.builder.heldBy
+import com.r3.corda.lib.tokens.builder.withHashingService
 import com.r3.corda.lib.tokens.contracts.datatypes.InputOutputStates
 import com.r3.corda.lib.tokens.contracts.states.FungibleToken
 import com.r3.corda.lib.tokens.contracts.types.TokenType
-import com.r3.corda.lib.tokens.contracts.utilities.heldBy
 import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
 import com.r3.corda.lib.tokens.contracts.utilities.sumTokenStateAndRefs
 import com.r3.corda.lib.tokens.selection.TokenQueryBy
@@ -414,7 +415,7 @@ abstract class Selector {
         return if (difference.quantity == 0L) {
             null
         } else {
-            difference.heldBy(changeOwner, hashingService)
+            difference heldBy changeOwner withHashingService hashingService
         }
     }
 }
