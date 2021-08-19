@@ -20,9 +20,7 @@ class TokenBuilderUtilities
 /**
  * Creates a [FungibleTokenBuilder] from an amount of [IssuedTokenType].
  */
-infix fun Amount<IssuedTokenType>.heldBy(owner: AbstractParty): FungibleTokenBuilder = _heldBy(owner)
-
-internal infix fun Amount<IssuedTokenType>._heldBy(owner: AbstractParty): FungibleTokenBuilder {
+infix fun Amount<IssuedTokenType>.heldBy(owner: AbstractParty): FungibleTokenBuilder {
     return FungibleTokenBuilder().withIssuedTokenTypeAmount(this).heldBy(owner)
 }
 
@@ -36,9 +34,7 @@ infix fun FungibleTokenBuilder.withHashingService(hashingService: HashingService
  * E.g. IssuedTokenType<TokenType> -> NonFungibleToken.
  * This function must exist outside of the contracts module as creating a unique identifier is non-deterministic.
  */
-infix fun IssuedTokenType.heldBy(owner: AbstractParty): NonFungibleTokenBuilder = _heldBy(owner)
-
-private infix fun IssuedTokenType._heldBy(owner: AbstractParty): NonFungibleTokenBuilder {
+infix fun IssuedTokenType.heldBy(owner: AbstractParty): NonFungibleTokenBuilder {
     return NonFungibleTokenBuilder().withIssuedTokenType(this).heldBy(owner)
 }
 
@@ -52,16 +48,12 @@ infix fun NonFungibleTokenBuilder.withHashingService(hashingService: HashingServ
 // --------------------------
 
 /** Adds a notary [Party] to an [AbstractToken], by wrapping it in a [TransactionState]. */
-infix fun <T : AbstractToken> T.withNotary(notary: Party): TransactionState<T> = _withNotary(notary)
-
-internal infix fun <T : AbstractToken> T._withNotary(notary: Party): TransactionState<T> {
+infix fun <T : AbstractToken> T.withNotary(notary: Party): TransactionState<T> {
     return TransactionState(data = this, notary = notary)
 }
 
 /** Adds a notary [Party] to an [EvolvableTokenType], by wrapping it in a [TransactionState]. */
-infix fun <T : EvolvableTokenType> T.withNotary(notary: Party): TransactionState<T> = _withNotary(notary)
-
-internal infix fun <T : EvolvableTokenType> T._withNotary(notary: Party): TransactionState<T> {
+infix fun <T : EvolvableTokenType> T.withNotary(notary: Party): TransactionState<T> {
     return TransactionState(data = this, notary = notary)
 }
 
