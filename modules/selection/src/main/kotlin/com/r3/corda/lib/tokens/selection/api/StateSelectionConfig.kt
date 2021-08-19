@@ -2,7 +2,7 @@ package com.r3.corda.lib.tokens.selection.api
 
 import com.r3.corda.lib.tokens.selection.database.config.DatabaseSelectionConfig
 import com.r3.corda.lib.tokens.selection.memory.config.InMemorySelectionConfig
-import com.r3.corda.lib.tokens.selection.memory.services.VaultWatcherService
+import com.r3.corda.lib.tokens.selection.memory.services.TokenSelectionService
 import net.corda.v5.application.cordapp.CordappConfig
 import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.services.IdentityService
@@ -48,7 +48,7 @@ object ConfigSelection {
         persistenceService: PersistenceService,
         identityService: IdentityService,
         flowEngine: FlowEngine,
-        vaultWatcherService: VaultWatcherService,
+        tokenSelectionService: TokenSelectionService,
         config: CordappConfig
     ): Selector {
         return if (!config.exists("stateSelection")) {
@@ -57,7 +57,7 @@ object ConfigSelection {
         } else {
             when {
                 config.exists("stateSelection.database") -> DatabaseSelectionConfig.parse(config)
-                config.exists("stateSelection.inMemory") -> InMemorySelectionConfig.parse(config, vaultWatcherService)
+                config.exists("stateSelection.inMemory") -> InMemorySelectionConfig.parse(config, tokenSelectionService)
                 else -> throw IllegalArgumentException("Provide correct state-selection type string in the config, see kdocs for ConfigSelection.")
             }
         }.toSelector(persistenceService, identityService, flowEngine)

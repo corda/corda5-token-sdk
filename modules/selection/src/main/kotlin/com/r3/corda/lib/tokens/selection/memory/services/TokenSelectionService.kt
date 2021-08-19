@@ -9,7 +9,7 @@ import com.r3.corda.lib.tokens.selection.InsufficientNotLockedBalanceException
 import com.r3.corda.lib.tokens.selection.memory.config.InMemorySelectionConfig
 import com.r3.corda.lib.tokens.selection.memory.internal.Holder
 import com.r3.corda.lib.tokens.selection.memory.internal.lookupExternalIdFromKey
-import com.r3.corda.lib.tokens.selection.memory.services.VaultWatcherService.IndexingType
+import com.r3.corda.lib.tokens.selection.memory.services.TokenSelectionService.IndexingType
 import net.corda.v5.application.cordapp.CordappProvider
 import net.corda.v5.application.injection.CordaFlowInjectable
 import net.corda.v5.application.injection.CordaInjectPreStart
@@ -44,7 +44,7 @@ private val EMPTY_BUCKET = TokenBucket()
 
 const val PLACE_HOLDER: String = "THIS_IS_A_PLACE_HOLDER"
 
-interface VaultWatcherService : CordaService, CordaFlowInjectable, CordaServiceInjectable {
+interface TokenSelectionService : CordaService, CordaFlowInjectable, CordaServiceInjectable {
     enum class IndexingType(val ownerType: Class<out Holder>) {
 
         EXTERNAL_ID(Holder.MappedIdentity::class.java),
@@ -83,7 +83,7 @@ interface VaultWatcherService : CordaService, CordaFlowInjectable, CordaServiceI
     )
 }
 
-class VaultWatcherServiceImpl : VaultWatcherService {
+class TokenSelectionServiceImpl : TokenSelectionService {
 
     private companion object {
         val LOG = contextLogger()

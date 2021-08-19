@@ -8,7 +8,7 @@ import com.r3.corda.lib.tokens.contracts.types.TokenType
 import com.r3.corda.lib.tokens.selection.InsufficientBalanceException
 import com.r3.corda.lib.tokens.selection.database.selector.DatabaseTokenSelection
 import com.r3.corda.lib.tokens.selection.memory.selector.LocalTokenSelector
-import com.r3.corda.lib.tokens.selection.memory.services.VaultWatcherService
+import com.r3.corda.lib.tokens.selection.memory.services.TokenSelectionService
 import com.r3.corda.lib.tokens.testing.states.House
 import com.r3.corda.lib.tokens.workflows.flows.move.addMoveNonFungibleTokens
 import com.r3.corda.lib.tokens.workflows.flows.move.addMoveTokens
@@ -222,11 +222,11 @@ class SelectAndLockFlow(val amount: Amount<TokenType>, val delay: Duration = 1.s
     lateinit var flowEngine: FlowEngine
 
     @CordaInject
-    lateinit var vaultWatcherService: VaultWatcherService
+    lateinit var tokenSelectionService: TokenSelectionService
 
     @Suspendable
     override fun call() {
-        val selector = LocalTokenSelector(vaultWatcherService)
+        val selector = LocalTokenSelector(tokenSelectionService)
         selector.selectTokens(amount, flowEngine.flowId.uuid)
         flowEngine.sleep(delay)
     }
@@ -248,11 +248,11 @@ class JustLocalSelect(
     lateinit var flowEngine: FlowEngine
 
     @CordaInject
-    lateinit var vaultWatcherService: VaultWatcherService
+    lateinit var tokenSelectionService: TokenSelectionService
 
     @Suspendable
     override fun call(): List<StateAndRef<FungibleToken>> {
-        val selector = LocalTokenSelector(vaultWatcherService)
+        val selector = LocalTokenSelector(tokenSelectionService)
         var selectionAttempts = 0
         while (selectionAttempts < maxSelectAttempts) {
             try {
