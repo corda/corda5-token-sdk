@@ -131,7 +131,8 @@ subprojects {
 def publishProjects = [
         project(":contracts"),
         project(":workflows"),
-        project(":modules:selection")
+        project(":modules:selection"),
+        project(":modules:tokens-builder")
 ]
 
 configure(publishProjects) { subproject ->
