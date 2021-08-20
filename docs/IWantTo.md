@@ -82,7 +82,7 @@ amounts of it.
 
 To get from a token type or some amount of a token type to a non-fungible
 token or fungible token, we need to specify which party the proposed holder
-is. This can be done using the `heldBy` syntax:
+is. This can be done using the `heldBy` and `withHashingService` syntax:
 
 ```kotlin
     val issuer: Party = ...
@@ -92,10 +92,10 @@ is. This can be done using the `heldBy` syntax:
     val myIssuedTokenType: IssuedTokenType = myTokenType issuedBy issuer
     val tenOfMyIssuedTokenType = 10 of myIssuedTokenType
 
-    // Adding a holder to an amount of a token type, creates a fungible token.
-    val fungibleToken: FungibleToken = tenOfMyIssuedTokenType heldBy holder
-    // Adding a holder to a token type, creates a non-fungible token.
-    val nonFungibleToken: NonFungibleToken = myIssuedTokenType heldBy holder
+    // Adding a holder and hashing service to an amount of a token type, creates a fungible token.
+    val fungibleToken: FungibleToken = tenOfMyIssuedTokenType heldBy holder withHashingService hashingService
+    // Adding a holder and hashing service to a token type, creates a non-fungible token.
+    val nonFungibleToken: NonFungibleToken = myIssuedTokenType heldBy holder withHashingService hashingService
 ```
 
 Once you have a `FungibleToken` or a `NonFungibleToken`, you can then go

@@ -13,9 +13,6 @@ At the end of this section you will know how to:
 * sign and finalise token transaction,
 * construct business logic using the building blocks from `tokens-sdk`.
 
-If you would like to see how to write simple integration tests using similar example take a look at:
-[driver test](../workflows/src/integrationTest/kotlin/com/r3/corda/lib/tokens/integrationTest/TokenDriverTest.kt)
-
 ## Basic components
 
 Before doing this tutorial you should be familiar with the `FungibleToken`, `NonFungibleToken` and `IssuedTokenType` concepts
@@ -76,7 +73,7 @@ Let's take a look how to create and issue `EvolvableTokenType` onto the ledger.
 ```kotlin
     // From within the flow.
     val house: House = House(...)
-    val notary: Party = getPreferredNotary(serviceHub) // Or provide notary party using your favourite function from NotaryUtilities.
+    val notary: Party = getPreferredNotary(notaryLookupService, cordappProvider.appConfig) // Or provide notary party using your favourite function from NotaryUtilities.
     // We need to create the evolvable token first.
     subFlow(CreateEvolvableTokens(house withNotary notary))
 ```
@@ -143,8 +140,8 @@ Then construct transaction builder with house move to the new holder:
     override fun call(): SignedTransaction {
         val housePtr = house.toPointer<House>()
         // We can specify preferred notary in cordapp config file, otherwise the first one from network parameters is chosen.
-        val txBuilder = TransactionBuilder(notary = getPreferredNotary(serviceHub))
-        addMoveNonFungibleTokens(txBuilder, serviceHub, housePtr, newHolder)
+        val txBuilder = TransactionBuilder(notary = getPreferredNotary(notaryLookupService, cordappProvider.appConfig))
+        addMoveNonFungibleTokens(txBuilder, persistenceService, housePtr, newHolder)
         ...
     }
 ```
@@ -179,7 +176,7 @@ the final phase:
 
 ```kotlin
         ...
-        subFlow(SyncKeyMappingFlow(session, txBuilder.toWireTransaction(serviceHub)))
+        subFlow(SyncKeyMappingFlow(session, txBuilder.toWireTransaction()))
         ...
 ```
 
@@ -190,8 +187,8 @@ The last step is signing the transaction by all parties involved:
 ```kotlin
         ...
         // Because states on the transaction can have confidential identities on them, we need to sign them with corresponding keys.
-        val ourSigningKeys = txBuilder.toLedgerTransaction(serviceHub).ourSigningKeys(serviceHub)
-        val initialStx = serviceHub.signInitialTransaction(txBuilder, signingPubKeys = ourSigningKeys)
+        val ourSigningKeys = transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction()).ourSigningKeys(serviceHub)
+        val initialStx = transactionService.sign(txBuilder, signingPubKeys = ourSigningKeys)
         // Collect signatures from the new house owner.
         val stx = subFlow(CollectSignaturesFlow(initialStx, listOf(session), ourSigningKeys))
         ...
@@ -217,18 +214,34 @@ The responder flow is pretty straightforward to write calling corresponding flow
 
 ```kotlin
     @InitiatedBy(SellHouseFlow::class)
-    class SellHouseFlowHandler(val otherSession: FlowSession) : FlowLogic<Unit>() {
+    class SellHouseFlowHandler(val otherSession: FlowSession) : Flow<Unit> {
+        @CordaInject
+        lateinit var keyManagementService: KeyManagementService
+        @CordaInject
+        lateinit var persistenceService: PersistenceService
+        @CordaInject
+        lateinit var identityService: IdentityService
+        @CordaInject
+        lateinit var flowEngine: FlowEngine
+        @CordaInject
+        lateinit var hashingService: HashingService
+        @CordaInject
+        lateinit var memberLookupService: MemberLookupService
         @Suspendable
         override fun call() {
             // Receive notification with house price.
             val priceNotification = otherSession.receive<PriceNotification>().unwrap { it }
             // Generate fresh key, possible change outputs will belong to this key.
-            val changeHolder = serviceHub.keyManagementService.freshKeyAndCert(ourIdentityAndCert, false).party.anonymise()
+            val changeHolder = keyManagementService.freshKeyAndCert(ourIdentityAndCert, false).party.anonymise()
             // Chose state and refs to send back.
-            val (inputs, outputs) = DatabaseTokenSelection(serviceHub).generateMove(
-                lockId = runId.uuid,
+            val (inputs, outputs) = DatabaseTokenSelection(persistenceService, identityService, flowEngine).generateMove(
+				identityService = identityService,
+				hashingService = hashingService,
+				memberLookupService.myInfo(),
+                lockId = flowEngine.flowId.uuid,
                 partiesAndAmounts = listOf(Pair(otherSession.counterparty, priceNotification.amount)),
-                changeHolder = changeHolder
+                changeHolder = changeHolder,
+                queryBy = TokenQueryBy()
             )
             subFlow(SendStateAndRefFlow(otherSession, inputs))
             otherSession.send(outputs)
@@ -243,7 +256,7 @@ The responder flow is pretty straightforward to write calling corresponding flow
     }
 ```
 
-Notice the ```DatabaseTokenSelection(serviceHub).generateMove(...)``` used for chosing tokens that cover the required amount.
+Notice the ```DatabaseTokenSelection(persistenceService, identityService, flowEngine).generateMove(...)``` used for choosing tokens that cover the required amount.
 
 ## Extra advanced topic
 
@@ -263,7 +276,7 @@ It's sufficient for the issuer (or house state maintainer) to update that token 
 ```
 
 It will send the transaction with new updated house state to all parties on the issuer's distribution list. They will record it locally in
-their vaults. Next time `housePtr.pointer.resolve(serviceHub)` is called it will contain updated state.
+their vaults. Next time `stateLoaderService.load(housePtr.pointer)` is called it will contain updated state.
 
 ## Next steps
 
