@@ -3,8 +3,8 @@ package com.r3.corda.lib.tokens.e2eTests.services
 import com.google.gson.JsonParser
 import com.r3.corda.lib.tokens.e2eTests.alice
 import com.r3.corda.lib.tokens.e2eTests.e2eTestNetwork
-import com.r3.corda.lib.tokens.e2eTests.getFlowOutcome
-import com.r3.corda.lib.tokens.e2eTests.runFlow
+import com.r3.corda.lib.tokens.test.utils.getFlowOutcome
+import com.r3.corda.lib.tokens.test.utils.runFlow
 import com.r3.corda.lib.tokens.testflows.TokenSelectionServiceIsInjectableFlow
 import net.corda.client.rpc.flow.FlowStarterRPCOps
 import net.corda.test.dev.network.httpRpcClient

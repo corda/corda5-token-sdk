@@ -4,14 +4,14 @@ import com.google.gson.JsonParser
 import com.r3.corda.lib.tokens.e2eTests.alice
 import com.r3.corda.lib.tokens.e2eTests.bob
 import com.r3.corda.lib.tokens.e2eTests.e2eTestNetwork
-import com.r3.corda.lib.tokens.e2eTests.getFlowOutcome
-import com.r3.corda.lib.tokens.e2eTests.getX500Name
-import com.r3.corda.lib.tokens.e2eTests.runFlow
 import com.r3.corda.lib.tokens.sample.flows.evolvableNft.CreateHouseToken
 import com.r3.corda.lib.tokens.sample.flows.evolvableNft.GetHouseInfoFlow
 import com.r3.corda.lib.tokens.sample.flows.evolvableNft.MoveHouseTokenFlow
 import com.r3.corda.lib.tokens.sample.flows.evolvableNft.RedeemHouseTokenFlow
 import com.r3.corda.lib.tokens.sample.flows.evolvableNft.UpdateHouseValuation
+import com.r3.corda.lib.tokens.test.utils.getFlowOutcome
+import com.r3.corda.lib.tokens.test.utils.getX500Name
+import com.r3.corda.lib.tokens.test.utils.runFlow
 import com.r3.corda.lib.tokens.testing.states.House
 import net.corda.client.rpc.flow.FlowStarterRPCOps
 import net.corda.test.dev.network.Node

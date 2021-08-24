@@ -1,0 +1,10 @@
+registry: engineering-docker.software.r3.com
+tag: 5.0.0-devpreview-rc04
+nodes:
+  alice:
+  bob:
+  caroline:
+  denise:
+  gic:
+  notary:
+    notary: true

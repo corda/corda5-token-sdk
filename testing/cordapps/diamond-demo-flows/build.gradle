@@ -1,0 +1,30 @@
+plugins {
+    id 'net.corda.plugins.cordapp-cpk'
+    id 'kotlin'
+}
+
+dependencies {
+    cordaProvided "$corda_release_group:corda-application:$corda_release_version"
+    cordaProvided "$corda_release_group:corda-base:$corda_release_version"
+    cordaProvided "$corda_release_group:corda-ledger:$corda_release_version"
+
+    cordapp project(":workflows")
+    cordapp project(":testing:cordapps:contracts-for-testing")
+}
+
+cordapp {
+    targetPlatformVersion corda_platform_version as Integer
+
+    workflow {
+        name "Corda Tokens SDK - Diamond Demo Workflows"
+        versionId 1
+        vendor "R3"
+    }
+    signing {
+        enabled = true
+    }
+}
+
+jar {
+    archiveBaseName = 'tokens-diamond-demo-flows'
+}
