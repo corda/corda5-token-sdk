@@ -53,7 +53,7 @@ val observerSessions: List<FlowSession> = ...
 val requiredAmount: Amount<TokenType> = ...
 val queryBy: TokenQueryBy = ...  // See section below on queries
 // Just select tokens for spend, without output and change calculation
-val selectedStates: List<StateAndRef<FungibleToken>> = localTokenSelector.selectTokens(
+val selectedTokens: List<StateAndRef<FungibleToken>> = localTokenSelector.selectTokens(
     lockID = transactionBuilder.lockId,
     requiredAmount = requiredAmount,
     queryBy = queryBy)
@@ -91,7 +91,10 @@ already performed selection and provide input and output states directly. Fungib
 Using in memory selection when redeeming tokens looks very similar to move:
 
 ```kotlin
-val tokenSelectionService: TokenSelectionService // retrieved via injection
+// these two services are retrieved outside of the call function via injection using @CordaInject
+val flowEngine: FlowEngine 
+val tokenSelectionService: TokenSelectionService
+
 val localTokenSelector = LocalTokenSelector(tokenSelectionService, autoUnlockDelay = autoUnlockDelay)
 
 // Similar to previous case, we need to choose states that cover the amount.
@@ -109,7 +112,7 @@ val (inputs, changeOutput) =  generateExit(
 )
 // Call subflow top redeem states with the issuer
 val issuerSession: FlowSession = ...
-subflow(RedeemTokensFlow(inputs, changeOutput, issuerSession, observerSessions))
+flowEngine.subflow(RedeemTokensFlow(inputs, changeOutput, issuerSession, observerSessions))
 // or use utilities functions.
 addTokensToRedeem(
     transactionBuilder = transactionBuilder,
@@ -122,16 +125,17 @@ addTokensToRedeem(
 
 You can provide additional queries to `LocalTokenSelector` by constructing `TokenQueryBy` and passing it to `generateMove`
 or `selectStates` methods. `TokenQueryBy` takes `issuer` to specify selection of token from given issuing party, additionally
-you can provide any states filtering as `predicate` function. Optionally a query post processor can be used for additional processing when querying for tokens.
+you can provide any states filtering as `predicate` function. Optionally a query post processor can be used for additional filtering when querying for tokens.
+Any post-processor used must implement `StateAndRefPostProcessor` and it can only perform filtering actions i.e. the post-processor must return `StateAndRef` objects. 
 
 ```kotlin
 val issuerParty: Party = ...
 val notaryParty: Party = ...
 // Get list of input and output states that can be passed to addMove or MoveTokensFlow
 val (inputs, outputs) = localTokenSelector.generateMove(
-	identityService = identityService,
-	hashingService = hashingService,
-	memberInfo = memberInfo,
+    identityService = identityService,
+    hashingService = hashingService, 
+    memberInfo = memberInfo,
     partiesAndAmounts = listOf(Pair(receivingParty,  tokensAmount)),
     changeHolder = this.ourIdentity,
     // Get tokens issued by issuerParty and notarised by notaryParty
