@@ -1,0 +1,48 @@
+plugins {
+    id 'kotlin'
+}
+
+sourceSets {
+    diamondDemo {
+        compileClasspath += sourceSets.main.output + sourceSets.test.output
+        runtimeClasspath += sourceSets.main.output + sourceSets.test.output
+    }
+}
+
+configurations {
+    diamondDemoImplementation.extendsFrom testImplementation
+    diamondDemoRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+dependencies {
+    diamondDemoImplementation "org.assertj:assertj-core:$assertj_version"
+    diamondDemoImplementation "org.junit.jupiter:junit-jupiter:$junit_version"
+
+    diamondDemoImplementation "$corda_release_group:corda-application:$corda_release_version"
+    diamondDemoImplementation "$corda_release_group:corda-ledger:$corda_release_version"
+    diamondDemoImplementation "$corda_release_group:corda-dev-network-lib:$corda_release_version"
+    diamondDemoImplementation "$corda_release_group:corda-client-rpc:$corda_release_version"
+    diamondDemoImplementation "$corda_release_group:corda-client-extensions-rpc:$corda_release_version"
+    diamondDemoImplementation "$corda_release_group:corda-legacy-api:$corda_release_version"
+
+    diamondDemoImplementation project(":workflows")
+    diamondDemoImplementation project(":contracts")
+    diamondDemoImplementation project(":testing:cordapps:contracts-for-testing")
+    diamondDemoImplementation project(":testing:cordapps:diamond-demo-flows")
+    diamondDemoImplementation project(":testing:test-utils")
+
+    diamondDemoImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+}
+
+tasks.register('diamondDemo', Test) {
+    description = 'Runs the diamond demo flows.'
+    group = 'verification'
+
+    testClassesDirs = sourceSets.diamondDemo.output.classesDirs
+    classpath = sourceSets.diamondDemo.runtimeClasspath
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    reports { junitXml.setEnabled(true) }
+}

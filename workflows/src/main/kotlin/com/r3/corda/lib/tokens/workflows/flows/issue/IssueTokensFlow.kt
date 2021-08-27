@@ -58,18 +58,6 @@ class IssueTokensFlow (
         participantSessions: List<FlowSession>,
     ) : this(tokensToIssue, participantSessions, emptyList())
 
-    @CordaInject
-    lateinit var transactionBuilderFactory: TransactionBuilderFactory
-
-    @CordaInject
-    lateinit var flowEngine: FlowEngine
-
-    @CordaInject
-    lateinit var notaryLookupService: NotaryLookupService
-
-    @CordaInject
-    lateinit var cordappProvider: CordappProvider
-
     /** Issue a single [FungibleToken]. */
     constructor(
         token: FungibleToken,
@@ -99,6 +87,18 @@ class IssueTokensFlow (
 
     /** Issue a single [NonFungibleToken] to self with no observers. */
     constructor(token: NonFungibleToken) : this(listOf(token), emptyList(), emptyList())
+
+    @CordaInject
+    lateinit var transactionBuilderFactory: TransactionBuilderFactory
+
+    @CordaInject
+    lateinit var flowEngine: FlowEngine
+
+    @CordaInject
+    lateinit var notaryLookupService: NotaryLookupService
+
+    @CordaInject
+    lateinit var cordappProvider: CordappProvider
 
     @Suspendable
     override fun call(): SignedTransaction {

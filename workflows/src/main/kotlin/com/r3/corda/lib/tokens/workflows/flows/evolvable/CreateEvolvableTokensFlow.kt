@@ -14,7 +14,6 @@ import net.corda.v5.application.services.IdentityService
 import net.corda.v5.base.annotations.CordaSerializable
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.ledger.contracts.TransactionState
-import net.corda.v5.ledger.services.TransactionService
 import net.corda.v5.ledger.transactions.SignedTransaction
 import net.corda.v5.ledger.transactions.TransactionBuilderFactory
 
