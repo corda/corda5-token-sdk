@@ -1,5 +1,7 @@
 package com.r3.corda.lib.tokens.diamondDemo.flows
 
+import com.r3.corda.lib.tokens.test.utils.getMandatoryParameter
+import com.r3.corda.lib.tokens.test.utils.getUnconsumedLinearStates
 import com.r3.corda.lib.tokens.testing.states.DiamondGradingReport
 import com.r3.corda.lib.tokens.testing.states.DiamondGradingReportDigest
 import net.corda.v5.application.flows.Flow
@@ -11,11 +13,8 @@ import net.corda.v5.application.services.json.JsonMarshallingService
 import net.corda.v5.application.services.json.parseJson
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.StateAndRef
-import net.corda.v5.ledger.services.vault.IdentityStateAndRefPostProcessor
-import net.corda.v5.ledger.services.vault.StateStatus
 
 @StartableByRPC
 class GetDiamondReportFlow
@@ -32,26 +31,11 @@ class GetDiamondReportFlow
     @Suspendable
     override fun call(): DiamondGradingReportDigest {
         val parameters: Map<String, String> = jsonMarshallingService.parseJson(params.parametersInJson)
-        val tokenLinearId = UniqueIdentifier.fromString(parameters["linearId"]!!)
-        val cursor = persistenceService.query<StateAndRef<DiamondGradingReport>>(
-            "LinearState.findByUuidAndStateStatus",
-            mapOf(
-                "uuid" to tokenLinearId.id,
-                "stateStatus" to StateStatus.UNCONSUMED,
-            ),
-            IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME,
-        )
+        val tokenLinearId = UniqueIdentifier.fromString(parameters.getMandatoryParameter("linearId"))
 
-        val results = mutableListOf<StateAndRef<DiamondGradingReport>>()
-        do {
-            val pollResult = cursor.poll(1, 5.seconds)
-            results.addAll(pollResult.values)
-        } while (!pollResult.isLastResult)
+        val results: List<StateAndRef<DiamondGradingReport>> =
+            persistenceService.getUnconsumedLinearStates(tokenLinearId.id, expectedSize = 1)
 
-        require(results.size == 1)
-
-        val report = results.single().state.data
-
-        return DiamondGradingReportDigest(report)
+        return DiamondGradingReportDigest(results.single().state.data)
     }
 }

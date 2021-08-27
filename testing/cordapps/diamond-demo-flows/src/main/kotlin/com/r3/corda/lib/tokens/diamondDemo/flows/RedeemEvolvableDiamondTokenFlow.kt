@@ -1,7 +1,10 @@
 package com.r3.corda.lib.tokens.diamondDemo.flows
 
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
+import com.r3.corda.lib.tokens.test.utils.getMandatoryParameter
+import com.r3.corda.lib.tokens.test.utils.getUnconsumedLinearStates
 import com.r3.corda.lib.tokens.workflows.flows.rpc.RedeemNonFungibleTokens
+import net.corda.v5.application.flows.BadRpcStartFlowRequestException
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.JsonConstructor
 import net.corda.v5.application.flows.RpcStartFlowRequestParameters
@@ -14,11 +17,8 @@ import net.corda.v5.application.services.json.JsonMarshallingService
 import net.corda.v5.application.services.json.parseJson
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.StateAndRef
-import net.corda.v5.ledger.services.vault.IdentityStateAndRefPostProcessor
-import net.corda.v5.ledger.services.vault.StateStatus
 import net.corda.v5.ledger.transactions.SignedTransactionDigest
 
 @StartableByRPC
@@ -43,29 +43,15 @@ class RedeemEvolvableDiamondTokenFlow
     override fun call(): SignedTransactionDigest {
         val parameters: Map<String, String> = jsonMarshallingService.parseJson(params.parametersInJson)
 
-        val nftLinearId = UniqueIdentifier.fromString(parameters["nftLinearId"]!!)
-        val redeemFrom = identityService.partyFromName(CordaX500Name.parse(parameters["redeemFrom"]!!))!!
+        val nftLinearId = UniqueIdentifier.fromString(parameters.getMandatoryParameter("nftLinearId"))
+        val redeemFrom = CordaX500Name.parse(parameters.getMandatoryParameter("redeemFrom"))
+        val redeemFromParty = identityService.partyFromName(redeemFrom)
+            ?: throw BadRpcStartFlowRequestException("Could not find party for CordaX500Name: $redeemFrom")
 
-        val cursor = persistenceService.query<StateAndRef<NonFungibleToken>>(
-            "LinearState.findByUuidAndStateStatus",
-            mapOf(
-                "uuid" to nftLinearId.id,
-                "stateStatus" to StateStatus.UNCONSUMED,
-            ),
-            IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME,
-        )
-
-        val results = mutableListOf<StateAndRef<NonFungibleToken>>()
-        do {
-            val pollResult = cursor.poll(1, 5.seconds)
-            results.addAll(pollResult.values)
-        } while (!pollResult.isLastResult)
-
-        require(results.size == 1)
-
+        val results: List<StateAndRef<NonFungibleToken>> =
+            persistenceService.getUnconsumedLinearStates(nftLinearId.id, 1)
         val nft = results.single().state.data
-
-        val stx = flowEngine.subFlow(RedeemNonFungibleTokens(nft.token.tokenType, redeemFrom))
+        val stx = flowEngine.subFlow(RedeemNonFungibleTokens(nft.token.tokenType, redeemFromParty))
 
         return SignedTransactionDigest(
             stx.id,

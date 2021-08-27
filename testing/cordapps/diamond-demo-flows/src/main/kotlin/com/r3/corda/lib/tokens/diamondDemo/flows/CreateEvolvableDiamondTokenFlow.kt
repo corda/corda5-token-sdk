@@ -1,8 +1,10 @@
 package com.r3.corda.lib.tokens.diamondDemo.flows
 
+import com.r3.corda.lib.tokens.test.utils.getMandatoryParameter
 import com.r3.corda.lib.tokens.testing.states.DiamondGradingReport
 import com.r3.corda.lib.tokens.testing.states.DiamondGradingReportDigest
 import com.r3.corda.lib.tokens.workflows.flows.rpc.CreateEvolvableTokens
+import net.corda.v5.application.flows.BadRpcStartFlowRequestException
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.JsonConstructor
 import net.corda.v5.application.flows.RpcStartFlowRequestParameters
@@ -44,11 +46,13 @@ class CreateEvolvableDiamondTokenFlow
     override fun call(): SignedTransactionDigest {
         val parameters: Map<String, String> = jsonMarshallingService.parseJson(params.parametersInJson)
 
-        val caratWeight = parameters["caratWeight"]!!
-        val colorScale = parameters["colorScale"]!!
-        val clarityScale = parameters["clarityScale"]!!
-        val cutScale = parameters["cutScale"]!!
-        val requestor = CordaX500Name.parse(parameters["requestor"]!!)
+        val caratWeight = parameters.getMandatoryParameter("caratWeight")
+        val colorScale = parameters.getMandatoryParameter("colorScale")
+        val clarityScale = parameters.getMandatoryParameter("clarityScale")
+        val cutScale = parameters.getMandatoryParameter("cutScale")
+        val requestor = CordaX500Name.parse(parameters.getMandatoryParameter("requestor"))
+        val requestorParty = identityService.partyFromName(requestor)
+            ?: throw BadRpcStartFlowRequestException("Could not find requesting party from CordaX500Name: $requestor")
 
         val notary = notaryLookupService.notaryIdentities.first()
 
@@ -58,7 +62,7 @@ class CreateEvolvableDiamondTokenFlow
             DiamondGradingReport.ClarityScale.valueOf(clarityScale),
             DiamondGradingReport.CutScale.valueOf(cutScale),
             flowIdentity.ourIdentity,
-            identityService.partyFromName(requestor)!!
+            requestorParty
         )
 
         val stx = flowEngine.subFlow(

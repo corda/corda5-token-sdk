@@ -3,9 +3,12 @@ package com.r3.corda.lib.tokens.diamondDemo.flows
 import com.r3.corda.lib.tokens.builder.heldBy
 import com.r3.corda.lib.tokens.builder.withHashingService
 import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
+import com.r3.corda.lib.tokens.test.utils.getMandatoryParameter
+import com.r3.corda.lib.tokens.test.utils.getUnconsumedLinearStates
 import com.r3.corda.lib.tokens.testing.states.DiamondGradingReport
 import com.r3.corda.lib.tokens.workflows.flows.rpc.ConfidentialIssueTokens
 import com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens
+import net.corda.v5.application.flows.BadRpcStartFlowRequestException
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.JsonConstructor
 import net.corda.v5.application.flows.RpcStartFlowRequestParameters
@@ -14,21 +17,18 @@ import net.corda.v5.application.flows.flowservices.FlowEngine
 import net.corda.v5.application.flows.flowservices.FlowIdentity
 import net.corda.v5.application.identity.CordaX500Name
 import net.corda.v5.application.injection.CordaInject
-import net.corda.v5.application.services.MemberLookupService
+import net.corda.v5.application.services.IdentityService
 import net.corda.v5.application.services.crypto.HashingService
 import net.corda.v5.application.services.json.JsonMarshallingService
 import net.corda.v5.application.services.json.parseJson
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
-import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.UniqueIdentifier
 import net.corda.v5.ledger.contracts.StateAndRef
-import net.corda.v5.ledger.services.vault.IdentityStateAndRefPostProcessor
-import net.corda.v5.ledger.services.vault.StateStatus
 import net.corda.v5.ledger.transactions.SignedTransactionDigest
 
 @StartableByRPC
-class IssueNonFungibleDiamondToken
+class IssueNonFungibleDiamondTokenFlow
 @JsonConstructor constructor(
     val params: RpcStartFlowRequestParameters
 ) : Flow<SignedTransactionDigest> {
@@ -49,44 +49,31 @@ class IssueNonFungibleDiamondToken
     lateinit var persistenceService: PersistenceService
 
     @CordaInject
-    lateinit var memberLookupService: MemberLookupService
+    lateinit var identityService: IdentityService
 
     @Suspendable
     override fun call(): SignedTransactionDigest {
         val parameters: Map<String, String> = jsonMarshallingService.parseJson(params.parametersInJson)
 
-        val tokenLinearId = UniqueIdentifier.fromString(parameters["tokenLinearId"]!!)
-        val issueTo = memberLookupService.lookup(CordaX500Name.parse(parameters["issueTo"]!!))!!.party
-        val anonymous = parameters["anonymous"]!!.toBoolean()
+        val tokenLinearId = UniqueIdentifier.fromString(parameters.getMandatoryParameter("tokenLinearId"))
+        val issueTo = CordaX500Name.parse(parameters.getMandatoryParameter("issueTo"))
+        val issueToParty = identityService.partyFromName(issueTo)
+            ?: throw BadRpcStartFlowRequestException("Could not find party for CordaX500Name: $issueTo")
+        val anonymous = parameters.getMandatoryParameter("anonymous").toBoolean()
 
-        val cursor = persistenceService.query<StateAndRef<DiamondGradingReport>>(
-            "LinearState.findByUuidAndStateStatus",
-            mapOf(
-                "uuid" to tokenLinearId.id,
-                "stateStatus" to StateStatus.UNCONSUMED,
-            ),
-            IdentityStateAndRefPostProcessor.POST_PROCESSOR_NAME,
-        )
-
-        val results = mutableListOf<StateAndRef<DiamondGradingReport>>()
-        do {
-            val pollResult = cursor.poll(1, 5.seconds)
-            results.addAll(pollResult.values)
-        } while (!pollResult.isLastResult)
-
-        require(results.size == 1)
+        val results: List<StateAndRef<DiamondGradingReport>> =
+            persistenceService.getUnconsumedLinearStates(tokenLinearId.id, expectedSize = 1)
 
         val token = results.single().state.data
 
         val nft =
-            token.toPointer<DiamondGradingReport>() issuedBy flowIdentity.ourIdentity heldBy issueTo withHashingService hashingService
+            token.toPointer<DiamondGradingReport>() issuedBy flowIdentity.ourIdentity heldBy issueToParty withHashingService hashingService
+
         val stx = if (anonymous) {
             flowEngine.subFlow(ConfidentialIssueTokens(listOf(nft)))
         } else {
             flowEngine.subFlow(IssueTokens(listOf(nft)))
         }
-
-        stx.coreTransaction.outputStates.single()
 
         return SignedTransactionDigest(
             stx.id,

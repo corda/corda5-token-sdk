@@ -10,6 +10,7 @@ dependencies {
 
     cordapp project(":workflows")
     cordapp project(":testing:cordapps:contracts-for-testing")
+    cordapp project(":testing:test-utils")
 }
 
 cordapp {

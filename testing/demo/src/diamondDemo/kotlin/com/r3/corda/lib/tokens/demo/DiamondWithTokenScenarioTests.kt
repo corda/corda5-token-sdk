@@ -6,8 +6,8 @@ import com.r3.corda.lib.tokens.diamondDemo.flows.CreateEvolvableDiamondTokenFlow
 import com.r3.corda.lib.tokens.diamondDemo.flows.GetDiamondReportFlow
 import com.r3.corda.lib.tokens.diamondDemo.flows.HasTransactionFlow
 import com.r3.corda.lib.tokens.diamondDemo.flows.HasUnconsumedNonFungibleTokenFlow
-import com.r3.corda.lib.tokens.diamondDemo.flows.IssueNonFungibleDiamondToken
-import com.r3.corda.lib.tokens.diamondDemo.flows.MoveNonFungibleDiamondToken
+import com.r3.corda.lib.tokens.diamondDemo.flows.IssueNonFungibleDiamondTokenFlow
+import com.r3.corda.lib.tokens.diamondDemo.flows.MoveNonFungibleDiamondTokenFlow
 import com.r3.corda.lib.tokens.diamondDemo.flows.RedeemEvolvableDiamondTokenFlow
 import com.r3.corda.lib.tokens.diamondDemo.flows.UpdateEvolvableDiamondTokenFlow
 import com.r3.corda.lib.tokens.test.utils.getFlowOutcome
@@ -49,8 +49,8 @@ class DiamondWithTokenScenarioTests {
                             .withFlow<GetDiamondReportFlow>()
                             .withFlow<HasTransactionFlow>()
                             .withFlow<HasUnconsumedNonFungibleTokenFlow>()
-                            .withFlow<IssueNonFungibleDiamondToken>()
-                            .withFlow<MoveNonFungibleDiamondToken>()
+                            .withFlow<IssueNonFungibleDiamondTokenFlow>()
+                            .withFlow<MoveNonFungibleDiamondTokenFlow>()
                             .withFlow<RedeemEvolvableDiamondTokenFlow>()
                             .withFlow<UpdateEvolvableDiamondTokenFlow>()
                     }
@@ -261,7 +261,7 @@ class DiamondWithTokenScenarioTests {
         httpRpcClient<FlowStarterRPCOps, SignedTransactionDigest> {
             val flowOutcomeResponse = getFlowOutcome(
                 runFlow(
-                    IssueNonFungibleDiamondToken::class,
+                    IssueNonFungibleDiamondTokenFlow::class,
                     mapOf(
                         "tokenLinearId" to tokenLinearId,
                         "issueTo" to issueTo.toString(),
@@ -280,7 +280,7 @@ class DiamondWithTokenScenarioTests {
         httpRpcClient<FlowStarterRPCOps, SignedTransactionDigest> {
             val flowOutcomeResponse = getFlowOutcome(
                 runFlow(
-                    MoveNonFungibleDiamondToken::class,
+                    MoveNonFungibleDiamondTokenFlow::class,
                     mapOf(
                         "nftLinearId" to nftLinearId,
                         "moveTo" to moveTo.toString(),
