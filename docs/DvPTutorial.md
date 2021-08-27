@@ -71,11 +71,12 @@ class HouseContract : EvolvableTokenContract(), Contract {
 Let's take a look how to create and issue `EvolvableTokenType` onto the ledger.
 
 ```kotlin
+    val flowEngine: FlowEngine // from injection
     // From within the flow.
     val house: House = House(...)
     val notary: Party = getPreferredNotary(notaryLookupService, cordappProvider.appConfig) // Or provide notary party using your favourite function from NotaryUtilities.
     // We need to create the evolvable token first.
-    subFlow(CreateEvolvableTokens(house withNotary notary))
+    flowEngine.subFlow(CreateEvolvableTokens(house withNotary notary))
 ```
 
 `CreateEvolvableTokens` flow creates the evolvable state and shares it with maintainers and potential observers. To issue a token that
@@ -87,12 +88,13 @@ into `TokenPointer` first. This way, the token can evolve independently to which
 Let's issue `NonFungibleToken` referencing `House` held by Alice party.
 
 ```kotlin
+    val flowEngine: FlowEngine // from injection
     val aliceParty: Party = ...
     val issuerParty: Party = ourIdentity
     val housePtr = house.toPointer<House>()
     // Create NonFungibleToken referencing house with Alice party as an owner.
     val houseToken: NonFungibleToken = housePtr issuedBy issuerParty heldBy aliceParty
-    subFlow(ConfidentialIssueTokens(listOf(houseToken)))
+    flowEngine.subFlow(ConfidentialIssueTokens(listOf(houseToken)))
 ```
 
 There are some flows from issue tokens family that let you issue a token onto the ledger. In this case we used
@@ -103,9 +105,10 @@ For testing delivery versus payment it would be great to have some money tokens 
 tokens is straightforward:
 
 ```kotlin
+    val flowEngine: FlowEngine // from injection
     // Let's print some money!
     val otherParty: Party = ...
-    subFlow(IssueTokens(listOf(1_000_00.GBP issuedBy issuerParty heldBy otherParty))) // Initiating version of IssueFlow
+    flowEngine.subFlow(IssueTokens(listOf(1_000_00.GBP issuedBy issuerParty heldBy otherParty))) // Initiating version of IssueFlow
 ```
 
 **Note** There are different versions of `IssueFlow` inlined (that require you to pass in flow sessions) and initiating (callable via RPC),
@@ -136,11 +139,13 @@ Flow takes house to sell and new owner party. Let's define price notification to
 Then construct transaction builder with house move to the new holder:
 
 ```kotlin
+    @CordaInject
+    lateinit var transactionBuilderFactory: TransactionBuilderFactory
     @Suspendable
     override fun call(): SignedTransaction {
         val housePtr = house.toPointer<House>()
         // We can specify preferred notary in cordapp config file, otherwise the first one from network parameters is chosen.
-        val txBuilder = TransactionBuilder(notary = getPreferredNotary(notaryLookupService, cordappProvider.appConfig))
+        val txBuilder = transactionBuilderFactory.create().setNotary(getPreferredNotary(notaryLookupService, cordappProvider.appConfig))
         addMoveNonFungibleTokens(txBuilder, persistenceService, housePtr, newHolder)
         ...
     }
@@ -150,12 +155,13 @@ Time to contact the counterparty to collect `GBP` states in exchange for house:
 
 ```kotlin
         ...
+        val flowEngine: FlowEngine // from injection
         // Initiate new flow session. If this flow is supposed to be called as inline flow, then session should have been already passed.
         val session = initiateFlow(newHolder)
         // Ask for input stateAndRefs - send notification with the amount to exchange.
         session.send(PriceNotification(house.valuation))
         // Receive GBP states back.
-        val inputs = subFlow(ReceiveStateAndRefFlow<FungibleToken>(session))
+        val inputs = flowEngine.subFlow(ReceiveStateAndRefFlow<FungibleToken>(session))
         // Receive outputs.
         val outputs = session.receive<List<FungibleToken>>().unwrap { it }
         // For the future we could add some checks for inputs and outputs - that they sum up to house valuation,
@@ -175,8 +181,9 @@ It can happen that input states to the transaction have confidential identities 
 the final phase:
 
 ```kotlin
+        val flowEngine: FlowEngine // from injection
         ...
-        subFlow(SyncKeyMappingFlow(session, txBuilder.toWireTransaction()))
+        flowEngine.subFlow(SyncKeyMappingFlow(session, txBuilder.toWireTransaction()))
         ...
 ```
 
@@ -185,12 +192,14 @@ the final phase:
 The last step is signing the transaction by all parties involved:
 
 ```kotlin
+        val flowEngine: FlowEngine // from injection
+        val keyManagementService: KeyManagementService // from injection
         ...
         // Because states on the transaction can have confidential identities on them, we need to sign them with corresponding keys.
-        val ourSigningKeys = transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction()).ourSigningKeys(serviceHub)
-        val initialStx = transactionService.sign(txBuilder, signingPubKeys = ourSigningKeys)
+        val ourSigningKeys = transactionMappingService.toLedgerTransaction(txBuilder.toWireTransaction()).ourSigningKeys(keyManagementService)
+        val initialStx = txBuilder.sign(ourSigningKeys)
         // Collect signatures from the new house owner.
-        val stx = subFlow(CollectSignaturesFlow(initialStx, listOf(session), ourSigningKeys))
+        val stx = flowEngine.subFlow(CollectSignaturesFlow(initialStx, listOf(session), ourSigningKeys))
         ...
 ```
 
@@ -200,11 +209,12 @@ identities that should receive updates, it's usually kept on the issuer node (an
 to behave correctly we need to add special `UpdateDistributionListFlow` subflow:
 
 ```kotlin
+        val flowEngine: FlowEngine // from injection
         ...
         // Update distribution list.
-        subFlow(UpdateDistributionListFlow(stx))
+        flowEngine.subFlow(UpdateDistributionListFlow(stx))
         // Finalise transaction! If you want to have observers notified, you can pass optional observers sessions.
-        return subFlow(ObserverAwareFinalityFlow(stx, listOf(session)))
+        return flowEngine.subFlow(ObserverAwareFinalityFlow(stx, listOf(session)))
     }
 ```
 
@@ -243,15 +253,15 @@ The responder flow is pretty straightforward to write calling corresponding flow
                 changeHolder = changeHolder,
                 queryBy = TokenQueryBy()
             )
-            subFlow(SendStateAndRefFlow(otherSession, inputs))
+            flowEngine.subFlow(SendStateAndRefFlow(otherSession, inputs))
             otherSession.send(outputs)
-            subFlow(SyncKeyMappingFlowHandler(otherSession))
-            subFlow(object : SignTransactionFlow(otherSession) {
+			flowEngine.subFlow(SyncKeyMappingFlowHandler(otherSession))
+			flowEngine.subFlow(object : SignTransactionFlow(otherSession) {
                 override fun checkTransaction(stx: SignedTransaction) {
                     // We should perform some basic sanity checks before signing the transaction. This step was omitted for simplicity.
                 }
             })
-            subFlow(ObserverAwareFinalityFlowHandler(otherSession))
+			flowEngine.subFlow(ObserverAwareFinalityFlowHandler(otherSession))
         }
     }
 ```
@@ -269,10 +279,11 @@ valuation and all interested parties will get notified of that change.
 It's sufficient for the issuer (or house state maintainer) to update that token by simply running:
 
 ```kotlin
+    val flowEngine: FlowEngine // from injection
     // Update that evolvable state on issuer node.
     val oldHouse: StateAndRef<House> = ... // Query for the state.
     val newHouse: House = oldHouse.state.data.copy(valuation = 800_000L.GBP)
-    subFlow(UpdateEvolvableToken(oldStateAndRef = old, newState = new))
+    flowEngine.subFlow(UpdateEvolvableToken(oldStateAndRef = old, newState = new))
 ```
 
 It will send the transaction with new updated house state to all parties on the issuer's distribution list. They will record it locally in

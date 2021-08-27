@@ -62,6 +62,7 @@ val selectedTokens: List<StateAndRef<FungibleToken>> = localTokenSelector.select
 or even better `generateMove` method returns list of inputs and list of output states that can be passed to `addMove` or `MoveTokensFlow`:
 
 ```kotlin
+val flowEngine: FlowEngine // from injection
 // or generate inputs, outputs with change, grouped by issuers
 val partiesAndAmounts: List<PartyAndAmount<TokenType>> = ... // As in previous tutorials, list of parties that should receive amount of TokenType
 val changeHolder: AbstractParty = ... // Party that should receive change
@@ -75,7 +76,7 @@ val (inputs, outputs) = localTokenSelector.generateMove(
     queryBy = queryBy) // See section below on queries
 
 // Call subflow
-subflow(MoveTokensFlow(inputs, outputs, participantSessions, observerSessions))
+flowEngine.subFlow(MoveTokensFlow(inputs, outputs, participantSessions, observerSessions))
 // or use utilities functions
 //... implement some business specific logic
 addMoveTokens(transactionBuilder, inputs, outputs)
@@ -112,7 +113,7 @@ val (inputs, changeOutput) =  generateExit(
 )
 // Call subflow top redeem states with the issuer
 val issuerSession: FlowSession = ...
-flowEngine.subflow(RedeemTokensFlow(inputs, changeOutput, issuerSession, observerSessions))
+flowEngine.subFlow(RedeemTokensFlow(inputs, changeOutput, issuerSession, observerSessions))
 // or use utilities functions.
 addTokensToRedeem(
     transactionBuilder = transactionBuilder,

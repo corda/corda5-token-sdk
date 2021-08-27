@@ -169,14 +169,15 @@ _Conidential version:_ `ConfidentialIssueTokens`, _responder_: `ConfidentialIssu
 **Inline**
 
 ```kotlin
+val flowEngine: FlowEngine // from injection
 // We need to pass in counterparties sessions.
 val holderSession = initateFlow(holder)
 ...
 // All of the below flows can take a list of observer sessions.
 // Fungible
-subFlow(IssueTokensFlow(fungibleToken, listOf(holderSession)))
+flowEngine.subFlow(IssueTokensFlow(fungibleToken, listOf(holderSession)))
 // NonFungible
-subFlow(IssueTokensFlow(nonFungibleToken, listOf(holderSession)))
+flowEngine.subFlow(IssueTokensFlow(nonFungibleToken, listOf(holderSession)))
 ``` 
 
 There are other constructor overloads worth investigating.
@@ -186,14 +187,15 @@ _Responder flow:_ `IssueTokensFlowHandler`
 **Confidential inline**
 
 ```kotlin
+val flowEngine: FlowEngine // from injection
 // We need to pass in counterparties sessions.
 val holderSession = initateFlow(holder)
 ...
 // All of the below flows can take a list of observer sessions.
 // Fungible
-subFlow(ConfidentialIssueTokensFlow(fungibleToken, listOf(holderSession)))
+flowEngine.subFlow(ConfidentialIssueTokensFlow(fungibleToken, listOf(holderSession)))
 // NonFungible
-subFlow(ConfidentialIssueTokensFlow(nonFungibleToken, listOf(holderSession)))
+flowEngine.subFlow(ConfidentialIssueTokensFlow(nonFungibleToken, listOf(holderSession)))
 ```
 
 _Responder flow:_ `ConfidentialIssueTokensFlowHandler`
@@ -244,17 +246,18 @@ _Confidential version:_ `ConfidentialMoveFungibleTokens`, _responder_: `Confiden
 **Inline**
 
 ```kotlin
+val flowEngine: FlowEngine // from injection
 // We need to pass in counterparties sessions.
 val holderSession = initateFlow(holder)
 val otherHolderSession = initateFlow(otherHolder)
 ...
 // All of the below flows can take a list of observer sessions.
 // Construct many moves in one transaction.
-subFlow(MoveFungibleTokensFlow(listOf(PartyAndAmount(holder, 13 of myTokenType), PartyAndAmount(otherHolder, 44 of myTokenType)),
+flowEngine.subFlow(MoveFungibleTokensFlow(listOf(PartyAndAmount(holder, 13 of myTokenType), PartyAndAmount(otherHolder, 44 of myTokenType)),
     listOf(holderSession, otherHolderSession))
 )
 // Move only tokens issued by particular issuer.
-subFlow(MoveFungibleTokensFlow(
+flowEngine.subFlow(MoveFungibleTokensFlow(
     partyAndAmount = PartyAndAmount(holder, 5 of myTokenType),
     queryCriteria = tokenAmountWithIssuerCriteria(myTokenType, issuer),
     participantSessions = listOf(holderSession, otherHolderSession),
@@ -286,9 +289,10 @@ _Confidential version:_ `ConfidentialMoveNonFungibleTokens`, _responder_: `Confi
 **Inline**
 
 ```kotlin
+val flowEngine: FlowEngine // from injection
 val holderSession = initateFlow(holder)
 val observerSession = initatieFlow(observer)
-subFlow(MoveNonFungibleTokensFlow(PartyAndToken(holder, myTokenType), listOf(holderSession), listOf(observerSession)))
+flowEngine.subFlow(MoveNonFungibleTokensFlow(PartyAndToken(holder, myTokenType), listOf(holderSession), listOf(observerSession)))
 ```
 
 _Responder flow:_ `MoveTokensFlowHandler`
@@ -338,11 +342,12 @@ _Confidential version:_ `ConfidentialRedeemFungibleTokens`, _responder_: `Confid
 **Inline**
 
 ```kotlin
+val flowEngine: FlowEngine // from injection
 val issuerSession = initateFlow(issuer)
 val observerSession = initatieFlow(observer)
 val changeHolder: AbstractParty = ... // It can be either confidential identity belonging to tokens holder or well known identity of holder
 // It is also possible to provide custom query criteria for token selection.
-subFlow(RedeemFungibleTokensFlow(
+flowEngine.subFlow(RedeemFungibleTokensFlow(
     amount = 1000.GBP, 
     issuerSession = issuerSession,
     changeHolder = changeHolder,
@@ -373,10 +378,11 @@ _Responder flow:_ `RedeemNonFungibleTokensHandler`
 **Inline**
 
 ```kotlin
+val flowEngine: FlowEngine // from injection
 val myTokenType: TokenType = ...
 val issuerSession = initateFlow(issuerParty)
 val observerSession = initatieFlow(observerParty)
-subFlow(RedeemNonFungibleTokensFlow(myTokenType, listOf(issuerSession), listOf(observerSession)))
+flowEngine.subFlow(RedeemNonFungibleTokensFlow(myTokenType, listOf(issuerSession), listOf(observerSession)))
 ```
 
 _Responder flow:_ `RedeemTokensFlowHandler`
@@ -396,10 +402,11 @@ Observers record states in `StatesToRecord.ALL_VISIBLE` mode. Participants handl
 You can call it at the finalisation step:
 
 ```kotlin
+val flowEngine: FlowEngine // from injection
 val stx: SignedTransaction = ...
 val participantSession: FlowSession = initFlow(participantParty)
 val observerSession: FlowSession = initFlow(observerParty)
-subFlow(ObserverAwareFinalityFlow(stx, listOf(participantSession, observerSession)))
+flowEngine.subFlow(ObserverAwareFinalityFlow(stx, listOf(participantSession, observerSession)))
 ```
 
 **Keeping distribution lists up-to-date**
@@ -411,8 +418,9 @@ that takes care of adding new parties to the distribution list kept by the token
 Simply call at the end of your flow:
 
 ```kotlin
+val flowEngine: FlowEngine // from injection
 val stx: SignedTransaction = ...
-subFlow(UpdateDistributionListFlow(stx))
+flowEngine.subFlow(UpdateDistributionListFlow(stx))
 ```
 
 ### Creating your own subtypes of TokenType
@@ -466,7 +474,10 @@ notary = "O=Notary,L=London,C=GB"
 All flows from `token-sdk` will use this notary. If you want to use it from your custom flows, you can call:
 
 ```kotlin
-val notary = getPreferredNotary(serviceHub)
+val transactionBuilderFactory: TransactionBuilderFactory // provided by injection
+val notaryLookupService: NotaryLookupService // provided by injection
+val cordappProvider: CordappProvider // provided by injection
+val notary = getPreferredNotary(notaryLookupService, cordappProvider.appConfig)
 // And pass it to transaction builder
-TransactionBuilder(notary = notary)
+transactionBuilderFactory.create().setNotary(notary)
 ```
