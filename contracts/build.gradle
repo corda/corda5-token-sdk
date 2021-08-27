@@ -8,6 +8,8 @@ plugins {
     id 'com.r3.internal.gradle.plugins.r3Publish'
 }
 
+description 'Token SDK Contracts'
+
 sourceSets {
     test {
         resources {

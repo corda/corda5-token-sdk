@@ -8,6 +8,8 @@ plugins {
     id 'com.r3.internal.gradle.plugins.r3Publish'
 }
 
+description 'Token SDK Workflows'
+
 evaluationDependsOn(":modules:selection")
 
 def selectionProject = project(":modules:selection")
