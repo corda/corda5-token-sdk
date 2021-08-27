@@ -51,21 +51,16 @@ class IssueNonFungibleDiamondTokenFlow
 
     @Suspendable
     override fun call(): SignedTransactionDigest {
-        val parameters: Map<String, String> = jsonMarshallingService.parseJson(params.parametersInJson)
+        val parameters = jsonMarshallingService.parseParameters(params)
 
-        val tokenLinearId = UniqueIdentifier.fromString(parameters.getMandatoryParameter("tokenLinearId"))
-        val issueTo = CordaX500Name.parse(parameters.getMandatoryParameter("issueTo"))
-        val issueToParty = identityService.partyFromName(issueTo)
-            ?: throw BadRpcStartFlowRequestException("Could not find party for CordaX500Name: $issueTo")
+        val tokenLinearId = parameters.getMandatoryUUID("tokenLinearId")
+        val issueTo = parameters.getMandatoryPartyFromName(identityService, "issueTo")
         val anonymous = parameters.getMandatoryParameter("anonymous").toBoolean()
 
-        val results: List<StateAndRef<DiamondGradingReport>> =
-            persistenceService.getUnconsumedLinearStates(tokenLinearId.id, expectedSize = 1)
-
-        val token = results.single().state.data
+        val token = persistenceService.getUnconsumedLinearState<DiamondGradingReport>(tokenLinearId).state.data
 
         val nft =
-            token.toPointer<DiamondGradingReport>() issuedBy flowIdentity.ourIdentity heldBy issueToParty withHashingService hashingService
+            token.toPointer<DiamondGradingReport>() issuedBy flowIdentity.ourIdentity heldBy issueTo withHashingService hashingService
 
         val stx = if (anonymous) {
             flowEngine.subFlow(ConfidentialIssueTokens(listOf(nft)))

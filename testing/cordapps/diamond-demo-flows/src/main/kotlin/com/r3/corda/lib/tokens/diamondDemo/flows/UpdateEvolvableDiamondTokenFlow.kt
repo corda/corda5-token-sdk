@@ -38,17 +38,15 @@ class UpdateEvolvableDiamondTokenFlow
 
     @Suspendable
     override fun call(): SignedTransactionDigest {
-        val parameters: Map<String, String> = jsonMarshallingService.parseJson(params.parametersInJson)
+        val parameters = jsonMarshallingService.parseParameters(params)
 
-        val tokenLinearId = UniqueIdentifier.fromString(parameters.getMandatoryParameter("tokenLinearId"))
+        val tokenLinearId = parameters.getMandatoryUUID("tokenLinearId")
         val caratWeight = parameters["caratWeight"]?.let { BigDecimal(it) }
         val colorScale = parameters["colorScale"]?.let { ColorScale.valueOf(it) }
         val clarityScale = parameters["clarityScale"]?.let { ClarityScale.valueOf(it) }
         val cutScale = parameters["cutScale"]?.let { CutScale.valueOf(it) }
 
-        val results: List<StateAndRef<DiamondGradingReport>> =
-            persistenceService.getUnconsumedLinearStates(tokenLinearId.id, expectedSize = 1)
-        val token = results.single()
+        val token = persistenceService.getUnconsumedLinearState<DiamondGradingReport>(tokenLinearId)
 
         val newGradingReport = with(token.state.data) {
             DiamondGradingReport(

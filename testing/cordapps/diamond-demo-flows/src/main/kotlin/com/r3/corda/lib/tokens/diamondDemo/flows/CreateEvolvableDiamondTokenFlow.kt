@@ -43,15 +43,13 @@ class CreateEvolvableDiamondTokenFlow
 
     @Suspendable
     override fun call(): SignedTransactionDigest {
-        val parameters: Map<String, String> = jsonMarshallingService.parseJson(params.parametersInJson)
+        val parameters = jsonMarshallingService.parseParameters(params)
 
         val caratWeight = parameters.getMandatoryParameter("caratWeight")
         val colorScale = parameters.getMandatoryParameter("colorScale")
         val clarityScale = parameters.getMandatoryParameter("clarityScale")
         val cutScale = parameters.getMandatoryParameter("cutScale")
-        val requestor = CordaX500Name.parse(parameters.getMandatoryParameter("requestor"))
-        val requestorParty = identityService.partyFromName(requestor)
-            ?: throw BadRpcStartFlowRequestException("Could not find requesting party from CordaX500Name: $requestor")
+        val requestor = parameters.getMandatoryPartyFromName(identityService, "requestor")
 
         val notary = notaryLookupService.notaryIdentities.first()
 
@@ -61,7 +59,7 @@ class CreateEvolvableDiamondTokenFlow
             DiamondGradingReport.ClarityScale.valueOf(clarityScale),
             DiamondGradingReport.CutScale.valueOf(cutScale),
             flowIdentity.ourIdentity,
-            requestorParty
+            requestor
         )
 
         val stx = flowEngine.subFlow(

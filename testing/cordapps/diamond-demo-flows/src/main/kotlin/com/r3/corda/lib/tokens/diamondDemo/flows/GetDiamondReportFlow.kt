@@ -28,12 +28,8 @@ class GetDiamondReportFlow
 
     @Suspendable
     override fun call(): DiamondGradingReportDigest {
-        val parameters: Map<String, String> = jsonMarshallingService.parseJson(params.parametersInJson)
-        val tokenLinearId = UniqueIdentifier.fromString(parameters.getMandatoryParameter("linearId"))
-
-        val results: List<StateAndRef<DiamondGradingReport>> =
-            persistenceService.getUnconsumedLinearStates(tokenLinearId.id, expectedSize = 1)
-
-        return DiamondGradingReportDigest(results.single().state.data)
+        val tokenLinearId = jsonMarshallingService.parseParameters(params).getMandatoryUUID("linearId")
+        val result = persistenceService.getUnconsumedLinearState<DiamondGradingReport>(tokenLinearId)
+        return DiamondGradingReportDigest(result.state.data)
     }
 }

@@ -26,7 +26,7 @@ class HasTransactionFlow
 
     @Suspendable
     override fun call(): Boolean {
-        val parameters: Map<String, String> = jsonMarshallingService.parseJson(params.parametersInJson)
+        val parameters = jsonMarshallingService.parseParameters(params)
         val signedTransactionDigest: SignedTransactionDigest =
             jsonMarshallingService.parseJson(parameters.getMandatoryParameter("transactionDigest"))
         val tx = transactionStorage.getTransaction(SecureHash.create(signedTransactionDigest.txId))

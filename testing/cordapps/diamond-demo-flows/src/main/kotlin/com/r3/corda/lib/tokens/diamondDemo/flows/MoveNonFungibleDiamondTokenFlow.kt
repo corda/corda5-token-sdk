@@ -41,30 +41,19 @@ class MoveNonFungibleDiamondTokenFlow
 
     @Suspendable
     override fun call(): SignedTransactionDigest {
-        val parameters: Map<String, String> = jsonMarshallingService.parseJson(params.parametersInJson)
+        val parameters = jsonMarshallingService.parseParameters(params)
 
-        val nftLinearId = UniqueIdentifier.fromString(parameters.getMandatoryParameter("nftLinearId"))
-        val moveTo = CordaX500Name.parse(parameters.getMandatoryParameter("moveTo"))
-        val moveToParty = identityService.partyFromName(moveTo)
-            ?: throw BadRpcStartFlowRequestException("Could not find party for CordaX500Name: $moveTo")
-        val anonymous = parameters.getMandatoryParameter("anonymous").toBoolean()
+        val nftLinearId = parameters.getMandatoryUUID("nftLinearId")
+        val moveTo = parameters.getMandatoryPartyFromName(identityService, "moveTo")
+        val anonymous = parameters.getMandatoryBoolean("anonymous")
 
-        val results: List<StateAndRef<NonFungibleToken>> =
-            persistenceService.getUnconsumedLinearStates(nftLinearId.id, expectedSize = 1)
-
-        val nft = results.single().state.data
-
-        val partyAndToken = PartyAndToken(
-            moveToParty,
-            nft.token.tokenType
-        )
-
+        val nft = persistenceService.getUnconsumedLinearState<NonFungibleToken>(nftLinearId).state.data
+        val partyAndToken = PartyAndToken(moveTo, nft.token.tokenType)
         val stx = if (anonymous) {
             flowEngine.subFlow(ConfidentialMoveNonFungibleTokens(partyAndToken, emptyList()))
         } else {
             flowEngine.subFlow(MoveNonFungibleTokens(partyAndToken))
         }
-
 
         return SignedTransactionDigest(
             stx.id,

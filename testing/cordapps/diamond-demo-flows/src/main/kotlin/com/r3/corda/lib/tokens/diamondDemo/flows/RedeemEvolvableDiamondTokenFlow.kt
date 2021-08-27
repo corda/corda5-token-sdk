@@ -39,17 +39,13 @@ class RedeemEvolvableDiamondTokenFlow
 
     @Suspendable
     override fun call(): SignedTransactionDigest {
-        val parameters: Map<String, String> = jsonMarshallingService.parseJson(params.parametersInJson)
+        val parameters = jsonMarshallingService.parseParameters(params)
 
-        val nftLinearId = UniqueIdentifier.fromString(parameters.getMandatoryParameter("nftLinearId"))
-        val redeemFrom = CordaX500Name.parse(parameters.getMandatoryParameter("redeemFrom"))
-        val redeemFromParty = identityService.partyFromName(redeemFrom)
-            ?: throw BadRpcStartFlowRequestException("Could not find party for CordaX500Name: $redeemFrom")
+        val nftLinearId = parameters.getMandatoryUUID("nftLinearId")
+        val redeemFrom = parameters.getMandatoryPartyFromName(identityService, "redeemFrom")
 
-        val results: List<StateAndRef<NonFungibleToken>> =
-            persistenceService.getUnconsumedLinearStates(nftLinearId.id, 1)
-        val nft = results.single().state.data
-        val stx = flowEngine.subFlow(RedeemNonFungibleTokens(nft.token.tokenType, redeemFromParty))
+        val nft = persistenceService.getUnconsumedLinearState<NonFungibleToken>(nftLinearId).state.data
+        val stx = flowEngine.subFlow(RedeemNonFungibleTokens(nft.token.tokenType, redeemFrom))
 
         return SignedTransactionDigest(
             stx.id,

@@ -1,10 +1,19 @@
 package com.r3.corda.lib.tokens.diamondDemo.flows
 
 import net.corda.v5.application.flows.BadRpcStartFlowRequestException
+import net.corda.v5.application.flows.RpcStartFlowRequestParameters
+import net.corda.v5.application.identity.CordaX500Name
+import net.corda.v5.application.identity.Party
+import net.corda.v5.application.services.IdentityService
+import net.corda.v5.application.services.json.JsonMarshallingService
+import net.corda.v5.application.services.json.parseJson
 import net.corda.v5.application.services.persistence.PersistenceService
 import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.stream.Cursor
 import net.corda.v5.base.util.seconds
+import net.corda.v5.ledger.UniqueIdentifier
+import net.corda.v5.ledger.contracts.ContractState
+import net.corda.v5.ledger.contracts.StateAndRef
 import net.corda.v5.ledger.services.vault.IdentityStateAndRefPostProcessor
 import net.corda.v5.ledger.services.vault.StateStatus
 import java.util.*
@@ -19,10 +28,10 @@ private fun <T> Cursor<T>.getResults(): List<T> {
     return result
 }
 
-private fun <T> PersistenceService.findByUuidAndStateStatus(
+private fun <T : ContractState> PersistenceService.findByUuidAndStateStatus(
     uuid: UUID,
     stateStatus: StateStatus = StateStatus.UNCONSUMED
-): Cursor<T> {
+): Cursor<StateAndRef<T>> {
     return query(
         "LinearState.findByUuidAndStateStatus",
         mapOf(
@@ -34,7 +43,7 @@ private fun <T> PersistenceService.findByUuidAndStateStatus(
 }
 
 @Suspendable
-fun <T> PersistenceService.getUnconsumedLinearStates(uuid: UUID, expectedSize: Int? = null): List<T> {
+fun <T : ContractState> PersistenceService.getUnconsumedLinearStates(uuid: UUID, expectedSize: Int? = null): List<StateAndRef<T>> {
 
     val results = findByUuidAndStateStatus<T>(uuid).getResults()
     expectedSize?.let {
@@ -45,9 +54,31 @@ fun <T> PersistenceService.getUnconsumedLinearStates(uuid: UUID, expectedSize: I
     return results
 }
 
+@Suspendable
+fun <T : ContractState> PersistenceService.getUnconsumedLinearState(uuid: UUID): StateAndRef<T> = getUnconsumedLinearStates<T>(uuid, 1).single()
+
+fun JsonMarshallingService.parseParameters(params: RpcStartFlowRequestParameters) : Map<String, String> {
+    return parseJson(params.parametersInJson)
+}
 
 fun Map<String, String>.getMandatoryParameter(param: String): String {
     return this[param] ?: throw BadRpcStartFlowRequestException(
         "Mandatory parameter required to start flow was not found. Missing parameter: [$param]"
     )
+}
+
+fun Map<String, String>.getMandatoryBoolean(param: String): Boolean {
+    return this[param]?.toBoolean() ?: throw BadRpcStartFlowRequestException(
+        "Mandatory parameter required to start flow was not found. Missing parameter: [$param]"
+    )
+}
+
+fun Map<String, String>.getMandatoryUUID(param: String): UUID {
+    return UniqueIdentifier.fromString(getMandatoryParameter(param)).id
+}
+
+fun Map<String, String>.getMandatoryPartyFromName(identityService: IdentityService, param: String): Party {
+    val name = CordaX500Name.parse(getMandatoryParameter(param))
+    return identityService.partyFromName(name)
+        ?: throw BadRpcStartFlowRequestException("Could not find requesting party from CordaX500Name: $name")
 }

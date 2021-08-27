@@ -27,11 +27,9 @@ class HasUnconsumedNonFungibleTokenFlow
 
     @Suspendable
     override fun call(): Boolean {
-        val parameters: Map<String, String> = jsonMarshallingService.parseJson(params.parametersInJson)
-        val linearId = UniqueIdentifier.fromString(parameters.getMandatoryParameter("linearId"))
-
-        return persistenceService
-            .getUnconsumedLinearStates<StateAndRef<NonFungibleToken>>(linearId.id)
-            .isNotEmpty()
+        val linearId = jsonMarshallingService
+            .parseParameters(params)
+            .getMandatoryUUID("linearId")
+        return persistenceService.getUnconsumedLinearStates<NonFungibleToken>(linearId).isNotEmpty()
     }
 }
