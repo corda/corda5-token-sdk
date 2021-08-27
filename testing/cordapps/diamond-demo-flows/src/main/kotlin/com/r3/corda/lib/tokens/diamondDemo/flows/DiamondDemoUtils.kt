@@ -70,7 +70,6 @@ fun Map<String, String>.getMandatoryParameter(param: String): String =
         "Mandatory parameter required to start flow was not found. Missing parameter: [$param]"
     )
 
-
 fun Map<String, String>.getMandatoryBoolean(param: String): Boolean =
     this[param]?.toBoolean() ?: throw BadRpcStartFlowRequestException(
         "Mandatory parameter required to start flow was not found. Missing parameter: [$param]"
