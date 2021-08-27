@@ -2,12 +2,14 @@ package com.r3.corda.lib.tokens.diamondDemo.flows
 
 import net.corda.v5.application.flows.BadRpcStartFlowRequestException
 import net.corda.v5.application.services.persistence.PersistenceService
+import net.corda.v5.base.annotations.Suspendable
 import net.corda.v5.base.stream.Cursor
 import net.corda.v5.base.util.seconds
 import net.corda.v5.ledger.services.vault.IdentityStateAndRefPostProcessor
 import net.corda.v5.ledger.services.vault.StateStatus
 import java.util.*
 
+@Suspendable
 private fun <T> Cursor<T>.getResults(): List<T> {
     val result = mutableListOf<T>()
     do {
@@ -31,6 +33,7 @@ private fun <T> PersistenceService.findByUuidAndStateStatus(
     )
 }
 
+@Suspendable
 fun <T> PersistenceService.getUnconsumedLinearStates(uuid: UUID, expectedSize: Int? = null): List<T> {
 
     val results = findByUuidAndStateStatus<T>(uuid).getResults()
