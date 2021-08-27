@@ -44,7 +44,7 @@ class RedeemEvolvableDiamondTokenFlow
         val nftLinearId = parameters.getMandatoryUUID("nftLinearId")
         val redeemFrom = parameters.getMandatoryPartyFromName(identityService, "redeemFrom")
 
-        val nft = persistenceService.getUnconsumedLinearState<NonFungibleToken>(nftLinearId).state.data
+        val nft = persistenceService.getUnconsumedLinearStateData<NonFungibleToken>(nftLinearId)
         val stx = flowEngine.subFlow(RedeemNonFungibleTokens(nft.token.tokenType, redeemFrom))
 
         return SignedTransactionDigest(

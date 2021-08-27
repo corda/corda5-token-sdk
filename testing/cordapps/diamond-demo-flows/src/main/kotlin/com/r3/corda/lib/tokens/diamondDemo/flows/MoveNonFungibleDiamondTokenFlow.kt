@@ -47,13 +47,14 @@ class MoveNonFungibleDiamondTokenFlow
         val moveTo = parameters.getMandatoryPartyFromName(identityService, "moveTo")
         val anonymous = parameters.getMandatoryBoolean("anonymous")
 
-        val nft = persistenceService.getUnconsumedLinearState<NonFungibleToken>(nftLinearId).state.data
+        val nft = persistenceService.getUnconsumedLinearStateData<NonFungibleToken>(nftLinearId)
         val partyAndToken = PartyAndToken(moveTo, nft.token.tokenType)
-        val stx = if (anonymous) {
-            flowEngine.subFlow(ConfidentialMoveNonFungibleTokens(partyAndToken, emptyList()))
+        val flow = if (anonymous) {
+            ConfidentialMoveNonFungibleTokens(partyAndToken, emptyList())
         } else {
-            flowEngine.subFlow(MoveNonFungibleTokens(partyAndToken))
+            MoveNonFungibleTokens(partyAndToken)
         }
+        val stx = flowEngine.subFlow(flow)
 
         return SignedTransactionDigest(
             stx.id,

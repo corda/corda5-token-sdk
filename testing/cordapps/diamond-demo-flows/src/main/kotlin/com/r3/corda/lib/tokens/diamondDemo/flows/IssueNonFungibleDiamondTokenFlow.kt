@@ -57,16 +57,16 @@ class IssueNonFungibleDiamondTokenFlow
         val issueTo = parameters.getMandatoryPartyFromName(identityService, "issueTo")
         val anonymous = parameters.getMandatoryParameter("anonymous").toBoolean()
 
-        val token = persistenceService.getUnconsumedLinearState<DiamondGradingReport>(tokenLinearId).state.data
-
+        val token = persistenceService.getUnconsumedLinearStateData<DiamondGradingReport>(tokenLinearId)
         val nft =
             token.toPointer<DiamondGradingReport>() issuedBy flowIdentity.ourIdentity heldBy issueTo withHashingService hashingService
 
-        val stx = if (anonymous) {
-            flowEngine.subFlow(ConfidentialIssueTokens(listOf(nft)))
+        val flow = if (anonymous) {
+            ConfidentialIssueTokens(listOf(nft))
         } else {
-            flowEngine.subFlow(IssueTokens(listOf(nft)))
+            IssueTokens(listOf(nft))
         }
+        val stx = flowEngine.subFlow(flow)
 
         return SignedTransactionDigest(
             stx.id,
