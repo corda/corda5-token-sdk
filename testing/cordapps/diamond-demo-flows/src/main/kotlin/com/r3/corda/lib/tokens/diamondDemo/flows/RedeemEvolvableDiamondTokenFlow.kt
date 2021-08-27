@@ -1,8 +1,6 @@
 package com.r3.corda.lib.tokens.diamondDemo.flows
 
 import com.r3.corda.lib.tokens.contracts.states.NonFungibleToken
-import com.r3.corda.lib.tokens.test.utils.getMandatoryParameter
-import com.r3.corda.lib.tokens.test.utils.getUnconsumedLinearStates
 import com.r3.corda.lib.tokens.workflows.flows.rpc.RedeemNonFungibleTokens
 import net.corda.v5.application.flows.BadRpcStartFlowRequestException
 import net.corda.v5.application.flows.Flow

@@ -3,8 +3,6 @@ package com.r3.corda.lib.tokens.diamondDemo.flows
 import com.r3.corda.lib.tokens.builder.heldBy
 import com.r3.corda.lib.tokens.builder.withHashingService
 import com.r3.corda.lib.tokens.contracts.utilities.issuedBy
-import com.r3.corda.lib.tokens.test.utils.getMandatoryParameter
-import com.r3.corda.lib.tokens.test.utils.getUnconsumedLinearStates
 import com.r3.corda.lib.tokens.testing.states.DiamondGradingReport
 import com.r3.corda.lib.tokens.workflows.flows.rpc.ConfidentialIssueTokens
 import com.r3.corda.lib.tokens.workflows.flows.rpc.IssueTokens

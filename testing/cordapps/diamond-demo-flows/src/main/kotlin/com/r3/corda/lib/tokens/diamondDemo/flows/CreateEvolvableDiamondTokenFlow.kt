@@ -1,6 +1,5 @@
 package com.r3.corda.lib.tokens.diamondDemo.flows
 
-import com.r3.corda.lib.tokens.test.utils.getMandatoryParameter
 import com.r3.corda.lib.tokens.testing.states.DiamondGradingReport
 import com.r3.corda.lib.tokens.testing.states.DiamondGradingReportDigest
 import com.r3.corda.lib.tokens.workflows.flows.rpc.CreateEvolvableTokens

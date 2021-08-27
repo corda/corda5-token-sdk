@@ -1,7 +1,5 @@
 package com.r3.corda.lib.tokens.diamondDemo.flows
 
-import com.r3.corda.lib.tokens.test.utils.getMandatoryParameter
-import com.r3.corda.lib.tokens.test.utils.getUnconsumedLinearStates
 import com.r3.corda.lib.tokens.testing.states.DiamondGradingReport
 import com.r3.corda.lib.tokens.testing.states.DiamondGradingReport.ClarityScale
 import com.r3.corda.lib.tokens.testing.states.DiamondGradingReport.ColorScale

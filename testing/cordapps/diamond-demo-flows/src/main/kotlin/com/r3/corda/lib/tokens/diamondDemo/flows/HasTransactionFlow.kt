@@ -1,6 +1,5 @@
 package com.r3.corda.lib.tokens.diamondDemo.flows
 
-import com.r3.corda.lib.tokens.test.utils.getMandatoryParameter
 import net.corda.v5.application.flows.Flow
 import net.corda.v5.application.flows.JsonConstructor
 import net.corda.v5.application.flows.RpcStartFlowRequestParameters
