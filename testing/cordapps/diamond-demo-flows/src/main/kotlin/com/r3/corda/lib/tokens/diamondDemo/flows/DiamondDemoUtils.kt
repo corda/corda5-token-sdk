@@ -60,7 +60,7 @@ fun <T : ContractState> PersistenceService.getUnconsumedLinearState(uuid: UUID):
 
 @Suspendable
 fun <T : ContractState> PersistenceService.getUnconsumedLinearStateData(uuid: UUID): T =
-    getUnconsumedLinearStates<T>(uuid, 1).single().state.data
+    getUnconsumedLinearState<T>(uuid).state.data
 
 fun JsonMarshallingService.parseParameters(params: RpcStartFlowRequestParameters): Map<String, String> =
     parseJson(params.parametersInJson)
