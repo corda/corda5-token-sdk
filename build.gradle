@@ -187,9 +187,10 @@ configure(publishProjects) { subproject ->
     publishing {
         publications {
             create(subproject.name, MavenPublication) {
-                evaluationDependsOn(subproject.path)
+                evaluationDependsOn(subproject.path.toString())
+                def projectName = "tokens-${subproject.name}"
                 groupId subproject.group
-                artifactId "tokens-${subproject.name}"
+                artifactId projectName
 
                 pluginManager.withPlugin('java-library') {
                     from components.java
@@ -203,7 +204,7 @@ configure(publishProjects) { subproject ->
                 }
 
                 pom {
-                    name = subproject.name
+                    name = projectName
                     description = subproject.description
                     url = 'https://github.com/corda/corda5-token-sdk'
                     licenses {
