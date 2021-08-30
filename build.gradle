@@ -187,6 +187,7 @@ configure(publishProjects) { subproject ->
     publishing {
         publications {
             create(subproject.name, MavenPublication) {
+                evaluationDependsOn(subproject.path)
                 groupId subproject.group
                 artifactId "tokens-${subproject.name}"
 
