@@ -7,7 +7,6 @@ plugins {
 
 description 'Token SDK tokens builder'
 
-
 cordapp {
     targetPlatformVersion corda_platform_version.toInteger()
 
