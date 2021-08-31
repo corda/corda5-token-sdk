@@ -91,9 +91,7 @@ publish binaries to your local maven repository:
     ./gradlew clean install
 
 ## Where to go next?
-
-[Official documentation](https://engineering.r3.com/product-areas/corda-platform/api-and-modularity/docs/)
-_Note: this currently points to internal documentation and should be updated to point to public documentation when made available._
+Official documentation: _Note: this documentation is not yet public and should be linked here when available._
 
 [Introduction to token SDK](docs/OVERVIEW.md)
 
