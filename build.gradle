@@ -8,6 +8,8 @@ plugins {
     id 'jacoco'
     id 'net.corda.cordapp.cordapp-configuration'
     id 'org.jetbrains.kotlin.plugin.noarg' apply false
+    id 'com.r3.internal.gradle.plugins.r3ArtifactoryPublish' apply true
+    id 'com.r3.internal.gradle.plugins.r3Publish' apply false
 }
 
 allprojects {
@@ -31,6 +33,18 @@ allprojects {
         }
     }
 }
+
+def revision = {
+    if (System.getenv("CORDA_REVISION")) {
+        return System.getenv("CORDA_REVISION")
+    }
+    try {
+        return "git rev-parse HEAD".execute().text.trim()
+    } catch (Exception error) {
+        logger.warn("git is unavailable in build environment", error)
+        "unknown"
+    }
+}()
 
 void configureKotlinForOSGi(Configuration configuration) {
     configuration.resolutionStrategy {
@@ -151,6 +165,17 @@ configure(publishProjects) { subproject ->
             archiveClassifier = 'javadoc'
             from javadoc.destinationDir
         }
+
+        tasks.withType(Jar).matching { !(it.name ==~ /cp[bk]/) }.configureEach {
+            manifest {
+                attributes("Corda-Release-Version": archiveVersion.get())
+                attributes("Corda-Platform-Version": corda_platform_version)
+                attributes("Corda-Revision": revision)
+                attributes("Automatic-Module-Name": "${tokens_release_group}.${project.name.replace('-', '.')}")
+                attributes("Corda-Docs-Link": "https://docs.r3.com/")
+                attributes("Corda-License": licenseUrl)
+            }
+        }
     }
 
     tasks.register('install') {
@@ -160,8 +185,10 @@ configure(publishProjects) { subproject ->
     publishing {
         publications {
             create(subproject.name, MavenPublication) {
+                evaluationDependsOn(subproject.path.toString())
+                def projectName = "tokens-${subproject.name}"
                 groupId subproject.group
-                artifactId "tokens-${subproject.name}"
+                artifactId projectName
 
                 pluginManager.withPlugin('java-library') {
                     from components.java
@@ -175,7 +202,26 @@ configure(publishProjects) { subproject ->
                 }
 
                 pom {
+                    name = projectName
                     description = subproject.description
+                    url = 'https://github.com/corda/corda5-token-sdk'
+                    licenses {
+                        license {
+                            name = licenseName
+                            url = licenseUrl
+                            distribution = licenseUrl
+                        }
+                    }
+                    developers {
+                        developer {
+                            id = 'R3'
+                            name = 'R3'
+                            email = 'dev@corda.net'
+                        }
+                    }
+                    scm {
+                        url = 'https://github.com/corda/corda5-token-sdk'
+                    }
                 }
             }
         }

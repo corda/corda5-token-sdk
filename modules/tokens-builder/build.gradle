@@ -2,7 +2,10 @@ plugins {
     id 'org.jetbrains.kotlin.jvm'
     id 'jacoco'
     id 'net.corda.plugins.cordapp-cpk'
+    id 'com.r3.internal.gradle.plugins.r3Publish'
 }
+
+description 'Token SDK tokens builder'
 
 cordapp {
     targetPlatformVersion corda_platform_version.toInteger()

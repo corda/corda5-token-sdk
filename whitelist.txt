@@ -1,0 +1,6 @@
+# Artifacts have to be included/excluded by their artifact config name
+#   these do not always line up with the location in the git repo
+tokens-contracts
+tokens-workflows
+tokens-selection
+tokens-tokens-builder
