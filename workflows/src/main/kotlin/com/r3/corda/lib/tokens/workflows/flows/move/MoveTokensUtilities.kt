@@ -140,7 +140,8 @@ fun addMoveFungibleTokens(
         flowEngine,
         memberInfo,
         partiesAndAmounts,
-        changeHolder
+        changeHolder,
+        TokenQueryBy()
     )
 }
 
