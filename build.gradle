@@ -46,6 +46,15 @@ def revision = {
     }
 }()
 
+def remoteUrl = {
+    try {
+        return "git remote get-url origin".execute().text.trim()
+    } catch (Exception error) {
+        logger.warn("git is unavailable in build environment", error)
+        return "unknown"
+    }
+}()
+
 void configureKotlinForOSGi(Configuration configuration) {
     configuration.resolutionStrategy {
         dependencySubstitution {
@@ -61,23 +70,14 @@ void configureKotlinForOSGi(Configuration configuration) {
 subprojects {
     repositories {
         mavenCentral()
+        maven { url "$artifactoryContextUrl/corda-dependencies" }
         //needed for C5 binaries
         maven {
-            url = "$artifactoryContextUrl/corda-os-maven-stable-local"
+            url = "$artifactoryContextUrl/corda-os-maven"
             credentials {
                 username = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
                 password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
             }
-        }
-        maven {
-            url = "$artifactoryContextUrl/corda-os-maven-unstable"
-            credentials {
-                username = findProperty('cordaArtifactoryUsername') ?: System.getenv('CORDA_ARTIFACTORY_USERNAME')
-                password = findProperty('cordaArtifactoryPassword') ?: System.getenv('CORDA_ARTIFACTORY_PASSWORD')
-            }
-        }
-        maven {
-            url = "$artifactoryContextUrl/corda-dependencies"
         }
     }
 
@@ -171,7 +171,7 @@ configure(publishProjects) { subproject ->
                 attributes("Corda-Platform-Version": corda_platform_version)
                 attributes("Corda-Revision": revision)
                 attributes("Automatic-Module-Name": "${tokens_release_group}.${project.name.replace('-', '.')}")
-                attributes("Corda-Docs-Link": "https://docs.r3.com/")
+                attributes("Corda-Docs-Link": docsUrl)
                 attributes("Corda-License": licenseUrl)
             }
         }
@@ -203,7 +203,7 @@ configure(publishProjects) { subproject ->
                 pom {
                     name = projectName
                     description = subproject.description
-                    url = 'https://github.com/corda/corda5-token-sdk'
+                    url = remoteUrl
                     licenses {
                         license {
                             name = licenseName
@@ -213,13 +213,13 @@ configure(publishProjects) { subproject ->
                     }
                     developers {
                         developer {
-                            id = 'R3'
-                            name = 'R3'
-                            email = 'dev@corda.net'
+                            id = pomDeveloperId
+                            name = pomDeveloperName
+                            email = pomDeveloperEmail
                         }
                     }
                     scm {
-                        url = 'https://github.com/corda/corda5-token-sdk'
+                        url = remoteUrl
                     }
                 }
             }

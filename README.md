@@ -63,7 +63,7 @@ Second, you must add the tokens development artifactory repository to the
 list of repositories for your project:
 
     repositories {
-        maven { url 'https://software.r3.com/artifactory/corda-os-maven-stable' }
+        maven { url 'https://software.r3.com/artifactory/corda-os-maven' }
     }
 
 Now, you can add the `token-sdk` dependencies to the `dependencies` block
