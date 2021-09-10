@@ -5,6 +5,7 @@ cordaPipeline(
     runE2eTests: true,
     e2eTestName: 'corda5-token-sdk-e2e-tests',
     nexusAppId: 'com.r3.corda.sdk.token-corda-5',
+    nexusIqExcludePatterns: ['**/*-javadoc.jar', '**/*-sources.jar'],
     dependentJobsNames: [
         "/Corda5/corda5-token-sdk-diamond-demo/${env.BRANCH_NAME.replace('/', '%2F')}"
     ],
