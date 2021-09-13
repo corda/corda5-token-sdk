@@ -7,6 +7,7 @@ plugins {
     id 'com.jfrog.artifactory'
     id 'jacoco'
     id 'net.corda.cordapp.cordapp-configuration'
+    id 'org.jetbrains.dokka' apply false
     id 'org.jetbrains.kotlin.plugin.noarg' apply false
     id 'com.r3.internal.gradle.plugins.r3ArtifactoryPublish' apply true
     id 'com.r3.internal.gradle.plugins.r3Publish' apply false
@@ -152,6 +153,8 @@ configure(publishProjects) { subproject ->
     apply plugin: 'com.jfrog.artifactory'
 
     pluginManager.withPlugin('java-library') {
+        apply plugin: 'org.jetbrains.dokka'
+
         tasks.register('sourceJar', Jar) {
             dependsOn subproject.classes
             archiveClassifier = 'sources'
@@ -159,9 +162,13 @@ configure(publishProjects) { subproject ->
         }
 
         tasks.register('javadocJar', Jar) {
-            dependsOn subproject.javadoc
+            description = 'Create JavaDoc Jar from Dokka docs'
+            group = 'documentation'
+
+            def dokkaHtml = tasks.named('dokkaHtml', org.jetbrains.dokka.gradle.DokkaTask)
+            from dokkaHtml.flatMap { it.outputDirectory }
+
             archiveClassifier = 'javadoc'
-            from javadoc.destinationDir
         }
 
         tasks.withType(Jar).matching { !(it.name ==~ /cp[bk]/) }.configureEach {
