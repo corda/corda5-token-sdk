@@ -155,8 +155,10 @@ configure(publishProjects) { subproject ->
     pluginManager.withPlugin('java-library') {
         apply plugin: 'org.jetbrains.dokka'
 
+        def jarTask = tasks.named('jar', Jar)
         tasks.register('sourceJar', Jar) {
             dependsOn subproject.classes
+            archiveBaseName = jarTask.flatMap { it.archiveBaseName }
             archiveClassifier = 'sources'
             from sourceSets.main.allSource
         }
@@ -168,6 +170,7 @@ configure(publishProjects) { subproject ->
             def dokkaHtml = tasks.named('dokkaHtml', org.jetbrains.dokka.gradle.DokkaTask)
             from dokkaHtml.flatMap { it.outputDirectory }
 
+            archiveBaseName = jarTask.flatMap { it.archiveBaseName }
             archiveClassifier = 'javadoc'
         }
 
