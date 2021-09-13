@@ -61,12 +61,7 @@ void configureKotlinForOSGi(Configuration configuration) {
 
 subprojects {
     repositories {
-        mavenLocal()
         mavenCentral()
-        maven { url "$artifactoryContextUrl/corda-dev" }
-        maven { url "$artifactoryContextUrl/corda-releases" }
-        maven { url "$artifactoryContextUrl/corda-lib" }
-        maven { url "$artifactoryContextUrl/corda-lib-dev" }
         //needed for C5 binaries
         maven {
             url = "$artifactoryContextUrl/corda-os-maven-stable-local"
@@ -137,6 +132,13 @@ subprojects {
     tasks.withType(Test).configureEach {
         minHeapSize = "128m"
         maxHeapSize = "4096m"
+    }
+
+    tasks.register('compileAll') {
+        description = 'Compiles all the Kotlin and Java classes, including all of the test classes.'
+        group = 'verification'
+
+        dependsOn tasks.withType(AbstractCompile)
     }
 }
 
