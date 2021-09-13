@@ -20,7 +20,6 @@ sourceSets {
 
 dependencies {
     implementation "net.corda.kotlin:kotlin-stdlib-jdk8-osgi:$kotlin_version"
-    cordaProvided "javax.persistence:javax.persistence-api:$persistenceApiVersion"
 
     // Corda dependencies.
     cordaProvided("$corda_release_group:corda-application:$corda_release_version")

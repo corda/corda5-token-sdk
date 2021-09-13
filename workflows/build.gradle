@@ -53,7 +53,8 @@ compileKotlin {
 }
 
 dependencies {
-    cordaProvided("org.hibernate:hibernate-core:$hibernateVersion")
+    // Only needed for its @Type annotation.
+    compileOnly "org.hibernate:hibernate-core:$hibernateVersion"
 
     // Corda dependencies.
     cordaProvided("$corda_release_group:corda-application:$corda_release_version")

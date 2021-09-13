@@ -1,6 +1,10 @@
 # Artifacts have to be included/excluded by their artifact config name
 #   these do not always line up with the location in the git repo
 tokens-contracts
+tokens-contracts/tokens-contracts.corda.cpk
 tokens-workflows
+tokens-workflows/tokens-workflows.corda.cpk
 tokens-selection
+tokens-selection/tokens-selection.corda.cpk
 tokens-tokens-builder
+tokens-tokens-builder/tokens-tokens-builder.corda.cpk

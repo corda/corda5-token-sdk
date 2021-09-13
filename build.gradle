@@ -129,10 +129,8 @@ subprojects {
         }
     }
 
-    tasks.withType(Jar) {
-        jar {
-            exclude "**/log4j2*.xml"
-        }
+    tasks.withType(Jar).configureEach {
+        exclude "**/log4j2*.xml"
     }
 
     tasks.withType(Test).configureEach {
