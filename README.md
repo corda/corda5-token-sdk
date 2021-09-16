@@ -35,8 +35,8 @@ For more details behind the token SDK's design, see
 ### Build Tokens SDK against Corda release branch
 
 Often, in order to use the latest `token-sdk` master you will need to build against a specific Corda release branch until 
-the required changes make it into a Corda release. At the time of writing tokens `2.0.0-DevPreview-RC07` requires Corda 
-`5.0.0-DevPreview-RC07`. 
+the required changes make it into a Corda release. At the time of writing tokens `2.0.0-DevPreview` requires Corda 
+`5.0.0-DevPreview`. 
 To build against a corda snapshot you can build this branch with the following commands:
 
     git clone https://github.com/corda/corda5
@@ -54,7 +54,7 @@ wish to use and set the corda version that should've been installed locally:
 
     buildscript {
         ext {
-            tokens_release_version = '2.0.0-DevPreview-RC07'
+            tokens_release_version = '2.0.0-DevPreview'
             tokens_release_group = 'com.r3.corda.lib.tokens'
         }
     }
