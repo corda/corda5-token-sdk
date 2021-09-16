@@ -91,7 +91,7 @@ publish binaries to your local maven repository:
     ./gradlew clean install
 
 ## Where to go next?
-Official documentation: _Note: this documentation is not yet public and should be linked here when available._
+[Official documentation](https://docs.r3.com/en/platform/corda/5.0-dev-preview-1/tokens-sdk-c5.html)
 
 [Introduction to token SDK](docs/OVERVIEW.md)
 
