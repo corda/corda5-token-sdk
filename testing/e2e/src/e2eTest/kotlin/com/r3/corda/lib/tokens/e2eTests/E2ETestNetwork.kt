@@ -10,5 +10,5 @@ fun Nodes<Node>.caroline() = getNode("caroline")
 
 val e2eTestNetwork = TestNetwork.forNetwork(
     System.getenv("E2E_TEST_NETWORK_NAME")
-        ?: System.getProperty("e2eTestNetwork", "smoke-tests-network")
+        ?: System.getProperty("e2eTestNetwork", "tokens-smoke-tests-network")
 )
