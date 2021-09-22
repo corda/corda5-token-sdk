@@ -8,7 +8,6 @@ plugins {
     id 'jacoco'
     id 'net.corda.cordapp.cordapp-configuration'
     id 'org.jetbrains.dokka' apply false
-    id 'org.jetbrains.kotlin.plugin.noarg' apply false
     id 'com.r3.internal.gradle.plugins.r3ArtifactoryPublish' apply true
     id 'com.r3.internal.gradle.plugins.r3Publish' apply false
 }
@@ -86,16 +85,6 @@ subprojects {
         java {
             sourceCompatibility = VERSION_11
             targetCompatibility = VERSION_11
-        }
-    }
-
-    pluginManager.withPlugin('org.jetbrains.kotlin.plugin.noarg') {
-        noArg {
-            annotations(
-                "javax.persistence.Entity",
-                "javax.persistence.Embeddable",
-                "javax.persistence.MappedSuperclass"
-            )
         }
     }
 

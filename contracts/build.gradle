@@ -4,7 +4,6 @@ plugins {
     id 'jacoco'
     id 'org.jetbrains.kotlin.plugin.jpa'
     id 'org.jetbrains.kotlin.plugin.allopen'
-    id 'org.jetbrains.kotlin.plugin.noarg'
     id 'com.r3.internal.gradle.plugins.r3Publish'
 }
 
