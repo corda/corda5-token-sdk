@@ -57,7 +57,6 @@ dependencies {
 
     // Corda dependencies.
     cordaProvided("$corda_release_group:corda-application:$corda_release_version")
-    cordaProvided("$corda_release_group:corda-node-api:$corda_release_version")
     cordaProvided("$corda_release_group:corda-ledger:$corda_release_version")
     cordaProvided("$corda_release_group:corda-crypto-api:$corda_release_version")
     cordaProvided("$corda_release_group:corda-persistence:$corda_release_version")
