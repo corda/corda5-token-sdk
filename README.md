@@ -32,38 +32,16 @@ For more details behind the token SDK's design, see
 
 ## How to use the SDK?
 
-### Build Tokens SDK against Corda release branch
-
-Often, in order to use the latest `token-sdk` master you will need to build against a specific Corda release branch until 
-the required changes make it into a Corda release. At the time of writing tokens `2.0.0-DevPreview-RC07` requires Corda 
-`5.0.0-DevPreview-RC07`. 
-To build against a corda snapshot you can build this branch with the following commands:
-
-    git clone https://github.com/corda/corda5
-    git fetch
-    git checkout origin release/os/5.0-DevPreview1
-   
-You can set the corda5 snapshot version in the `gradle.properties` file. Set the property: `corda_release_version`
-
-Then run a `./gradlew clean install` from the root directory.
-
 ### Adding token SDK dependencies to an existing CorDapp
 
 First, add a variable for the tokens release group and the version you 
-wish to use and set the corda version that should've been installed locally:
+wish to use.
 
     buildscript {
         ext {
-            tokens_release_version = '2.0.0-DevPreview-RC07'
+            tokens_release_version = '2.0.0-DevPreview-1.0'
             tokens_release_group = 'com.r3.corda.lib.tokens'
         }
-    }
-
-Second, you must add the tokens development artifactory repository to the
-list of repositories for your project:
-
-    repositories {
-        maven { url 'https://software.r3.com/artifactory/corda-os-maven-stable' }
     }
 
 Now, you can add the `token-sdk` dependencies to the `dependencies` block
@@ -81,19 +59,20 @@ And add the tokens builder module:
 
     cordapp "$tokens_release_group:tokens-builder:$tokens_release_version"
 
-### Installing the token SDK binaries
+### Building locally and installing the token SDK binaries
 
 If you wish to build the `token-sdk` from source then do the following to
 publish binaries to your local maven repository:
 
     git clone http://github.com/corda/corda5-token-sdk
-    cd token-sdk
+    cd corda5-token-sdk
     ./gradlew clean install
 
-## Where to go next?
+You then need to add `maven-local()` to your repositories and reference the version you published
+locally in your CorDapp build configuration to use your local build.
 
-[Official documentation](https://engineering.r3.com/product-areas/corda-platform/api-and-modularity/docs/)
-_Note: this currently points to internal documentation and should be updated to point to public documentation when made available._
+## Where to go next?
+[Official documentation](https://docs.r3.com/en/platform/corda/5.0-dev-preview-1/tokens-sdk-c5.html)
 
 [Introduction to token SDK](docs/OVERVIEW.md)
 
