@@ -72,7 +72,7 @@ You then need to add `maven-local()` to your repositories and reference the vers
 locally in your CorDapp build configuration to use your local build.
 
 ## Where to go next?
-[Official documentation](https://docs.r3.com/en/platform/corda/5.0-dev-preview-1/tokens-sdk-c5.html)
+[Official documentation](https://docs.r3.com/en/platform/corda/5.0-dev-preview-1/tokens-sdk/overview.html)
 
 [Introduction to token SDK](docs/OVERVIEW.md)
 
