@@ -1,5 +1,14 @@
 ## Changelog
 
+### V2.0.0-DevPreview-1.0
+
+* Ported to work with Corda 5.0.0-DevPreview-1.0
+  
+* Modified the flow to work against the new APIs
+
+* Removed any MockNetwork and DriverDSL tests and replaced with the e2e tests   
+
+
 ### V1.1
 
 #### Workflows
