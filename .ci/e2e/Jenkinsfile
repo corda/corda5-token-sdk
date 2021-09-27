@@ -26,7 +26,7 @@ pipeline {
         ARTIFACTORY_URL="https://software.r3.com:443/artifactory"
         NAMESPACE="tok-${nameSpace}"
         E2E_TEST_NETWORK_NAME="${env.NAMESPACE}"
-        CONFIDENTIAL_IDENTITIES_VERSION="2.0.0-DevPreview"
+        CONFIDENTIAL_IDENTITIES_VERSION="2.0.0-DevPreview-1.0"
         CONFIDENTIAL_IDENTITIES_REPO="corda-os-maven-stable"
         CONFIDENTIAL_IDENTITIES_CPK="com/r3/corda/lib/ci/ci-workflows/${CONFIDENTIAL_IDENTITIES_VERSION}/ci-workflows-${CONFIDENTIAL_IDENTITIES_VERSION}-cordapp.cpk"
         CPK_DIR="testing/build/e2eCPKs"

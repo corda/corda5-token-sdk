@@ -1,5 +1,6 @@
 # Sample full network suitable for local use
-tag: 5.0.0-devpreview
+registry: engineering-docker.software.r3.com
+tag: 5.0.0-devpreview-1.0
 nodes:
   alice:
   bob:
