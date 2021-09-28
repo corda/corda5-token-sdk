@@ -32,33 +32,52 @@ For more details behind the token SDK's design, see
 
 ## How to use the SDK?
 
+Tokens SDK binaries for the current Developer Preview version of Corda 5 are published to R3's corda-lib
+Artifactory and can be used from there.
+
 ### Adding token SDK dependencies to an existing CorDapp
 
-First, add a variable for the tokens release group and the version you 
+1. Add a repository definition for R3's corda-lib Artifactory:
+
+```
+    repositories {
+        maven { url 'https://software.r3.com/artifactory/corda-lib' }
+    }
+```
+
+2. Add a variable for the tokens release group and the version you 
 wish to use.
 
+ ```
     buildscript {
         ext {
             tokens_release_version = '2.0.0-DevPreview-1.0'
             tokens_release_group = 'com.r3.corda.lib.tokens'
         }
     }
+ ```
 
-Now, you can add the `token-sdk` dependencies to the `dependencies` block
-in each module of your CorDapp. For contract modules add:
+3. Now, you can add the `token-sdk` dependencies to the `dependencies` block
+   in each module of your CorDapp.
+ 
+    For contract modules add:
 
+   ```
     cordapp "$tokens_release_group:tokens-contracts:$tokens_release_version"
-
-In your workflow `build.gradle` add:
-
+   ```
+   In your workflow `build.gradle` add:
+    
+   ```
     cordapp "$tokens_release_group:tokens-workflows:$tokens_release_version"
-Add the selection module:
+   ```
+   
+   You can also add the token selection and token builder to your workflows:
 
+   ```
     cordapp "$tokens_release_group:tokens-selection:$tokens_release_version"
-And add the tokens builder module:
-
     cordapp "$tokens_release_group:tokens-builder:$tokens_release_version"
-
+   ```
+   
 ### Building locally and installing the token SDK binaries
 
 If you wish to build the `token-sdk` from source then do the following to
