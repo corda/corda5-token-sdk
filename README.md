@@ -32,7 +32,7 @@ For more details behind the token SDK's design, see
 
 ## How to use the SDK?
 
-Tokens SDK binaries for the current DevPreview version of Corda 5 are published to R3's corda-lib
+Tokens SDK binaries for the current Developer Preview version of Corda 5 are published to R3's corda-lib
 Artifactory and can be used from there.
 
 ### Adding token SDK dependencies to an existing CorDapp
